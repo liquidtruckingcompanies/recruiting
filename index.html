@@ -8,29 +8,18 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Open+Sans:wght@400;600;700&display=swap">
 <link rel="stylesheet" href="assets/site.css">
 <style>
-/* Layout: welcome band, then page tiles beside the sign-in card, recent map activity below. */
+/* Layout: welcome band, then a grid of page-name tiles beside the sign-in card. */
 [hidden]{display:none!important}
 body{margin:0}
 .hello{display:grid;gap:6px}
 .hello h1{font-size:2.4rem}
 .home{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
 @media (max-width:900px){.home{grid-template-columns:minmax(0,1fr)} #authCard{order:-1}}
-.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.tile{align-content:start;background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--brand-gold);border-radius:8px;padding:18px;display:grid;gap:12px;text-decoration:none;color:inherit;transition:box-shadow .15s,transform .15s}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;align-content:start}
+.tile{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--brand-gold);border-radius:8px;padding:22px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none;color:inherit;transition:box-shadow .15s,transform .15s}
 a.tile:hover{box-shadow:0 6px 18px rgba(16,30,48,.14);transform:translateY(-1px)}
-.tile h2{color:var(--heading);text-transform:uppercase;letter-spacing:.02em;font-size:1.5rem}
-.tile .go{font-family:var(--display);font-weight:700;text-transform:uppercase;color:var(--brand-deep)}
-.tile.soon{border-left-color:var(--steel);border-style:dashed;border-left-style:solid}
-.mix{display:flex;height:12px;border-radius:999px;overflow:hidden;background:var(--steel)}
-.mix i{display:block;height:100%}
-.counts{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.85rem}
-.counts span{display:inline-flex;align-items:center;gap:6px}
-.dot{width:10px;height:10px;border-radius:2px;display:inline-block}
-.c-green{background:var(--g)} .c-yellow{background:var(--y)} .c-orange{background:var(--o)} .c-red{background:var(--r)}
-.c-off{background:repeating-linear-gradient(45deg,var(--off) 0 2px,transparent 2px 5px);border:1px solid var(--off)}
-.recent{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-.recent li{display:grid;gap:2px;padding-bottom:8px;border-bottom:1px solid var(--line);font-size:.9rem}
-.recent li:last-child{border-bottom:none;padding-bottom:0}
+.tile h2{color:var(--heading);text-transform:uppercase;letter-spacing:.02em;font-size:1.35rem}
+.tile::after{content:"→";font-family:var(--display);font-weight:700;color:var(--brand-deep);font-size:1.3rem}
 .who{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .msg{font-size:.85rem;min-height:1.2em;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -58,34 +47,15 @@ a.tile:hover{box-shadow:0 6px 18px rgba(16,30,48,.14);transform:translateY(-1px)
 
   <div class="home">
     <div style="display:grid;gap:16px;min-width:0">
-      <div class="tiles">
-        <a class="tile" href="hiring-map.html">
-          <div class="eyebrow">Live</div>
-          <h2>Hiring Map</h2>
-          <p class="small" style="margin:0">County-by-county home-time colors, where we're hiring, cities by population, and the full change history.</p>
-          <div class="mix" id="mix" aria-hidden="true"></div>
-          <div class="counts" id="counts"><span class="muted">Loading the map…</span></div>
-          <div class="small muted" id="lastChange"></div>
-          <span class="go">Open the hiring map →</span>
-        </a>
-        <div class="tile soon">
-          <div class="eyebrow">Coming soon</div>
-          <h2 style="color:var(--muted)">More pages</h2>
-          <p class="small muted" style="margin:0">New recruiting pages will show up here as they're added to the site.</p>
-        </div>
-      </div>
-
-      <section class="card">
-        <h2>Latest map changes</h2>
-        <ul class="recent" id="recent"><li class="muted">Loading…</li></ul>
-        <a href="hiring-map.html" class="small">See the full change log on the hiring map</a>
-      </section>
+      <nav class="tiles" aria-label="Pages">
+        <a class="tile" href="hiring-map.html"><h2>Hiring Map</h2></a>
+      </nav>
     </div>
 
     <aside class="card" id="authCard">
       <h2 id="authTitle">Editor sign in</h2>
       <div id="signedOut" style="display:grid;gap:10px">
-        <p class="small muted" style="margin:0">Anyone can view the site. Sign in to change the hiring map. We'll email you a 6-digit code.</p>
+        <p class="small muted" style="margin:0">Anyone can view the site. Sign in to make changes. We'll email you a 6-digit code.</p>
         <label class="field" for="otpEmail"><span>Email</span><input type="email" id="otpEmail" class="txt" autocomplete="email"></label>
         <div><button type="button" class="primary" id="sendCode">Email me a code</button></div>
         <div id="codeStep" hidden style="display:grid;gap:10px">
@@ -95,7 +65,7 @@ a.tile:hover{box-shadow:0 6px 18px rgba(16,30,48,.14);transform:translateY(-1px)
       </div>
       <div id="signedIn" hidden style="display:grid;gap:10px">
         <div class="who"><span id="whoText"></span></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap"><a href="hiring-map.html"><button type="button" class="primary" tabindex="-1">Go to the hiring map</button></a><button type="button" id="signOut">Sign out</button></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="signOut">Sign out</button></div>
       </div>
       <div class="msg" id="authMsg"></div>
     </aside>
@@ -113,10 +83,7 @@ a.tile:hover{box-shadow:0 6px 18px rgba(16,30,48,.14);transform:translateY(-1px)
 // Same project and key as the hiring map, so one sign-in covers every page.
 const SUPABASE_URL = "https://bunskxkyzmabbhybbubg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_YPlmQVx-G_A97WaiTSLFqg_xIyl3PC_";
-const ST = {"05":"AR","08":"CO","17":"IL","18":"IN","19":"IA","20":"KS","21":"KY","26":"MI","27":"MN","29":"MO","31":"NE","38":"ND","40":"OK","46":"SD","47":"TN","55":"WI","56":"WY"};
-const SHORT = {green:"Green", yellow:"Yellow", orange:"Orange", red:"Red"};
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const fmtWhen=iso=>new Date(iso).toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
 const $=id=>document.getElementById(id);
 
 let sb=null;
@@ -129,7 +96,7 @@ async function renderUser(session){
   if(email){
     const first=(editor?.name||"").split(" ")[0];
     $("hello").textContent=first?`Welcome, ${first}`:"Welcome";
-    $("whoText").innerHTML=editor?`Signed in as <b>${esc(editor.name)}</b>. You can edit the hiring map.`:`Signed in as ${esc(email)}. This email isn't on the editor list yet, so the map is view-only for you.`;
+    $("whoText").innerHTML=editor?`Signed in as <b>${esc(editor.name)}</b>.`:`Signed in as ${esc(email)}. This email isn't on the editor list yet, so pages are view-only for you.`;
   }else{ $("hello").textContent="Welcome"; }
 }
 
@@ -153,35 +120,10 @@ $("verifyCode").onclick=async()=>{
 };
 $("signOut").onclick=async()=>{ await sb.auth.signOut(); await renderUser(null); };
 
-async function loadMapSummary(){
-  const [counties,st,ch]=await Promise.all([
-    fetch("data/counties.json").then(r=>r.json()),
-    sb.from("county_status").select("fips,level,hiring"),
-    sb.from("county_changes").select("fips,level,hiring,prev_level,prev_hiring,reason,changed_by_name,changed_at").order("changed_at",{ascending:false}).order("id",{ascending:false}).limit(6)
-  ]);
-  if(st.error||ch.error) throw st.error||ch.error;
-  const names=Object.fromEntries(counties.map(c=>[c.id,`${c.n} County, ${ST[c.id.slice(0,2)]||""}`]));
-  const n={green:0,yellow:0,orange:0,red:0,off:0};
-  for(const d of st.data){ if(d.hiring===false) n.off++; else n[d.level]++; }
-  const total=counties.length, none=total-st.data.length;
-  $("mix").innerHTML=["green","yellow","orange","red","off"].map(k=>n[k]?`<i class="c-${k}" style="width:${(n[k]/total*100).toFixed(2)}%"></i>`:"").join("");
-  $("counts").innerHTML=["green","yellow","orange","red"].map(k=>`<span><i class="dot c-${k}"></i>${SHORT[k]} ${n[k]}</span>`).join("")+
-    `<span><i class="dot c-off"></i>Not hiring ${n.off}</span><span class="muted">No color ${none}</span>`;
-  const last=ch.data[0];
-  $("lastChange").textContent=last?`Last change ${fmtWhen(last.changed_at)} by ${last.changed_by_name}`:"";
-  $("recent").innerHTML=ch.data.length?ch.data.map(a=>{
-    const what=a.prev_level==null&&a.prev_hiring==null?`set to ${SHORT[a.level]}`
-      :a.prev_level!==a.level?`${SHORT[a.prev_level]||"No color"} → ${SHORT[a.level]}`
-      :a.prev_hiring!==a.hiring?(a.hiring?"hiring turned on":"hiring turned off"):"note updated";
-    return `<li><span><b>${esc(names[a.fips]||a.fips)}</b> ${esc(what)}</span><span class="muted small">${fmtWhen(a.changed_at)} · ${esc(a.changed_by_name)}${a.reason?` · ${esc(a.reason)}`:""}</span></li>`;
-  }).join(""):`<li class="muted">No changes yet.</li>`;
-}
-
 (async()=>{
-  if(!window.supabase){ $("authCard").hidden=true; $("counts").innerHTML=`<span class="muted">Open the map to see current colors.</span>`; $("recent").innerHTML=`<li class="muted">Couldn't load recent changes.</li>`; return; }
+  if(!window.supabase){ $("authCard").hidden=true; return; }
   sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{flowType:"implicit",detectSessionInUrl:true,persistSession:true}});
   try{ const {data}=await sb.auth.getSession(); await renderUser(data.session); }catch(e){ await renderUser(null); }
-  try{ await loadMapSummary(); }catch(e){ $("counts").innerHTML=`<span class="muted">Open the map to see current colors.</span>`; $("recent").innerHTML=`<li class="muted">Couldn't load recent changes.</li>`; }
 })();
 </script>
 </body>

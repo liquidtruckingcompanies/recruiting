@@ -28,7 +28,7 @@ To remove someone, delete their row from `editors` (and the user, if you like).
 
 ## Pages
 
-- `index.html`: home page with editor sign-in and a tile for each page.
+- `index.html`: home page with editor sign-in and a name-only tile for each page.
 - `hiring-map.html`: the county hiring map.
 - `assets/site.css`: shared brand styles (header, footer, colors, fonts) for new pages.
 
