@@ -15,7 +15,7 @@ Every zone change is a new entry appended to `data/changes.json` (zone, color, h
 The newest entry for each zone is what the map shows today, and the "View the map as of" date picker replays the file to show any past day.
 The git history of that file is the permanent audit trail.
 
-Highway lines come from Natural Earth (public domain) 1:10m roads. State outlines come from the us-atlas package (U.S. Census Bureau data).
+The map covers all 48 lower states and every county (3,108). Highway lines come from Natural Earth (public domain) 1:10m roads, in `data/roads.json`. State and county outlines come from the us-atlas package (U.S. Census Bureau data), in `data/states.json` and `data/counties.json`.
 
 City dots and population bands come from GeoNames (places of 1,000+ people, via the all-the-cities package), stored in `data/cities.json` as `[name, state, lon, lat, population]`.
 
