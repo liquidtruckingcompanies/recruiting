@@ -227,11 +227,11 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
 
   <div class="dlg" id="signInDlg" hidden><form id="signInForm" class="dlg-card">
     <h3>Editor sign in</h3>
-    <p class="small muted" style="margin:0">Enter your email and we'll send you a sign-in link. Click it in this same browser, or type the code from the email below. Only approved editors can change counties.</p>
+    <p class="small muted" style="margin:0">Enter your email and we'll send you a 6-digit sign-in code. Only approved editors can change counties.</p>
     <label class="field" for="otpEmail"><span>Email</span><input type="email" id="otpEmail" class="txt" autocomplete="email"></label>
-    <div><button type="button" class="primary" id="sendCode">Email me a sign-in link</button></div>
+    <div><button type="button" class="primary" id="sendCode">Email me a code</button></div>
     <div id="codeStep" hidden style="display:grid;gap:8px">
-      <label class="field" for="otpCode"><span>Code from the email (if it has one)</span><input type="text" id="otpCode" class="txt" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456"></label>
+      <label class="field" for="otpCode"><span>Code from the email</span><input type="text" id="otpCode" class="txt" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456"></label>
       <div><button type="button" class="primary" id="verifyCode">Sign in</button></div>
     </div>
     <details id="pwBox"><summary class="small">Use an email and password instead</summary><div style="display:grid;gap:10px;padding-top:8px">
@@ -666,7 +666,7 @@ document.getElementById("sendCode").onclick=async()=>{
   msg.textContent="Sending…";
   const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:location.origin+location.pathname}});
   if(error){ msg.textContent="Couldn't send the code: "+error.message; return; }
-  msg.textContent="Sent to "+email+". Click the link in the email, or type its code here. It can take a minute to arrive; check spam too.";
+  msg.textContent="Code sent to "+email+". It can take a minute to arrive; check Junk too.";
   document.getElementById("codeStep").hidden=false; document.getElementById("otpCode").focus();
 };
 document.getElementById("verifyCode").onclick=async()=>{
