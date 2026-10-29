@@ -239,8 +239,8 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
   <div class="rule"><span aria-hidden="true">⚠</span><div><b>These colors are a guideline.</b> Unless a driver lives firmly inside a green county, double-check with Planners before promising home time.</div></div>
 
   <div class="dlg" id="signInDlg" hidden><form id="signInForm" class="dlg-card">
-    <h3>Editor sign in</h3>
-    <p class="small muted" style="margin:0">Enter your email and we'll send you a 6-digit sign-in code. Only approved editors can change counties.</p>
+    <h3>Sign in</h3>
+    <p class="small muted" style="margin:0">Enter your email and we'll send you a 6-digit sign-in code. Only people with edit access can change counties.</p>
     <label class="field" for="otpEmail"><span>Email</span><input type="email" id="otpEmail" class="txt" autocomplete="email"></label>
     <div><button type="button" class="primary" id="sendCode">Email me a code</button></div>
     <div id="codeStep" hidden style="display:grid;gap:8px">
@@ -255,6 +255,8 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
     <div><button type="button" id="signInClose">Close</button></div>
     <div class="msg small" id="signInMsg"></div>
   </form></div>
+
+  <div class="rule" id="lockBanner" hidden><span aria-hidden="true">🔒</span><div><b>This map is for signed-in team members.</b> Sign in with an account that has access to see hiring colors. <button type="button" id="lockSignIn" onclick="document.getElementById('signInDlg').hidden=false">Sign in</button></div></div>
 
   <div class="past" id="pastBanner" hidden><span id="pastText"></span><button type="button" id="pastBack">Back to today</button></div>
 
@@ -560,7 +562,7 @@ let asOf=null;      // "YYYY-MM-DD" or null
 let selected=[];    // fips list
 let logLimit=25;
 let sb=null, editor=null; // supabase client, {name,email} when the signed-in person is an approved editor
-let sessionEmail=null;
+let sessionEmail=null, account=null, locked=false;
 
 const fmtDate=iso=>new Date(iso).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
 const fmtWhen=iso=>new Date(iso).toLocaleString(undefined,{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});
@@ -713,8 +715,12 @@ function renderAuth(){
   const box=document.getElementById("authBox"); if(!box) return;
   if(!sb){box.innerHTML="";return}
   if(editor){box.innerHTML=`<span class="small">Signed in as <b>${esc(editor.name)}</b></span> <button type="button" id="signOut">Sign out</button>`;}
-  else if(sessionEmail){box.innerHTML=`<span class="small">${esc(sessionEmail)} isn't on the editor list.</span> <button type="button" id="signOut">Sign out</button>`;}
-  else {box.innerHTML=`<button type="button" id="signInBtn">Editor sign in</button>`;}
+  else if(sessionEmail){
+    const why=!account?`${esc(sessionEmail)} hasn't been added as a user.`:account.active===false?`<b>${esc(account.name)}</b>, your account is inactive.`:`Signed in as <b>${esc(account.name)}</b> · view only`;
+    box.innerHTML=`<span class="small">${why}</span> <button type="button" id="signOut">Sign out</button>`;}
+  else {box.innerHTML=`<button type="button" id="signInBtn">Sign in</button>`;}
+  document.getElementById("lockBanner").hidden=!locked;
+  const lb=document.getElementById("lockSignIn"); if(lb) lb.hidden=!!sessionEmail;
   const so=document.getElementById("signOut"); if(so) so.onclick=async()=>{await sb.auth.signOut(); editor=null; sessionEmail=null; paint();};
   const si=document.getElementById("signInBtn"); if(si) si.onclick=()=>{document.getElementById("signInDlg").hidden=false; document.getElementById("otpEmail").focus();};
 }
@@ -748,10 +754,17 @@ document.getElementById("verifyCode").onclick=async()=>{
 };
 document.getElementById("signInClose").onclick=()=>{document.getElementById("signInDlg").hidden=true;};
 async function refreshEditor(session){
-  sessionEmail=session?.user?.email?.toLowerCase()||null; editor=null;
+  sessionEmail=session?.user?.email?.toLowerCase()||null; editor=null; account=null;
   try{
-  if(sessionEmail){ const {data}=await sb.from("editors").select("name,email").eq("email",sessionEmail).maybeSingle(); if(data) editor=data; }
+  if(sessionEmail){
+    let r=await sb.from("editors").select("name,email,role,active,pages").eq("email",sessionEmail).maybeSingle();
+    if(r.error) r=await sb.from("editors").select("name,email").eq("email",sessionEmail).maybeSingle(); // before 02-admin.sql
+    account=r.data||null;
+    // Edit rights: an active admin, or an active user with edit access to this page.
+    if(account && account.active!==false && (!account.role || account.role==="admin" || account.pages?.["hiring-map"]==="edit")) editor=account;
+  }
   }catch(err){ console.warn("Editor check failed",err); }
+  if(loaded) await loadData().catch(()=>{});
   paint();
 }
 
@@ -778,6 +791,10 @@ async function loadData(){
     audit=all.map(a=>({fips:a.fips,level:a.level,hiring:a.hiring,note:a.note,prevLevel:a.prev_level,prevHiring:a.prev_hiring,reason:a.reason,by:a.changed_by_name,at:a.changed_at}));
     ok=st.data.length>0;
   }catch(err){ console.warn("Database not ready, showing starting colors", err); } }
+  // Sign-in-only page and this person has no access: show nothing rather than the starting colors.
+  locked=false;
+  if(!ok && sb){ try{ const r=await sb.rpc("can_view",{p_page:"hiring-map"}); if(r.data===false) locked=true; }catch(e){} }
+  if(locked){ live={}; audit=[]; loaded=true; paint(); return; }
   if(!ok){
     // Preview until the database is connected: starting colors from the original zone map.
     const seed=await (await fetch("data/county-seed.json?v="+DV)).json(), at="2026-10-29T12:00:00Z";

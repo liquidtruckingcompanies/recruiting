@@ -19,12 +19,12 @@ The map covers all 48 lower states and every county (3,108). Highway lines come 
 
 City dots and population bands come from GeoNames (places of 1,000+ people, via the all-the-cities package), stored in `data/cities.json` as `[name, state, lon, lat, population]`.
 
-## Editors
+## Users and admins
 
-Editing needs a Supabase account and a row in `public.editors`:
-1. Supabase → Authentication → Users → Add user → Create new user, with the person's work email and a starting password, and "Auto Confirm User" checked.
-2. SQL Editor: `insert into public.editors (email, name) values ('their.email@company.com', 'Their Name');`
-To remove someone, delete their row from `editors` (and the user, if you like).
+Run `supabase/setup.sql` once, then `supabase/02-admin.sql` once (Supabase → SQL Editor).
+After that, admins manage everything on `admin.html`: add users by email, set each person's level (User or Admin), turn accounts active or inactive, give per-page access (No access, View, View + edit), and choose whether each page is public or sign-in only.
+People sign in on the Home page with an emailed 6-digit code. Every account change is listed under Account history.
+New pages get a row in `public.site_pages` (id, name, public_view, sort) and a tile on the Home page with a matching `data-page`.
 
 ## Pages
 

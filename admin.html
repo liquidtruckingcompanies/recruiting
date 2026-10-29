@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Admin · Liquid Trucking Recruiting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Open+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+/* Admin: add-user form, user table with inline controls, page visibility, account history. */
+[hidden]{display:none!important}
+body{margin:0}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
+@media (max-width:980px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.form{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;align-items:end}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+th{background:#f4f7fa;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+tr:last-child td{border-bottom:none}
+tr.inactive td{background:#f6f7f8;color:var(--muted)}
+td .txt{width:auto;min-width:130px;padding:5px 7px}
+select.txt{width:auto;padding:5px 7px}
+.toggle{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-weight:600}
+.toggle input{width:18px;height:18px;accent-color:var(--g)}
+.badge{display:inline-block;border-radius:999px;padding:1px 9px;font-size:.78rem;font-weight:700}
+.badge.on{background:#e3f3e9;color:#1f6b3c}
+.badge.off{background:#eceeef;color:#5a6878}
+.msg{font-size:.85rem;min-height:1.2em;color:var(--muted)}
+.msg.err{color:#b3261e}
+.pagerow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.pagerow:last-child{border-bottom:none}
+.hist{display:grid;gap:8px;font-size:.85rem;max-height:420px;overflow:auto}
+.hist div{border-left:3px solid var(--line);padding-left:8px}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--brand-deep);color:#fff;padding:8px 16px;border-radius:6px;font-size:.9rem;box-shadow:0 4px 14px rgba(16,30,48,.25);z-index:30}
+.toast.err{background:#b3261e}
+</style>
+</head>
+<body>
+<div class="sitebar"><div class="sitebar-in">
+  <a class="brand" href="https://liquidtrucking.com/" aria-label="Liquid Trucking home"><img src="https://liquidtrucking.com/wp-content/uploads/2021/03/LiquidTrucking-Logo-transparent-1.png" alt="Liquid Trucking" height="56"></a>
+  <nav class="sitenav" aria-label="Site">
+    <a href="./">Home</a>
+    <a href="hiring-map.html">Hiring map</a>
+    <a href="admin.html" aria-current="page">Admin</a>
+  </nav>
+</div></div>
+<div class="subbar"><div class="sitebar-in subbar-in">
+  <span>Recruiting · Admin</span>
+  <span>844-GO-TANKS</span>
+</div></div>
+
+<div class="wrap">
+  <header><div>
+    <h1>Admin</h1>
+    <p class="small muted" style="margin:4px 0 0">Add people, turn accounts on or off, and choose which pages each person can view or edit.</p>
+  </div></header>
+
+  <div class="card" id="gate"><p class="muted" style="margin:0" id="gateText">Checking your account…</p></div>
+
+  <div id="adminUI" hidden style="display:grid;gap:16px">
+    <section class="card">
+      <h2>Add a user</h2>
+      <form id="addForm" class="form">
+        <label class="field" for="newName"><span>Name</span><input id="newName" class="txt" required autocomplete="off"></label>
+        <label class="field" for="newEmail"><span>Work email</span><input id="newEmail" type="email" class="txt" required autocomplete="off"></label>
+        <label class="field" for="newRole"><span>Account level</span><select id="newRole" class="txt" style="width:100%"><option value="user">User</option><option value="admin">Admin</option></select></label>
+        <div id="newPages" style="display:contents"></div>
+        <div><button type="submit" class="primary">Add user</button></div>
+      </form>
+      <p class="small muted" style="margin:0">They sign in on the Home page with this email and get a 6-digit code. No password or Supabase step needed.</p>
+      <div class="msg" id="addMsg"></div>
+    </section>
+
+    <div class="grid2">
+      <section class="card">
+        <h2>Users</h2>
+        <p class="small muted" style="margin:0">Changes save as soon as you make them. Admins can view and edit every page and manage users.</p>
+        <div class="tablewrap"><table>
+          <thead id="userHead"></thead>
+          <tbody id="userBody"></tbody>
+        </table></div>
+      </section>
+
+      <div style="display:grid;gap:16px">
+        <section class="card">
+          <h2>Pages</h2>
+          <p class="small muted" style="margin:0">Choose whether anyone with the link can view a page, or only signed-in users you've given access.</p>
+          <div id="pageList"></div>
+        </section>
+        <section class="card">
+          <h2>Account history</h2>
+          <div class="hist" id="hist"><span class="muted">Nothing yet.</span></div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="sitefoot"><div class="sitefoot-in">
+  <div><b>Liquid Trucking</b> · 108 East Bay Rd, Plattsmouth, NE 68048</div>
+  <div>844-GO-TANKS · <a href="https://liquidtrucking.com/">liquidtrucking.com</a></div>
+</div></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
+<script>
+// Same project and key as the other pages, so one sign-in covers every page.
+const SUPABASE_URL = "https://bunskxkyzmabbhybbubg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_YPlmQVx-G_A97WaiTSLFqg_xIyl3PC_";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $=id=>document.getElementById(id);
+const ACCESS=[["none","No access"],["view","View"],["edit","View + edit"]];
+const fmtWhen=iso=>new Date(iso).toLocaleString(undefined,{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});
+
+let sb=null, me=null, USERS=[], PAGES=[];
+
+function toast(text,err){
+  const t=document.createElement("div"); t.className="toast"+(err?" err":""); t.textContent=text; t.setAttribute("role","status");
+  document.body.appendChild(t); setTimeout(()=>t.remove(),err?5000:1800);
+}
+const accessSelect=(id,val,disabled)=>`<select class="txt" id="${id}" ${disabled?"disabled":""}>${ACCESS.map(([v,l])=>`<option value="${v}" ${v===val?"selected":""}>${l}</option>`).join("")}</select>`;
+
+function renderAddPages(){
+  $("newPages").innerHTML=PAGES.map(p=>`<label class="field" for="np-${p.id}"><span>${esc(p.name)}</span>${accessSelect("np-"+p.id,"view").replace('class="txt"','class="txt" style="width:100%"')}</label>`).join("");
+}
+
+function renderUsers(){
+  $("userHead").innerHTML=`<tr><th>Name</th><th>Email</th><th>Level</th><th>Status</th>${PAGES.map(p=>`<th>${esc(p.name)}</th>`).join("")}</tr>`;
+  $("userBody").innerHTML=USERS.map((u,i)=>{
+    const self=u.email===me.email, admin=u.role==="admin";
+    return `<tr class="${u.active?"":"inactive"}" data-i="${i}">
+      <td><input class="txt" data-f="name" value="${esc(u.name)}" aria-label="Name for ${esc(u.email)}"></td>
+      <td>${esc(u.email)}${self?' <span class="muted small">(you)</span>':""}</td>
+      <td><select class="txt" data-f="role" ${self?"disabled title=\"You can't change your own level\"":""} aria-label="Account level"><option value="user" ${!admin?"selected":""}>User</option><option value="admin" ${admin?"selected":""}>Admin</option></select></td>
+      <td><label class="toggle"><input type="checkbox" data-f="active" ${u.active?"checked":""} ${self?"disabled":""}><span class="badge ${u.active?"on":"off"}">${u.active?"Active":"Inactive"}</span></label></td>
+      ${PAGES.map(p=>`<td>${admin?'<span class="small muted">View + edit (admin)</span>':accessSelect("",u.pages?.[p.id]||"none").replace("<select",`<select data-page="${p.id}" aria-label="${esc(p.name)} access"`)}</td>`).join("")}
+    </tr>`;}).join("")||`<tr><td colspan="${4+PAGES.length}" class="muted">No users yet.</td></tr>`;
+  $("userBody").querySelectorAll("tr[data-i]").forEach(tr=>{
+    const u=USERS[+tr.dataset.i];
+    tr.querySelectorAll("[data-f],[data-page]").forEach(inp=>inp.addEventListener("change",()=>{
+      const next={...u,pages:{...(u.pages||{})}};
+      if(inp.dataset.f==="name") next.name=inp.value.trim();
+      if(inp.dataset.f==="role") next.role=inp.value;
+      if(inp.dataset.f==="active") next.active=inp.checked;
+      if(inp.dataset.page) next.pages[inp.dataset.page]=inp.value;
+      if(!next.name){ toast("Name can't be empty.",true); inp.value=u.name; return; }
+      save(next);
+    }));
+  });
+}
+
+function renderPages(){
+  $("pageList").innerHTML=PAGES.map(p=>`<div class="pagerow"><div><b>${esc(p.name)}</b><div class="small muted">${p.public_view?"Anyone with the link can view":"Only signed-in users with access"}</div></div>
+    <label class="toggle small"><input type="checkbox" data-pid="${p.id}" ${p.public_view?"checked":""}>Public</label></div>`).join("");
+  $("pageList").querySelectorAll("[data-pid]").forEach(cb=>cb.onchange=async()=>{
+    const {error}=await sb.rpc("admin_set_page_public",{p_id:cb.dataset.pid,p_public:cb.checked});
+    if(error){ toast("Couldn't save: "+error.message,true); }
+    else toast(cb.checked?"Page is public":"Page is now sign-in only");
+    await load();
+  });
+}
+
+function renderHistory(rows){
+  $("hist").innerHTML=rows.length?rows.map(r=>`<div><b>${esc(r.target.startsWith("page:")?(PAGES.find(p=>"page:"+p.id===r.target)?.name||r.target):(USERS.find(u=>u.email===r.target)?.name||r.target))}</b> · ${esc(r.summary)}<br><span class="muted">${esc(r.changed_by_name)} · ${fmtWhen(r.changed_at)}</span></div>`).join(""):`<span class="muted">Nothing yet.</span>`;
+}
+
+async function save(u){
+  const {error}=await sb.rpc("admin_save_user",{p_email:u.email,p_name:u.name,p_role:u.role,p_active:u.active,p_pages:u.pages||{}});
+  if(error) toast("Couldn't save: "+error.message,true); else toast("Saved");
+  await load();
+}
+
+async function load(){
+  const [us,ps,hs]=await Promise.all([
+    sb.from("editors").select("email,name,role,active,pages").order("name"),
+    sb.from("site_pages").select("id,name,public_view,sort").order("sort"),
+    sb.from("account_changes").select("target,summary,changed_by_name,changed_at").order("changed_at",{ascending:false}).limit(100),
+  ]);
+  if(us.error||ps.error){ $("gateText").textContent="Couldn't load accounts. If this is the first time, run supabase/02-admin.sql in Supabase."; $("gate").hidden=false; $("adminUI").hidden=true; return; }
+  USERS=us.data; PAGES=ps.data;
+  renderUsers(); renderPages(); renderHistory(hs.data||[]);
+  if(!$("newPages").children.length) renderAddPages();
+}
+
+$("addForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const email=$("newEmail").value.trim().toLowerCase(), name=$("newName").value.trim(), msg=$("addMsg");
+  if(USERS.some(u=>u.email===email)){ msg.className="msg err"; msg.textContent=email+" is already a user. Change their access in the table below."; return; }
+  const pages=Object.fromEntries(PAGES.map(p=>[p.id,$("np-"+p.id).value]));
+  const {error}=await sb.rpc("admin_save_user",{p_email:email,p_name:name,p_role:$("newRole").value,p_active:true,p_pages:pages});
+  if(error){ msg.className="msg err"; msg.textContent="Couldn't add: "+error.message; return; }
+  msg.className="msg"; msg.textContent=`Added ${name}. Tell them to sign in on the Home page with ${email}.`;
+  $("addForm").reset(); renderAddPages(); await load();
+});
+$("newRole").onchange=()=>$("newPages").querySelectorAll("select").forEach(s=>s.disabled=$("newRole").value==="admin");
+
+(async()=>{
+  if(!window.supabase){ $("gateText").textContent="Couldn't reach the sign-in service. Refresh to try again."; return; }
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{flowType:"implicit",detectSessionInUrl:true,persistSession:true}});
+  const {data}=await sb.auth.getSession();
+  const email=data.session?.user?.email?.toLowerCase();
+  if(!email){ $("gateText").innerHTML=`Sign in on the <a href="./">Home page</a> first, then come back here.`; return; }
+  const {data:row}=await sb.from("editors").select("email,name,role,active").eq("email",email).maybeSingle();
+  if(!row||row.role!=="admin"||!row.active){ $("gateText").innerHTML=`This page is for admins. You're signed in as ${esc(email)}. <a href="./">Back to Home</a>`; return; }
+  me=row; $("gate").hidden=true; $("adminUI").hidden=false;
+  await load();
+})();
+</script>
+</body>
+</html>

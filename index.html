@@ -48,14 +48,16 @@ a.tile:hover{box-shadow:0 6px 18px rgba(16,30,48,.14);transform:translateY(-1px)
   <div class="home">
     <div style="display:grid;gap:16px;min-width:0">
       <nav class="tiles" aria-label="Pages">
-        <a class="tile" href="hiring-map.html"><h2>Hiring Map</h2></a>
+        <a class="tile" href="hiring-map.html" data-page="hiring-map"><h2>Hiring Map</h2></a>
+        <a class="tile" href="admin.html" id="adminTile" hidden><h2>Admin</h2></a>
       </nav>
+      <p class="muted" id="noTiles" hidden style="margin:0">Sign in to see your pages.</p>
     </div>
 
     <aside class="card" id="authCard">
-      <h2 id="authTitle">Editor sign in</h2>
+      <h2 id="authTitle">Sign in</h2>
       <div id="signedOut" style="display:grid;gap:10px">
-        <p class="small muted" style="margin:0">Anyone can view the site. Sign in to make changes. We'll email you a 6-digit code.</p>
+        <p class="small muted" style="margin:0">Sign in to see your pages and make changes. We'll email you a 6-digit code.</p>
         <label class="field" for="otpEmail"><span>Email</span><input type="email" id="otpEmail" class="txt" autocomplete="email"></label>
         <div><button type="button" class="primary" id="sendCode">Email me a code</button></div>
         <div id="codeStep" hidden style="display:grid;gap:10px">
@@ -87,15 +89,32 @@ const $=id=>document.getElementById(id);
 
 let sb=null;
 
+// Show a tile when its page is public or this person has view or edit access. Admins see everything.
+async function renderTiles(editor){
+  let pages=null;
+  try{ const r=await sb.from("site_pages").select("id,public_view"); if(!r.error) pages=r.data; }catch(e){}
+  const admin=editor?.role==="admin"&&editor.active!==false;
+  document.querySelectorAll(".tile[data-page]").forEach(t=>{
+    const pg=pages?.find(p=>p.id===t.dataset.page), acc=editor&&editor.active!==false?editor.pages?.[t.dataset.page]:null;
+    t.hidden=!(!pages||!pg||pg.public_view||admin||acc==="view"||acc==="edit");
+  });
+  $("adminTile").hidden=!admin;
+  $("noTiles").hidden=!![...document.querySelectorAll(".tile")].some(t=>!t.hidden);
+}
+
 async function renderUser(session){
   const email=session?.user?.email?.toLowerCase()||null;
   let editor=null;
-  if(email){ try{ const {data}=await sb.from("editors").select("name").eq("email",email).maybeSingle(); editor=data; }catch(e){} }
-  $("signedOut").hidden=!!email; $("signedIn").hidden=!email; $("authTitle").textContent=email?"Your account":"Editor sign in";
+  if(email){ try{ const r=await sb.from("editors").select("name,role,active,pages").eq("email",email).maybeSingle(); editor=r.data;
+    if(r.error){ const r2=await sb.from("editors").select("name").eq("email",email).maybeSingle(); editor=r2.data; } }catch(e){} }
+  await renderTiles(editor);
+  $("signedOut").hidden=!!email; $("signedIn").hidden=!email; $("authTitle").textContent=email?"Your account":"Sign in";
   if(email){
     const first=(editor?.name||"").split(" ")[0];
     $("hello").textContent=first?`Welcome, ${first}`:"Welcome";
-    $("whoText").innerHTML=editor?`Signed in as <b>${esc(editor.name)}</b>.`:`Signed in as ${esc(email)}. This email isn't on the editor list yet, so pages are view-only for you.`;
+    $("whoText").innerHTML=!editor?`Signed in as ${esc(email)}. This email hasn't been added as a user yet, so ask an admin for access.`
+      :editor.active===false?`Signed in as <b>${esc(editor.name)}</b>. Your account is inactive, so ask an admin to turn it back on.`
+      :`Signed in as <b>${esc(editor.name)}</b>${editor.role==="admin"?" (admin)":""}.`;
   }else{ $("hello").textContent="Welcome"; }
 }
 
