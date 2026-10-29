@@ -5,53 +5,56 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Home-Time Zone Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Open+Sans:wght@400;600;700&display=swap">
 <style>
 /* Layout: dispatch board. Header + Payton rule, then map beside a details/editor panel, change log below. */
 :root{
-  --bg:#f3f4f1; --surface:#ffffff; --fg:#1d2321; --muted:#5e6862; --line:#d6dad4;
+  --bg:#f1f4f7; --surface:#ffffff; --fg:#1b2633; --muted:#5a6878; --line:#d1dae2;
   --land:#e7eae3; --land-line:#9aa39c; --water:#c9dce6;
-  --accent:#1f4f8f; --accent-fg:#ffffff;
+  --accent:#105486; --accent-fg:#ffffff;
   --g:#2f9a57; --y:#e2bd22; --o:#e57f25; --r:#d4443a; --off:#8b928d;
   --warn-bg:#fff4dc; --warn-line:#e2bd22;
   --hw-i:#2f3138; --hw-us:#7c7466;
-  --brand-bar:#ffffff; --brand-bar-fg:#1b2430; --brand-accent:#1f4f8f;
-  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
-  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --brand-bar:#ffffff; --brand-bar-fg:#333d47; --brand-accent:#ecc01c; --brand-blue:#346d98; --brand-deep:#105486; --brand-gold:#ecc01c;
+  --display:"Saira Semi Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Open Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#141917; --surface:#1d2421; --fg:#e7ebe8; --muted:#9ba59f; --line:#323b37;
+  --bg:#111820; --surface:#18222d; --fg:#e6ecf2; --muted:#98a6b5; --line:#2b3947;
   --land:#262e2a; --land-line:#58625c; --water:#15232c;
   --accent:#7fb0ef; --accent-fg:#0d1a2b;
   --g:#3fb56a; --y:#e8c63a; --o:#f08f3a; --r:#e85a4f; --off:#727a75;
   --warn-bg:#2d2715; --warn-line:#b8961c; --hw-i:#e9ebef; --hw-us:#a59c8c; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#141917; --surface:#1d2421; --fg:#e7ebe8; --muted:#9ba59f; --line:#323b37;
+  --bg:#111820; --surface:#18222d; --fg:#e6ecf2; --muted:#98a6b5; --line:#2b3947;
   --land:#262e2a; --land-line:#58625c; --water:#15232c;
   --accent:#7fb0ef; --accent-fg:#0d1a2b;
   --g:#3fb56a; --y:#e8c63a; --o:#f08f3a; --r:#e85a4f; --off:#727a75;
   --warn-bg:#2d2715; --warn-line:#b8961c; --hw-i:#e9ebef; --hw-us:#a59c8c; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
-.sitebar{background:var(--brand-bar);color:var(--brand-bar-fg);border-bottom:4px solid var(--brand-accent)}
+.sitebar{background:var(--brand-bar);color:var(--brand-bar-fg)}
 .sitebar-in,.sitefoot-in{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.sitebar-in{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding-block:10px}
-.brand img{display:block;height:44px;width:auto}
-.sitetag{font-family:var(--display);font-weight:700;font-size:1.1rem;text-transform:uppercase;letter-spacing:.08em;padding-left:14px;border-left:1px solid color-mix(in srgb,var(--brand-bar-fg) 35%,transparent)}
-.sitenav{margin-left:auto;display:flex;gap:4px 18px;flex-wrap:wrap}
-.sitenav a{color:var(--brand-bar-fg);text-decoration:none;font-weight:600;font-size:.95rem;padding:4px 0;border-bottom:2px solid transparent}
-.sitenav a:hover,.sitenav a[aria-current]{border-bottom-color:var(--brand-accent)}
-.sitefoot{background:var(--brand-bar);color:var(--brand-bar-fg);margin-top:8px}
-.sitefoot-in{padding-block:20px;display:grid;gap:4px;font-size:.9rem}
+.sitebar-in{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding-block:12px}
+.brand img{display:block;height:56px;width:auto;max-width:100%}
+.sitenav{margin-left:auto;display:flex;align-items:center;gap:6px 26px;flex-wrap:wrap}
+.sitenav a{color:var(--brand-bar-fg);text-decoration:none;font-size:.95rem;text-transform:uppercase;padding:4px 0;border-bottom:2px solid transparent}
+.sitenav a:hover,.sitenav a[aria-current]{border-bottom-color:var(--brand-blue)}
+.sitenav a.pill{background:var(--brand-gold);color:#1b2633;font-family:var(--display);font-weight:700;padding:5px 12px;border-radius:6px;border:none}
+.sitenav a.pill:hover{filter:brightness(.95)}
+.subbar{background:var(--brand-blue);color:#ffffff}
+.subbar-in{justify-content:space-between;padding-block:9px;font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:1.05rem;letter-spacing:.02em}
+.sitefoot{background:var(--brand-deep);color:#ffffff;margin-top:8px;border-top:4px solid var(--brand-gold)}
+.sitefoot-in{padding-block:22px;display:grid;gap:4px;font-size:.9rem}
 .sitefoot a{color:inherit}
-.sitefoot .muted{color:color-mix(in srgb,var(--brand-bar-fg) 70%,transparent)}
+.sitefoot .muted{color:#c9d6e3}
 .wrap{max-width:1240px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:16px}
 h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:.01em;margin:0;text-wrap:balance}
 h1{font-size:2.1rem;line-height:1.05}
 h2{font-size:1.35rem}
 h3{font-size:1.2rem}
 .eyebrow{font-size:.75rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600}
-header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px}
+header{padding-top:4px;display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px}
 .rule{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:6px;padding:10px 14px;display:flex;gap:10px;align-items:flex-start}
 .rule b{font-weight:600}
 .asof{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.9rem}
@@ -159,12 +162,16 @@ td.when{white-space:nowrap;font-variant-numeric:tabular-nums}
 </head>
 <body>
 <div class="sitebar"><div class="sitebar-in">
-  <a class="brand" href="https://liquidtrucking.com/" aria-label="Liquid Trucking home"><img src="https://liquidtrucking.com/wp-content/uploads/2021/03/LiquidTrucking-Logo-transparent-1.png" alt="Liquid Trucking" height="44"></a>
-  <span class="sitetag">Recruiting</span>
+  <a class="brand" href="https://liquidtrucking.com/" aria-label="Liquid Trucking home"><img src="https://liquidtrucking.com/wp-content/uploads/2021/03/LiquidTrucking-Logo-transparent-1.png" alt="Liquid Trucking" height="56"></a>
   <nav class="sitenav" aria-label="Site">
     <a href="./" aria-current="page">Zone map</a>
-    <a href="https://liquidtrucking.com/">liquidtrucking.com</a>
+    <a href="https://liquidtrucking.com/">Liquidtrucking.com</a>
+    <a class="pill" href="https://liquidtrucking.com/">Driver applications</a>
   </nav>
+</div></div>
+<div class="subbar"><div class="sitebar-in subbar-in">
+  <span>Recruiting · Home-time zones</span>
+  <span>844-GO-TANKS</span>
 </div></div>
 <div class="wrap">
   <header>
