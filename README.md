@@ -18,3 +18,10 @@ The git history of that file is the permanent audit trail.
 Highway lines come from Natural Earth (public domain) 1:10m roads. State outlines come from the us-atlas package (U.S. Census Bureau data).
 
 City dots and population bands come from GeoNames (places of 1,000+ people, via the all-the-cities package), stored in `data/cities.json` as `[name, state, lon, lat, population]`.
+
+## Editors
+
+Editing needs a Supabase account and a row in `public.editors`:
+1. Supabase → Authentication → Users → Add user → Create new user, with the person's work email and a starting password, and "Auto Confirm User" checked.
+2. SQL Editor: `insert into public.editors (email, name) values ('their.email@company.com', 'Their Name');`
+To remove someone, delete their row from `editors` (and the user, if you like).

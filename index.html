@@ -226,13 +226,10 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
 
   <div class="dlg" id="signInDlg" hidden><form id="signInForm" class="dlg-card">
     <h3>Editor sign in</h3>
-    <p class="small muted" style="margin:0">Enter your work email and we'll email you a sign-in link and code. Only approved editors can change counties.</p>
-    <label class="field" for="signInEmail"><span>Work email</span><input type="email" id="signInEmail" class="txt" required autocomplete="email"></label>
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" type="submit" id="sendBtn">Email me a code</button><button type="button" id="signInClose">Close</button></div>
-    <div id="codeStep" hidden style="display:grid;gap:8px">
-      <label class="field" for="signInCode"><span>Code from the email</span><input type="text" id="signInCode" class="txt" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456"></label>
-      <div><button type="button" class="primary" id="verifyBtn">Sign in</button></div>
-    </div>
+    <p class="small muted" style="margin:0">Use the email and password Jason set up for you. Only approved editors can change counties.</p>
+    <label class="field" for="signInEmail"><span>Work email</span><input type="email" id="signInEmail" class="txt" required autocomplete="username"></label>
+    <label class="field" for="signInPw"><span>Password</span><input type="password" id="signInPw" class="txt" required autocomplete="current-password"></label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" type="submit">Sign in</button><button type="button" id="signInClose">Close</button></div>
     <div class="msg small" id="signInMsg"></div>
   </form></div>
 
@@ -645,22 +642,14 @@ function renderAuth(){
 }
 document.getElementById("signInForm").addEventListener("submit",async e=>{
   e.preventDefault();
-  const email=document.getElementById("signInEmail").value.trim().toLowerCase(), msg=document.getElementById("signInMsg");
-  if(!email) return;
-  msg.textContent="Sending…";
-  const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:true}});
-  if(error){ msg.textContent="Couldn't send the email: "+error.message; return; }
-  msg.textContent="Email sent. Type the code from the email here, or click its link in this same browser.";
-  document.getElementById("codeStep").hidden=false; document.getElementById("signInCode").focus();
+  const email=document.getElementById("signInEmail").value.trim().toLowerCase(), password=document.getElementById("signInPw").value, msg=document.getElementById("signInMsg");
+  if(!email||!password) return;
+  msg.textContent="Signing in…";
+  const {data,error}=await sb.auth.signInWithPassword({email,password});
+  if(error){ msg.textContent=/invalid/i.test(error.message)?"That email and password don't match. Ask Jason to check your account.":"Couldn't sign in: "+error.message; return; }
+  document.getElementById("signInPw").value=""; msg.textContent=""; document.getElementById("signInDlg").hidden=true;
+  await refreshEditor(data.session);
 });
-document.getElementById("verifyBtn").onclick=async()=>{
-  const email=document.getElementById("signInEmail").value.trim().toLowerCase(), token=document.getElementById("signInCode").value.replace(/\s/g,""), msg=document.getElementById("signInMsg");
-  if(!token) return;
-  msg.textContent="Checking…";
-  const {data,error}=await sb.auth.verifyOtp({email,token,type:"email"});
-  if(error){ msg.textContent="That code didn't work: "+error.message+". Request a new one if it has expired."; return; }
-  document.getElementById("signInDlg").hidden=true; msg.textContent=""; await refreshEditor(data.session);
-};
 document.getElementById("signInClose").onclick=()=>{document.getElementById("signInDlg").hidden=true;};
 async function refreshEditor(session){
   sessionEmail=session?.user?.email?.toLowerCase()||null; editor=null;
@@ -723,7 +712,7 @@ async function loadData(){
         await refreshEditor(data.session);
         if(linkErr && !data.session){
           document.getElementById("signInDlg").hidden=false;
-          document.getElementById("signInMsg").textContent="That sign-in link didn't work ("+linkErr.replace(/\+/g," ")+"). Enter your email to get a new code, and type the code instead of clicking the link.";
+          document.getElementById("signInMsg").textContent="That sign-in link didn't work. Sign in with your email and password instead.";
         }
       }catch(err){ console.warn("Sign-in check failed",err); }
       sb.auth.onAuthStateChange((_ev,session)=>{ if((session?.user?.email?.toLowerCase()||null)!==sessionEmail) setTimeout(()=>refreshEditor(session),0); });
