@@ -97,6 +97,16 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .pin text{font-family:var(--display);font-weight:700;font-size:14px;fill:var(--fg);paint-order:stroke;stroke:var(--land);stroke-width:3.5px}
 .hatchline{stroke:var(--off);stroke-width:2}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:grid;gap:14px;min-width:0}
+@media (min-width:901px){.panel{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow-y:auto}}
+.quickbar{position:absolute;left:10px;right:56px;bottom:10px;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--brand-gold);border-radius:8px;box-shadow:0 4px 14px rgba(16,30,48,.18);padding:8px 10px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:.9rem}
+.quickbar .qname{font-family:var(--display);font-weight:700;color:var(--heading);margin-right:4px}
+.quickbar button{padding:5px 10px;font-size:.85rem}
+.quickbar .q-green{border-color:var(--g);background:color-mix(in srgb,var(--g) 22%,transparent)}
+.quickbar .q-yellow{border-color:var(--y);background:color-mix(in srgb,var(--y) 28%,transparent)}
+.quickbar .q-orange{border-color:var(--o);background:color-mix(in srgb,var(--o) 24%,transparent)}
+.quickbar .q-red{border-color:var(--r);background:color-mix(in srgb,var(--r) 22%,transparent)}
+.quickbar button.on{outline:2px solid var(--fg);outline-offset:1px}
+.quickbar .qmsg{color:var(--muted);font-size:.8rem}
 .legend{display:grid;gap:6px;margin:0;padding:0;list-style:none}
 .legend li{display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:center}
 .sw{width:18px;height:14px;border-radius:3px;border:2px solid}
@@ -255,6 +265,7 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
         <g id="geo"><g id="states"></g><g id="zones"></g><g id="roads"></g></g>
         <g id="labels"><g id="shieldLayer"></g></g>
       </svg>
+      <div class="quickbar" id="quickbar" hidden></div>
       <div class="zoombtns">
         <button type="button" id="zin" aria-label="Zoom in">+</button>
         <button type="button" id="zout" aria-label="Zoom out">−</button>
@@ -263,6 +274,8 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
     </div>
 
     <aside class="panel" id="panel">
+      <div id="detail"><p class="muted small" style="margin:0">Click a county to see its status, cities and history. Hold Shift to select several.</p></div>
+      <hr>
       <div>
         <h2>How far out?</h2>
         <p class="small muted" style="margin:2px 0 0">Typical wait before a driver living in the area gets home time.</p>
@@ -290,8 +303,6 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
         <label for="tg-rural"><input type="checkbox" id="tg-rural"><i class="cdotsw rural"></i><span>Rural <small class="muted">· 1,000–2,500 · <span id="cnt-rural">–</span></small></span></label>
         <small class="muted">Names appear as you zoom in.</small>
       </div>
-      <hr>
-      <div id="detail"><p class="muted small" style="margin:0">Click a county to see its status, cities and history. Hold Shift to select several.</p></div>
     </aside>
   </div>
 
@@ -563,7 +574,37 @@ function verdictFor(d,many){
   return `<div class="verdict check small">${SHORT[d.level]}: ${LEVELS[d.level]} out. Double-check with Planners before promising home time.</div>`;
 }
 
+function renderQuickbar(){
+  const qb=document.getElementById("quickbar");
+  if(!editor||asOf||!selected.length){qb.hidden=true;qb.innerHTML="";return}
+  const s=stateAt(), first=s[selected[0]];
+  const same=selected.every(f=>(s[f]?.level||null)===(first?.level||null)&&(s[f]?.hiring!==false)===(first?.hiring!==false));
+  const lv=same?first?.level:null, hi=same?(first?first.hiring!==false:true):null;
+  const label=selected.length>1?`${selected.length} counties`:`${CBY[selected[0]].short} ${CBY[selected[0]].st}`;
+  qb.innerHTML=`<span class="qname">${esc(label)}</span>`+
+    Object.keys(SHORT).map(k=>`<button type="button" class="q-${k}${lv===k?" on":""}" data-lv="${k}">${SHORT[k]}</button>`).join("")+
+    `<button type="button" data-hire="${hi===false?"on":"off"}">${hi===false?"Turn hiring on":"Not hiring"}</button><span class="qmsg" id="qmsg"></span>`;
+  qb.hidden=false;
+  qb.querySelectorAll("button").forEach(b=>b.onclick=async e=>{
+    e.stopPropagation();
+    const msg=document.getElementById("qmsg"); msg.textContent="Saving…";
+    qb.querySelectorAll("button").forEach(x=>x.disabled=true);
+    // keep each county's own note; group counties that share the same note into one call
+    const groups={};
+    for(const f of selected){const d=s[f]; const key=JSON.stringify([d?.note||"", d?.level||"green", d?d.hiring!==false:true]); (groups[key]=groups[key]||[]).push(f);}
+    let err=null;
+    for(const [key,fips] of Object.entries(groups)){
+      const [note,curLv,curHi]=JSON.parse(key);
+      const level=b.dataset.lv||curLv, hiring=b.dataset.hire?b.dataset.hire==="on":curHi;
+      const {error}=await sb.rpc("set_county",{p_fips:fips,p_level:level,p_hiring:hiring,p_note:note,p_reason:"Quick change from the map"});
+      if(error){err=error;break;}
+    }
+    if(err){ msg.textContent=/editor/i.test(err.message)?"Your email isn't on the editor list.":"Couldn't save: "+err.message; qb.querySelectorAll("button").forEach(x=>x.disabled=false); return; }
+    await loadData();
+  });
+}
 function renderDetail(){
+  renderQuickbar();
   const box=document.getElementById("detail");
   if(!selected.length){box.innerHTML=`<p class="muted small" style="margin:0">Click a county to see its status, cities and history. Hold Shift to select several.</p>`;return}
   const s=stateAt(), many=selected.length>1, first=s[selected[0]];
@@ -582,7 +623,7 @@ function renderDetail(){
   }
   if(editor && !asOf){
     const lv=same&&first?first.level:"", hi=same&&first?first.hiring!==false:true;
-    html+=`<hr><form id="edit" style="display:grid;gap:10px">
+    html+=`<p class="small muted" style="margin:0">Tip: use the color buttons on the map for a quick change, or the form below to add a note and reason.</p><form id="edit" style="display:grid;gap:10px">
       <div class="eyebrow">Change ${many?`these ${selected.length} counties`:"this county"}</div>
       <div class="levels" role="radiogroup" aria-label="County color">
         ${Object.keys(SHORT).map(k=>`<label class="${k}"><input type="radio" name="lv" id="lv-${k}" value="${k}" ${k===lv?"checked":""}><span>${SHORT[k]}</span></label>`).join("")}
