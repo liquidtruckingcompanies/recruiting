@@ -1,0 +1,90 @@
+[
+  {
+    "zone": "omaha-iowa",
+    "level": "green",
+    "hiring": true,
+    "note": "",
+    "prevLevel": null,
+    "prevHiring": null,
+    "reason": "Starting zones from Jason's original map",
+    "by": "Jason Eisenman",
+    "at": "2026-10-28T16:45:00.000Z"
+  },
+  {
+    "zone": "chicago",
+    "level": "green",
+    "hiring": true,
+    "note": "",
+    "prevLevel": null,
+    "prevHiring": null,
+    "reason": "Starting zones from Jason's original map",
+    "by": "Jason Eisenman",
+    "at": "2026-10-28T16:45:00.000Z"
+  },
+  {
+    "zone": "ne-ks-ring",
+    "level": "yellow",
+    "hiring": true,
+    "note": "",
+    "prevLevel": null,
+    "prevHiring": null,
+    "reason": "Starting zones from Jason's original map",
+    "by": "Jason Eisenman",
+    "at": "2026-10-28T16:45:00.000Z"
+  },
+  {
+    "zone": "s-iowa",
+    "level": "yellow",
+    "hiring": true,
+    "note": "",
+    "prevLevel": null,
+    "prevHiring": null,
+    "reason": "Starting zones from Jason's original map",
+    "by": "Jason Eisenman",
+    "at": "2026-10-28T16:45:00.000Z"
+  },
+  {
+    "zone": "stl",
+    "level": "yellow",
+    "hiring": true,
+    "note": "St. Louis runs about 2 weeks",
+    "prevLevel": null,
+    "prevHiring": null,
+    "reason": "Starting zones from Jason's original map",
+    "by": "Jason Eisenman",
+    "at": "2026-10-28T16:45:00.000Z"
+  },
+  {
+    "zone": "n-iowa",
+    "level": "orange",
+    "hiring": true,
+    "note": "",
+    "prevLevel": null,
+    "prevHiring": null,
+    "reason": "Starting zones from Jason's original map",
+    "by": "Jason Eisenman",
+    "at": "2026-10-28T16:45:00.000Z"
+  },
+  {
+    "zone": "kearney",
+    "level": "orange",
+    "hiring": true,
+    "note": "",
+    "prevLevel": null,
+    "prevHiring": null,
+    "reason": "Starting zones from Jason's original map",
+    "by": "Jason Eisenman",
+    "at": "2026-10-28T16:45:00.000Z"
+  },
+  {
+    "zone": "w-nebraska",
+    "level": "red",
+    "hiring": true,
+    "note": "",
+    "prevLevel": null,
+    "prevHiring": null,
+    "reason": "Starting zones from Jason's original map",
+    "by": "Jason Eisenman",
+    "at": "2026-10-28T16:45:00.000Z"
+  }
+]
