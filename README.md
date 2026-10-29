@@ -7,7 +7,7 @@ Public, view-only map of driver home-time zones for recruiting.
 - Orange: 2–3 weeks
 - Red: 3+ weeks
 
-Unless a driver lives firmly inside a green area, double-check with Payton before promising home time.
+Unless a driver lives firmly inside a green area, double-check with Planners before promising home time.
 
 ## How changes work
 
@@ -16,3 +16,5 @@ The newest entry for each zone is what the map shows today, and the "View the ma
 The git history of that file is the permanent audit trail.
 
 Highway lines come from Natural Earth (public domain) 1:10m roads. State outlines come from the us-atlas package (U.S. Census Bureau data).
+
+City dots and population bands come from GeoNames (places of 1,000+ people, via the all-the-cities package), stored in `data/cities.json` as `[name, state, lon, lat, population]`.

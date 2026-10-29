@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Open+Sans:wght@400;600;700&display=swap">
 <style>
-/* Layout: dispatch board. Header + Payton rule, then map beside a details/editor panel, change log below. */
+/* Layout: dispatch board. Header + Planners rule, then map beside a details/editor panel, change log below. */
 :root{color-scheme:light;
 
   --bg:#e9eef3; --surface:#ffffff; --fg:#1b2633; --muted:#5a6878; --line:#d1dae2;
@@ -157,6 +157,25 @@ button{border-color:var(--brand-blue);color:var(--heading);font-weight:600}
 .zoombtns button{background:var(--brand-deep);color:#ffffff;border:none}
 .past{background:var(--brand-blue)}
 .layers input,.switch input{accent-color:var(--brand-deep)}
+.cdot{fill:var(--brand-deep);stroke:#ffffff;stroke-width:.8;pointer-events:none}
+.cdot.metro{fill:#1b2633;stroke-width:1.2}
+.cdot.small,.cdot.rural{fill:#4f6377;stroke:none}
+.cname{font-family:var(--body);font-size:10.5px;fill:var(--fg);paint-order:stroke;stroke:var(--land);stroke-width:3px;pointer-events:none}
+.cname.metro{font-family:var(--display);font-weight:700;font-size:13px}
+.cname.city{font-weight:600}
+.cdotsw{display:inline-block;border-radius:50%;background:var(--brand-deep);flex:none;margin:0 5px}
+.cdotsw.metro{width:11px;height:11px;background:#1b2633;margin:0 3px}
+.cdotsw.city{width:8px;height:8px;margin:0 4px}
+.cdotsw.town{width:6px;height:6px}
+.cdotsw.small{width:4px;height:4px;background:#4f6377;margin:0 6px}
+.cdotsw.rural{width:3px;height:3px;background:#4f6377;margin:0 6.5px}
+.layers small{font-size:.8rem}
+details summary{cursor:pointer;padding:2px 0}
+.clist{display:flex;flex-wrap:wrap;gap:2px 12px;padding:4px 0 6px 14px;max-height:180px;overflow-y:auto}
+th.num,td.num{text-align:right;font-variant-numeric:tabular-nums}
+th small{font-weight:400;text-transform:none;letter-spacing:0}
+tr.zrow{cursor:pointer}
+tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -188,7 +207,7 @@ button{border-color:var(--brand-blue);color:var(--heading);font-weight:600}
     </div>
   </header>
 
-  <div class="rule"><span aria-hidden="true">⚠</span><div><b>These zones are a guideline.</b> Unless a driver lives firmly inside a green area, double-check with Payton before promising home time.</div></div>
+  <div class="rule"><span aria-hidden="true">⚠</span><div><b>These zones are a guideline.</b> Unless a driver lives firmly inside a green area, double-check with Planners before promising home time.</div></div>
 
   <div class="past" id="pastBanner" hidden><span id="pastText"></span><button type="button" id="pastBack">Back to today</button></div>
 
@@ -229,10 +248,34 @@ button{border-color:var(--brand-blue);color:var(--heading);font-weight:600}
         <label for="tgI"><input type="checkbox" id="tgI" checked><i class="ln"></i>Interstates</label>
         <label for="tgUS"><input type="checkbox" id="tgUS" checked><i class="ln us"></i><span>U.S. Highways <small class="muted">· numbers show when zoomed in</small></span></label>
       </div>
+      <div class="layers">
+        <div class="eyebrow">Cities by population</div>
+        <label for="tg-metro"><input type="checkbox" id="tg-metro" checked><i class="cdotsw metro"></i><span>Metros <small class="muted">· 250,000+ · <span id="cnt-metro">–</span></small></span></label>
+        <label for="tg-city"><input type="checkbox" id="tg-city" checked><i class="cdotsw city"></i><span>Cities <small class="muted">· 50,000–250,000 · <span id="cnt-city">–</span></small></span></label>
+        <label for="tg-town"><input type="checkbox" id="tg-town" checked><i class="cdotsw town"></i><span>Towns <small class="muted">· 10,000–50,000 · <span id="cnt-town">–</span></small></span></label>
+        <label for="tg-small"><input type="checkbox" id="tg-small"><i class="cdotsw small"></i><span>Small towns <small class="muted">· 2,500–10,000 · <span id="cnt-small">–</span></small></span></label>
+        <label for="tg-rural"><input type="checkbox" id="tg-rural"><i class="cdotsw rural"></i><span>Rural <small class="muted">· 1,000–2,500 · <span id="cnt-rural">–</span></small></span></label>
+        <small class="muted">Names appear as you zoom in.</small>
+      </div>
       <hr>
       <div id="detail"><p class="muted small" style="margin:0">Click any colored area on the map to see its details and recent changes.</p></div>
     </aside>
   </div>
+
+  <section class="log">
+    <div class="loghead">
+      <div>
+        <h2>Cities by hiring area</h2>
+        <p class="small muted" style="margin:2px 0 0">How many cities and people each area covers, by population band. Click a row to open that area on the map.</p>
+      </div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Area</th><th>Status</th><th class="num">Metros<br><small>250k+</small></th><th class="num">Cities<br><small>50k–250k</small></th><th class="num">Towns<br><small>10k–50k</small></th><th class="num">Small towns<br><small>2.5k–10k</small></th><th class="num">Rural<br><small>1k–2.5k</small></th><th class="num">Total pop.</th></tr></thead>
+        <tbody id="cityBody"></tbody>
+      </table>
+    </div>
+  </section>
 
   <section class="log">
     <div class="loghead">
@@ -274,14 +317,16 @@ const ZBY = Object.fromEntries(ZONES.map(z=>[z.id,z]));
 const LEVELS = {green:"Green · ~1 week", yellow:"Yellow · 1–2 weeks", orange:"Orange · 2–3 weeks", red:"Red · 3+ weeks"};
 const SHORT = {green:"Green", yellow:"Yellow", orange:"Orange", red:"Red"};
 
-const CITIES = [
-  ["Sioux Falls",-96.73,43.55],["Sioux City",-96.40,42.50],["Lincoln",-96.70,40.81],["Grand Island",-98.34,40.92],
-  ["Kearney",-99.08,40.70],["North Platte",-100.77,41.12],["Cedar Rapids",-91.67,41.98],["Davenport",-90.58,41.52],
-  ["Topeka",-95.68,39.05],["Manhattan",-96.57,39.18],["Columbia",-92.33,38.95],["St. Louis",-90.20,38.63],
-  ["Springfield",-89.65,39.80],["Peoria",-89.59,40.69],["Rockford",-89.09,42.27],["Naperville",-88.15,41.75],
-  ["Chicago",-87.63,41.88],["Madison",-89.40,43.07],["Milwaukee",-87.91,43.04],["Champaign",-88.24,40.12],
-  ["Hays",-99.33,38.88],["Mason City",-93.20,43.15],["Waterloo",-92.34,42.49],["Ogallala",-101.72,41.13]
+// City population bands (GeoNames, places of 1,000+ people). labelAt = zoom level where names appear.
+const CGROUPS=[
+  {id:"metro", label:"Metros",      range:"250,000+",       min:250000, r:5.5, labelAt:1,   on:true},
+  {id:"city",  label:"Cities",      range:"50,000–250,000", min:50000,  r:4,   labelAt:1,   on:true},
+  {id:"town",  label:"Towns",       range:"10,000–50,000",  min:10000,  r:2.8, labelAt:1.8, on:true},
+  {id:"small", label:"Small towns", range:"2,500–10,000",   min:2500,   r:2,   labelAt:3,   on:false},
+  {id:"rural", label:"Rural",       range:"1,000–2,500",    min:1000,   r:1.5, labelAt:4.5, on:false},
 ];
+const groupOf=pop=>CGROUPS.find(g=>pop>=g.min);
+const fmtPop=n=>n.toLocaleString("en-US");
 const PINS = [["Omaha",-95.94,41.26],["Des Moines",-93.61,41.59],["Kansas City",-94.58,39.10]];
 
 // Mercator fitted to the region
@@ -334,10 +379,7 @@ for(const [cls,list] of [["i",ROADS.I],["us",ROADS.US]]){
     }
   }
 }
-for(const [n,lon,lat] of CITIES){
-  const g=el("g",{class:"city"},gLabels); el("circle",{r:2.5},g); el("text",{x:5,y:4},g).textContent=n;
-  labelNodes.push({g,xy:P([lon,lat])});
-}
+const gCityDots=el("g",{id:"cityDots"},gLabels), gCityNames=el("g",{id:"cityNames"},gLabels);
 for(const [n,lon,lat] of PINS){
   const g=el("g",{class:"pin"},gLabels);
   el("path",{d:"M0,0 C-3,-7 -9,-11 -9,-17 A9,9 0 1 1 9,-17 C9,-11 3,-7 0,0Z"},g);
@@ -346,8 +388,65 @@ for(const [n,lon,lat] of PINS){
   labelNodes.push({g,xy:P([lon,lat])});
 }
 
+// ---------- cities ----------
+let CITIES=[], curT=d3.zoomIdentity, cityRaf=0;
+const PIN_NAMES=new Set(PINS.map(p=>p[0]));
+function inPoly(pt,ring){let c=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const [xi,yi]=ring[i],[xj,yj]=ring[j];if(((yi>pt[1])!==(yj>pt[1]))&&(pt[0]<(xj-xi)*(pt[1]-yi)/(yj-yi)+xi))c=!c}return c}
+function zoneAt(lon,lat){for(let i=ZONES.length-1;i>=0;i--){if(ZONES[i].poly.some(r=>inPoly([lon,lat],r)))return ZONES[i].id}return null}
+function scheduleCities(){ if(!cityRaf) cityRaf=requestAnimationFrame(()=>{cityRaf=0;layoutCities()}); }
+function layoutCities(){
+  const t=curT, on=Object.fromEntries(CGROUPS.map(g=>[g.id,g.on]));
+  const taken=[];
+  for(const c of CITIES){
+    const x=t.applyX(c.xy[0]), y=t.applyY(c.xy[1]);
+    const vis=on[c.g.id] && x>-10 && x<1010 && y>-10 && y<540;
+    c.dot.setAttribute("display",vis?"inline":"none");
+    if(vis){c.dot.setAttribute("cx",x.toFixed(1));c.dot.setAttribute("cy",y.toFixed(1));}
+    let show=false;
+    if(vis && t.k>=c.g.labelAt && !PIN_NAMES.has(c.name)){
+      const w=c.name.length*(c.g.id==="metro"?6.4:5.6)+4, h=c.g.id==="metro"?13:11, bx=x+c.g.r+2, by=y-h/2;
+      if(bx+w<=1000 && !taken.some(b=>bx<b[0]+b[2]&&bx+w>b[0]&&by<b[1]+b[3]&&by+h>b[1])){taken.push([bx,by,w,h]);show=true;
+        c.txt.setAttribute("x",bx.toFixed(1));c.txt.setAttribute("y",(y+3.5).toFixed(1));}
+    }
+    c.txt.setAttribute("display",show?"inline":"none");
+  }
+}
+function buildCities(rows){
+  CITIES=rows.map(([name,st,lon,lat,pop])=>{
+    const g=groupOf(pop);
+    const c={name,st,pop,g,xy:P([lon,lat]),zone:zoneAt(lon,lat)};
+    c.dot=el("circle",{class:"cdot "+g.id,r:g.r},gCityDots);
+    c.txt=el("text",{class:"cname "+g.id,display:"none"},gCityNames); c.txt.textContent=name;
+    return c;
+  });
+  layoutCities(); renderCityTable(); renderDetail();
+  for(const g of CGROUPS){ const n=document.getElementById("cnt-"+g.id); if(n) n.textContent=fmtPop(CITIES.filter(c=>c.g===g).length); }
+}
+function citiesIn(zoneId){ return CITIES.filter(c=>c.zone===zoneId); }
+function cityList(zoneId){
+  const list=citiesIn(zoneId); if(!list.length) return "";
+  return `<hr><div class="small" style="display:grid;gap:6px"><div class="eyebrow">Cities in this area</div>`+
+    CGROUPS.map(g=>{const cs=list.filter(c=>c.g===g); if(!cs.length) return "";
+      return `<details ${g.id==="metro"||g.id==="city"?"open":""}><summary><b>${g.label}</b> <span class="muted">(${g.range}) · ${cs.length}</span></summary><div class="clist">${cs.map(c=>`<span>${esc(c.name)}, ${c.st} <span class="muted">${fmtPop(c.pop)}</span></span>`).join("")}</div></details>`}).join("")+`</div>`;
+}
+function renderCityTable(){
+  const body=document.getElementById("cityBody"); if(!body) return;
+  if(!CITIES.length){body.innerHTML=`<tr><td colspan="${CGROUPS.length+3}" class="muted">Loading cities…</td></tr>`;return}
+  const s=stateAt();
+  const rows=ZONES.map(z=>{const cs=citiesIn(z.id), d=s[z.id];
+    return {z,d,cs,pop:cs.reduce((a,c)=>a+c.pop,0)}}).sort((a,b)=>b.pop-a.pop);
+  body.innerHTML=rows.map(r=>`<tr class="zrow" data-zone="${r.z.id}" tabindex="0"><td><b>${esc(r.z.name)}</b></td><td>${chip(r.d?.level,r.d?.hiring)}</td>${CGROUPS.map(g=>`<td class="num">${r.cs.filter(c=>c.g===g).length||"–"}</td>`).join("")}<td class="num">${fmtPop(r.pop)}</td></tr>`).join("");
+  body.querySelectorAll(".zrow").forEach(tr=>{const go=()=>{select(tr.dataset.zone);document.getElementById("map").scrollIntoView({behavior:"smooth",block:"center"})};tr.onclick=go;tr.onkeydown=e=>{if(e.key==="Enter")go()}});
+}
+
 // Zoom & pan
 const svg=d3.select("#map"), geo=document.getElementById("geo"), mapEl=document.getElementById("map");
+for(const g of CGROUPS){
+  const cb=document.getElementById("tg-"+g.id);
+  try{ const v=localStorage.getItem("layer-c-"+g.id); if(v) cb.checked=v==="on"; }catch(e){}
+  g.on=cb.checked;
+  cb.addEventListener("change",()=>{g.on=cb.checked; try{localStorage.setItem("layer-c-"+g.id,cb.checked?"on":"off")}catch(e){} layoutCities();});
+}
 for(const [id,cls] of [["tgI","hide-i"],["tgUS","hide-us"]]){
   const cb=document.getElementById(id);
   try{ if(localStorage.getItem("layer-"+id)==="off") cb.checked=false; }catch(e){}
@@ -359,6 +458,7 @@ const zoom=d3.zoom().scaleExtent([1,6]).translateExtent([[0,0],[1000,530]]).exte
     geo.setAttribute("transform",t.toString());
     mapEl.classList.toggle("z2",t.k>=1.8);
     for(const n of labelNodes) n.g.setAttribute("transform",`translate(${t.applyX(n.xy[0]).toFixed(1)},${t.applyY(n.xy[1]).toFixed(1)})`);
+    curT=t; scheduleCities();
   });
 svg.call(zoom).on("dblclick.zoom",null);
 svg.call(zoom.transform,d3.zoomIdentity);
@@ -400,7 +500,7 @@ function paint(){
   const pb=document.getElementById("pastBanner");
   pb.hidden=!asOf;
   if(asOf) document.getElementById("pastText").textContent="Showing the map as it stood at the end of "+fmtDate(asOf+"T12:00:00")+". ";
-  renderDetail(); renderLog();
+  renderDetail(); renderLog(); renderCityTable();
 }
 
 function chip(level,hiring){
@@ -416,16 +516,17 @@ function renderDetail(){
   if(!selected){box.innerHTML=`<p class="muted small" style="margin:0">Click any colored area on the map to see its details and recent changes.</p>`;return}
   const z=ZBY[selected], d=stateAt()[z.id];
   const firm = d && d.level==="green" && d.hiring!==false;
-  const verdict = !d ? `<div class="verdict check small">No record for this area${asOf?" on that date":""}. Check with Payton.</div>`
-    : d.hiring===false ? `<div class="verdict check small">Not hiring here right now. Check with Payton before recruiting in this area.</div>`
-    : firm ? `<div class="verdict small">Firmly green: about a week to home time. If the driver lives near the edge, still check with Payton.</div>`
-    : `<div class="verdict check small">${SHORT[d.level]} area: ${LEVELS[d.level].split("· ")[1]} out. Double-check with Payton before promising home time.</div>`;
+  const verdict = !d ? `<div class="verdict check small">No record for this area${asOf?" on that date":""}. Check with Planners.</div>`
+    : d.hiring===false ? `<div class="verdict check small">Not hiring here right now. Check with Planners before recruiting in this area.</div>`
+    : firm ? `<div class="verdict small">Firmly green: about a week to home time. If the driver lives near the edge, still check with Planners.</div>`
+    : `<div class="verdict check small">${SHORT[d.level]} area: ${LEVELS[d.level].split("· ")[1]} out. Double-check with Planners before promising home time.</div>`;
   const hist=audit.filter(a=>a.zone===z.id).slice(0,3);
   let html=`<div style="display:grid;gap:10px">
     <div><div class="eyebrow">Selected area</div><h3>${esc(z.name)}</h3></div>
     <div>${chip(d?.level,d?.hiring)}</div>
     ${d?.note?`<div class="small"><span class="muted">Hiring note:</span> ${esc(d.note)}</div>`:""}
     ${verdict}`;
+  html+=cityList(z.id);
   if(hist.length){
     html+=`<hr><div class="small" style="display:grid;gap:6px"><div class="eyebrow">Recent changes here</div>`+
       hist.map(a=>`<div><span class="muted">${fmtDate(a.at)}</span> · ${changeText(a)} · ${esc(who(a.by))}</div>`).join("")+`</div>`;
@@ -470,6 +571,7 @@ document.getElementById("pastBack").onclick=back;
 paint();
 
 // ---------- data: data/changes.json (every change, oldest or newest first) ----------
+fetch("data/cities.json").then(r=>r.json()).then(buildCities).catch(()=>{});
 fetch("data/changes.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(list=>{
   audit=list.slice().sort((a,b)=>a.at<b.at?1:a.at>b.at?-1:0);
   const m={}; for(const a of audit){ if(!m[a.zone]) m[a.zone]=a; } live=m; loaded=true; paint();
@@ -479,7 +581,7 @@ fetch("data/changes.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error(
 <footer class="sitefoot"><div class="sitefoot-in">
   <div><b>Liquid Trucking</b> · 108 East Bay Rd, Plattsmouth, NE 68048</div>
   <div>844-GO-TANKS · <a href="https://liquidtrucking.com/">liquidtrucking.com</a></div>
-  <div class="muted">Internal recruiting reference. Home-time zones are a guideline; confirm with Payton.</div>
+  <div class="muted">Internal recruiting reference. Home-time zones are a guideline; confirm with Planners.</div>
 </div></footer>
 </body>
 </html>
