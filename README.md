@@ -25,3 +25,11 @@ Editing needs a Supabase account and a row in `public.editors`:
 1. Supabase → Authentication → Users → Add user → Create new user, with the person's work email and a starting password, and "Auto Confirm User" checked.
 2. SQL Editor: `insert into public.editors (email, name) values ('their.email@company.com', 'Their Name');`
 To remove someone, delete their row from `editors` (and the user, if you like).
+
+## Pages
+
+- `index.html`: home page with editor sign-in and a tile for each page.
+- `hiring-map.html`: the county hiring map.
+- `assets/site.css`: shared brand styles (header, footer, colors, fonts) for new pages.
+
+To add a page, copy the header, sub-bar and footer from `index.html`, link `assets/site.css`, add the page to the nav on every page, and add a tile on the home page.
