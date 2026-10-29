@@ -1,4 +1,4 @@
-# Liquid Trucking Recruiting: Home-Time Zone Map
+# Liquid Trucking Recruiting: Hiring Map
 
 Public, view-only map of driver home-time zones for recruiting.
 

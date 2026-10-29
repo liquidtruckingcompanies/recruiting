@@ -3,34 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Home-Time Zone Map</title>
+<title>Liquid Trucking Hiring Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Open+Sans:wght@400;600;700&display=swap">
 <style>
 /* Layout: dispatch board. Header + Payton rule, then map beside a details/editor panel, change log below. */
-:root{
-  --bg:#f1f4f7; --surface:#ffffff; --fg:#1b2633; --muted:#5a6878; --line:#d1dae2;
-  --land:#e7eae3; --land-line:#9aa39c; --water:#c9dce6;
+:root{color-scheme:light;
+
+  --bg:#e9eef3; --surface:#ffffff; --fg:#1b2633; --muted:#5a6878; --line:#d1dae2;
+  --land:#f2f4f6; --land-line:#9fb0c0; --water:#b9d2e6;
   --accent:#105486; --accent-fg:#ffffff;
   --g:#2f9a57; --y:#e2bd22; --o:#e57f25; --r:#d4443a; --off:#8b928d;
-  --warn-bg:#fff4dc; --warn-line:#e2bd22;
+  --warn-bg:#fdf4d3; --warn-line:#ecc01c;
   --hw-i:#2f3138; --hw-us:#7c7466;
-  --brand-bar:#ffffff; --brand-bar-fg:#333d47; --brand-accent:#ecc01c; --brand-blue:#346d98; --brand-deep:#105486; --brand-gold:#ecc01c;
+  --brand-bar:#ffffff; --brand-bar-fg:#333d47; --brand-accent:#ecc01c; --brand-blue:#346d98; --brand-deep:#105486; --brand-gold:#ecc01c; --heading:#105486; --steel:#d1dae2;
   --display:"Saira Semi Condensed","Arial Narrow",Arial,sans-serif;
   --body:"Open Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#111820; --surface:#18222d; --fg:#e6ecf2; --muted:#98a6b5; --line:#2b3947;
-  --land:#262e2a; --land-line:#58625c; --water:#15232c;
-  --accent:#7fb0ef; --accent-fg:#0d1a2b;
-  --g:#3fb56a; --y:#e8c63a; --o:#f08f3a; --r:#e85a4f; --off:#727a75;
-  --warn-bg:#2d2715; --warn-line:#b8961c; --hw-i:#e9ebef; --hw-us:#a59c8c; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#111820; --surface:#18222d; --fg:#e6ecf2; --muted:#98a6b5; --line:#2b3947;
-  --land:#262e2a; --land-line:#58625c; --water:#15232c;
-  --accent:#7fb0ef; --accent-fg:#0d1a2b;
-  --g:#3fb56a; --y:#e8c63a; --o:#f08f3a; --r:#e85a4f; --off:#727a75;
-  --warn-bg:#2d2715; --warn-line:#b8961c; --hw-i:#e9ebef; --hw-us:#a59c8c; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
 .sitebar{background:var(--brand-bar);color:var(--brand-bar-fg)}
@@ -155,6 +144,19 @@ th{text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.07e
 td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
 td.when{white-space:nowrap;font-variant-numeric:tabular-nums}
 .arrow{color:var(--muted);padding:0 4px}
+h1{color:var(--heading);text-transform:uppercase;letter-spacing:.02em}
+.panel h2,.log h2{color:var(--heading);text-transform:uppercase;letter-spacing:.02em}
+.panel h3{color:var(--heading)}
+.panel,.log{border-top:5px solid var(--brand-blue)}
+.eyebrow{color:var(--brand-blue)}
+.rule{border-left:6px solid var(--brand-gold)}
+.mapbox{border-left:6px solid var(--brand-gold)}
+th{background:var(--steel);color:var(--heading)}
+thead th:first-child{border-radius:4px 0 0 4px} thead th:last-child{border-radius:0 4px 4px 0}
+button{border-color:var(--brand-blue);color:var(--heading);font-weight:600}
+.zoombtns button{background:var(--brand-deep);color:#ffffff;border:none}
+.past{background:var(--brand-blue)}
+.layers input,.switch input{accent-color:var(--brand-deep)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -164,19 +166,19 @@ td.when{white-space:nowrap;font-variant-numeric:tabular-nums}
 <div class="sitebar"><div class="sitebar-in">
   <a class="brand" href="https://liquidtrucking.com/" aria-label="Liquid Trucking home"><img src="https://liquidtrucking.com/wp-content/uploads/2021/03/LiquidTrucking-Logo-transparent-1.png" alt="Liquid Trucking" height="56"></a>
   <nav class="sitenav" aria-label="Site">
-    <a href="./" aria-current="page">Zone map</a>
+    <a href="./" aria-current="page">Hiring map</a>
     <a href="https://liquidtrucking.com/">Liquidtrucking.com</a>
     <a class="pill" href="https://liquidtrucking.com/">Driver applications</a>
   </nav>
 </div></div>
 <div class="subbar"><div class="sitebar-in subbar-in">
-  <span>Recruiting · Home-time zones</span>
+  <span>Recruiting · Hiring map</span>
   <span>844-GO-TANKS</span>
 </div></div>
 <div class="wrap">
   <header>
     <div>
-      <h1>Home-Time Zone Map</h1>
+      <h1>Hiring Map</h1>
       <p class="small muted" style="margin:4px 0 0">Where we can get drivers home, and where we're hiring right now.</p>
     </div>
     <div class="asof">
