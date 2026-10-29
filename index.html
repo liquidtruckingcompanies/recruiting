@@ -15,6 +15,7 @@
   --g:#2f9a57; --y:#e2bd22; --o:#e57f25; --r:#d4443a; --off:#8b928d;
   --warn-bg:#fff4dc; --warn-line:#e2bd22;
   --hw-i:#2f3138; --hw-us:#7c7466;
+  --brand-bar:#ffffff; --brand-bar-fg:#1b2430; --brand-accent:#1f4f8f;
   --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
   --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
@@ -32,6 +33,18 @@
   --warn-bg:#2d2715; --warn-line:#b8961c; --hw-i:#e9ebef; --hw-us:#a59c8c; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
+.sitebar{background:var(--brand-bar);color:var(--brand-bar-fg);border-bottom:4px solid var(--brand-accent)}
+.sitebar-in,.sitefoot-in{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sitebar-in{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding-block:10px}
+.brand img{display:block;height:44px;width:auto}
+.sitetag{font-family:var(--display);font-weight:700;font-size:1.1rem;text-transform:uppercase;letter-spacing:.08em;padding-left:14px;border-left:1px solid color-mix(in srgb,var(--brand-bar-fg) 35%,transparent)}
+.sitenav{margin-left:auto;display:flex;gap:4px 18px;flex-wrap:wrap}
+.sitenav a{color:var(--brand-bar-fg);text-decoration:none;font-weight:600;font-size:.95rem;padding:4px 0;border-bottom:2px solid transparent}
+.sitenav a:hover,.sitenav a[aria-current]{border-bottom-color:var(--brand-accent)}
+.sitefoot{background:var(--brand-bar);color:var(--brand-bar-fg);margin-top:8px}
+.sitefoot-in{padding-block:20px;display:grid;gap:4px;font-size:.9rem}
+.sitefoot a{color:inherit}
+.sitefoot .muted{color:color-mix(in srgb,var(--brand-bar-fg) 70%,transparent)}
 .wrap{max-width:1240px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:16px}
 h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:.01em;margin:0;text-wrap:balance}
 h1{font-size:2.1rem;line-height:1.05}
@@ -145,11 +158,19 @@ td.when{white-space:nowrap;font-variant-numeric:tabular-nums}
 <style>[hidden]{display:none!important}body{margin:0}</style>
 </head>
 <body>
+<div class="sitebar"><div class="sitebar-in">
+  <a class="brand" href="https://liquidtrucking.com/" aria-label="Liquid Trucking home"><img src="https://liquidtrucking.com/wp-content/uploads/2021/03/LiquidTrucking-Logo-transparent-1.png" alt="Liquid Trucking" height="44"></a>
+  <span class="sitetag">Recruiting</span>
+  <nav class="sitenav" aria-label="Site">
+    <a href="./" aria-current="page">Zone map</a>
+    <a href="https://liquidtrucking.com/">liquidtrucking.com</a>
+  </nav>
+</div></div>
 <div class="wrap">
   <header>
     <div>
-      <div class="eyebrow">Liquid Trucking · Recruiting</div>
       <h1>Home-Time Zone Map</h1>
+      <p class="small muted" style="margin:4px 0 0">Where we can get drivers home, and where we're hiring right now.</p>
     </div>
     <div class="asof">
       <label for="asofDate">View the map as of</label>
@@ -446,5 +467,10 @@ fetch("data/changes.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error(
 }).catch(()=>{loaded="error"; paint();});
 </script>
 
+<footer class="sitefoot"><div class="sitefoot-in">
+  <div><b>Liquid Trucking</b> · 108 East Bay Rd, Plattsmouth, NE 68048</div>
+  <div>844-GO-TANKS · <a href="https://liquidtrucking.com/">liquidtrucking.com</a></div>
+  <div class="muted">Internal recruiting reference. Home-time zones are a guideline; confirm with Payton.</div>
+</div></footer>
 </body>
 </html>
