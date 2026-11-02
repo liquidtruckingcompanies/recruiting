@@ -61,7 +61,20 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .past[hidden]{display:none}
 @media (max-width:900px){.main{grid-template-columns:minmax(0,1fr)}}
 .mapbox{background:var(--water);border:1px solid var(--line);border-radius:8px;overflow:hidden;position:relative}
-.mapbox svg{display:block;width:100%;height:auto;touch-action:none;cursor:grab}
+.mapbox svg{display:block;width:100%;height:auto;aspect-ratio:1000/530;touch-action:none;cursor:grab}
+/* Larger screens: use the full width and fill the window height */
+@media (min-width:901px){
+  .wrap,.sitebar-in,.sitefoot-in{max-width:none;padding-left:24px;padding-right:24px}
+  .mapbox svg{aspect-ratio:auto;height:clamp(460px,calc(100vh - 300px),1600px)}
+  .main{grid-template-columns:minmax(0,1fr) 360px}
+}
+/* Full-screen map: the map takes the whole window, the county panel floats on the right */
+body.fullmap{overflow:hidden}
+body.fullmap .main{position:fixed;inset:0;z-index:40;display:block;background:var(--water)}
+body.fullmap .mapbox{height:100%;border-radius:0;border:none}
+body.fullmap .mapbox svg{height:100vh;aspect-ratio:auto}
+body.fullmap .panel{position:absolute;top:12px;right:64px;width:min(360px,calc(100% - 90px));max-height:calc(100vh - 24px);overflow-y:auto;box-shadow:0 8px 24px rgba(16,30,48,.25);z-index:5}
+@media (max-width:700px){body.fullmap .panel{top:auto;bottom:10px;right:10px;left:10px;width:auto;max-height:45vh}}
 .zoombtns{position:absolute;right:10px;top:10px;display:grid;gap:4px}
 .zoombtns button{width:34px;height:34px;padding:0;font-weight:600;font-size:1.1rem;box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .state{fill:var(--land);stroke:var(--land-line);stroke-width:1;vector-effect:non-scaling-stroke}
@@ -315,6 +328,7 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
       <div class="zoombtns">
         <button type="button" id="zin" aria-label="Zoom in">+</button>
         <button type="button" id="zout" aria-label="Zoom out">−</button>
+        <button type="button" id="zfull" aria-label="Full-screen map" title="Full-screen map (Esc to exit)">⛶</button>
         <button type="button" id="zreset" aria-label="Reset the map: clear selection, search and state focus" title="Reset the map (clears selection, search and state focus)" style="font-size:.66rem;letter-spacing:.02em">RESET</button>
       </div>
     </div>
@@ -422,6 +436,10 @@ const el=(tag,attrs={},parent)=>{const e=document.createElementNS(SVGNS,tag);for
 
 const gStates=document.getElementById("states"), gZones=document.getElementById("zones"), gLabels=document.getElementById("labels");
 let STATES=[], WORLD=[[0,0],[1000,530]];
+// The map's on-screen size in pixels. The home view fits the original 1000x530 home region into it.
+let VW=1000, VH=530;
+const centerOn=(cx,cy,k)=>d3.zoomIdentity.translate(VW/2-k*cx,VH/2-k*cy).scale(k);
+const homeT=()=>centerOn(500,265,Math.min(VW/1000,VH/530));
 function buildStates(list){
   STATES=list.map(s=>{
     let x0=180,x1=-180,y0=90,y1=-90;
@@ -514,13 +532,13 @@ function layoutCities(){
   const taken=[];
   for(const c of CITIES){
     const x=t.applyX(c.xy[0]), y=t.applyY(c.xy[1]);
-    const vis=on[c.g.id] && t.k>=c.g.dotAt && (!focusSt||c.st===focusSt) && x>-10 && x<1010 && y>-10 && y<540;
+    const vis=on[c.g.id] && t.k>=c.g.dotAt && (!focusSt||c.st===focusSt) && x>-10 && x<VW+10 && y>-10 && y<VH+10;
     if(vis!==c.vis){c.dot.setAttribute("display",vis?"inline":"none");c.vis=vis;}
     if(vis){c.dot.setAttribute("cx",x.toFixed(1));c.dot.setAttribute("cy",y.toFixed(1));}
     let show=false;
     if(vis && t.k>=c.g.labelAt){
       const w=c.name.length*(c.g.id==="metro"?6.4:5.6)+4, h=c.g.id==="metro"?13:11, bx=x+c.g.r+2, by=y-h/2;
-      if(bx+w<=1000 && !taken.some(b=>bx<b[0]+b[2]&&bx+w>b[0]&&by<b[1]+b[3]&&by+h>b[1])){taken.push([bx,by,w,h]);show=true;
+      if(bx+w<=VW && !taken.some(b=>bx<b[0]+b[2]&&bx+w>b[0]&&by<b[1]+b[3]&&by+h>b[1])){taken.push([bx,by,w,h]);show=true;
         c.txt.setAttribute("x",bx.toFixed(1));c.txt.setAttribute("y",(y+3.5).toFixed(1));}
     }
     if(show!==c.show){c.txt.setAttribute("display",show?"inline":"none");c.show=show;}
@@ -572,7 +590,7 @@ for(const [id,cls] of [["tgI","hide-i"],["tgUS","hide-us"]]){
   const apply=()=>{ mapEl.classList.toggle(cls,!cb.checked); try{localStorage.setItem("layer-"+id,cb.checked?"on":"off")}catch(e){} };
   cb.addEventListener("change",apply); apply();
 }
-const zoom=d3.zoom().scaleExtent([.3,10]).translateExtent(WORLD).extent([[0,0],[1000,530]])
+const zoom=d3.zoom().scaleExtent([.2,12]).translateExtent(WORLD).extent(()=>[[0,0],[VW,VH]])
   .on("zoom",({transform:t})=>{
     geo.setAttribute("transform",t.toString());
     mapEl.classList.toggle("z2",t.k>=.9);
@@ -582,7 +600,22 @@ const zoom=d3.zoom().scaleExtent([.3,10]).translateExtent(WORLD).extent([[0,0],[
     curT=t; scheduleCities();
   });
 svg.call(zoom).on("dblclick.zoom",null);
-svg.call(zoom.transform,d3.zoomIdentity);
+// Size the map to its box and keep it sized as the window or full-screen mode changes.
+function sizeMap(first){
+  const r=mapEl.getBoundingClientRect(); if(!r.width||!r.height) return;
+  const k0=Math.min(VW/1000,VH/530);
+  VW=Math.round(r.width); VH=Math.round(r.height);
+  mapEl.setAttribute("viewBox",`0 0 ${VW} ${VH}`);
+  if(first) svg.call(zoom.transform,homeT());
+  else { // keep the same spot in the middle at a proportional zoom
+    const t=curT, cx=(VW0/2-t.x)/t.k, cy=(VH0/2-t.y)/t.k, k=t.k*Math.min(VW/1000,VH/530)/k0;
+    svg.call(zoom.transform,centerOn(cx,cy,k));
+  }
+  VW0=VW; VH0=VH;
+}
+let VW0=VW, VH0=VH;
+sizeMap(true);
+if(window.ResizeObserver) new ResizeObserver(()=>{ const r=mapEl.getBoundingClientRect(); if(Math.round(r.width)!==VW||Math.round(r.height)!==VH) sizeMap(false); }).observe(mapEl);
 document.getElementById("zin").onclick=()=>svg.transition().duration(200).call(zoom.scaleBy,1.5);
 document.getElementById("zout").onclick=()=>svg.transition().duration(200).call(zoom.scaleBy,1/1.5);
 // Reset: clear selection, search pin, state focus, and go back to the default view.
@@ -590,19 +623,30 @@ function resetMap(){
   const q=document.getElementById("q"); if(q){ q.value=""; document.getElementById("qclear").hidden=true; document.getElementById("qres").hidden=true; }
   setSpot(null); selected=[];
   if(focus) setFocus(null,{zoomTo:false}); else paint();
-  svg.transition().duration(300).call(zoom.transform,d3.zoomIdentity);
+  svg.transition().duration(300).call(zoom.transform,homeT());
 }
 document.getElementById("zreset").onclick=resetMap;
+// Full screen: the map fills the window (and the screen, where the browser allows it). Esc or the button exits.
+function setFull(on){
+  if(on===document.body.classList.contains("fullmap")) return;
+  document.body.classList.toggle("fullmap",on);
+  const b=document.getElementById("zfull"); b.textContent=on?"✕":"⛶"; b.setAttribute("aria-label",on?"Exit full screen":"Full-screen map"); b.title=on?"Exit full screen (Esc)":"Full-screen map (Esc to exit)";
+  try{ if(on&&document.documentElement.requestFullscreen&&!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{}); else if(!on&&document.fullscreenElement) document.exitFullscreen().catch(()=>{}); }catch(e){}
+}
+document.getElementById("zfull").onclick=()=>setFull(!document.body.classList.contains("fullmap"));
+document.addEventListener("fullscreenchange",()=>{ if(!document.fullscreenElement) setFull(false); });
 document.addEventListener("keydown",e=>{
-  if(e.key!=="Escape"||!selected.length) return;
+  if(e.key!=="Escape") return;
   if(!document.getElementById("bulkDlg").hidden||!document.getElementById("signInDlg").hidden) return;
+  if(document.body.classList.contains("fullmap")&&!selected.length){ setFull(false); return; }
+  if(!selected.length) return;
   const t=e.target; if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
   select([]);
 });
 // Jump to a state: fit its outline to the map.
 function zoomToBox([x0,y0,x1,y1],kmax=10){
-  const a=P([x0,y1]), b=P([x1,y0]), k=Math.min(kmax,Math.max(.3,.9*Math.min(1000/(b[0]-a[0]),530/(b[1]-a[1]))));
-  svg.transition().duration(450).call(zoom.transform,d3.zoomIdentity.translate(500-k*(a[0]+b[0])/2,265-k*(a[1]+b[1])/2).scale(k));
+  const a=P([x0,y1]), b=P([x1,y0]), k=Math.min(kmax,Math.max(.2,.9*Math.min(VW/(b[0]-a[0]),VH/(b[1]-a[1]))));
+  svg.transition().duration(450).call(zoom.transform,centerOn((a[0]+b[0])/2,(a[1]+b[1])/2,k));
 }
 
 // ---------- search: towns, ZIP codes, counties, states ----------
@@ -681,7 +725,7 @@ function pick(e){
   inp.value=label; document.getElementById("qclear").hidden=false;
   setSpot(e.kind==="county"?null:{label,ll:e.ll,fips});
   if(fips){ zoomToBox(CBY[fips].bbox,6); select([fips]); }
-  else if(e.ll){ const k=5,[x,y]=P(e.ll); svg.transition().duration(450).call(zoom.transform,d3.zoomIdentity.translate(500-k*x,265-k*y).scale(k)); }
+  else if(e.ll){ const [x,y]=P(e.ll); svg.transition().duration(450).call(zoom.transform,centerOn(x,y,5)); }
 }
 function setSpot(o){
   if(spot){ spot.pin.remove(); spot=null; }
@@ -753,10 +797,10 @@ function setFocus(id,{zoomTo=true}={}){
 }
 document.getElementById("goState").onchange=e=>{
   const v=e.target.value;
-  if(v==="us"){ setFocus(null); const k=.3,cx=(WORLD[0][0]+WORLD[1][0])/2,cy=(WORLD[0][1]+WORLD[1][1])/2;svg.transition().duration(450).call(zoom.transform,d3.zoomIdentity.translate(500-k*cx,265-k*cy).scale(k)); }
+  if(v==="us"){ setFocus(null); const k=Math.max(.2,.95*Math.min(VW/(WORLD[1][0]-WORLD[0][0]),VH/(WORLD[1][1]-WORLD[0][1]))),cx=(WORLD[0][0]+WORLD[1][0])/2,cy=(WORLD[0][1]+WORLD[1][1])/2;svg.transition().duration(450).call(zoom.transform,centerOn(cx,cy,k)); }
   else if(v) setFocus(v);
 };
-document.getElementById("stClear").onclick=()=>{ setFocus(null); svg.transition().duration(450).call(zoom.transform,d3.zoomIdentity); };
+document.getElementById("stClear").onclick=()=>{ setFocus(null); svg.transition().duration(450).call(zoom.transform,homeT()); };
 document.getElementById("map").addEventListener("click",e=>{ if(!e.shiftKey&&!e.ctrlKey&&!e.metaKey) select([]); });
 
 // ---------- state ----------
