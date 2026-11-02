@@ -227,6 +227,11 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
 .sso{padding:10px 14px;font-size:1rem}
 .dlg{position:fixed;inset:0;background:rgba(16,30,48,.45);display:grid;place-items:center;z-index:20;padding:16px}
 .dlg-card{background:var(--surface);border-radius:8px;border-top:5px solid var(--brand-gold);padding:20px;display:grid;gap:12px;width:min(420px,100%)}
+.dlg-card.bulk{width:min(520px,100%);max-height:calc(100vh - 32px);overflow:auto;border-top-color:#d4443a}
+.bulk ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.bulk .arrow{margin:0 4px;color:var(--muted)}
+.bulk .btns{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.bulk button.danger{background:#b3261e;border-color:#b3261e;color:#fff}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -260,6 +265,8 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
   </header>
 
   <div class="rule"><span aria-hidden="true">⚠</span><div><b>These colors are a guideline.</b> Unless a driver lives firmly inside a green county, double-check with Planners before promising home time.</div></div>
+
+  <div class="dlg" id="bulkDlg" hidden role="dialog" aria-modal="true" aria-labelledby="bulkTitle"><div class="dlg-card bulk"></div></div>
 
   <div class="dlg" id="signInDlg" hidden><form id="signInForm" class="dlg-card">
     <h3>Sign in</h3>
@@ -787,6 +794,47 @@ function verdictFor(d,many){
   return `<div class="verdict check small">${SHORT[d.level]}: ${LEVELS[d.level]} out. Double-check with Planners before promising home time.</div>`;
 }
 
+// Bulk-change check: any save touching 2+ counties needs a confirmation and a reason; 10+ also needs the count typed in.
+const BULK_MIN=2, BULK_TYPE=10;
+function confirmBulk(changes,presetReason){
+  return new Promise(resolve=>{
+    const n=changes.length, dlg=document.getElementById("bulkDlg"), card=dlg.firstElementChild;
+    const lab=(lv,hi)=>lv?SHORT[lv]+(hi===false?" (not hiring)":""):"No color";
+    const moves={}; let hireOff=0, hireOn=0;
+    for(const c of changes){
+      if(c.fromLevel!==c.toLevel){const k=`${c.fromLevel?SHORT[c.fromLevel]:"No color"}|${SHORT[c.toLevel]}`; moves[k]=(moves[k]||0)+1;}
+      if(c.fromHiring!==false&&c.toHiring===false&&c.fromLevel) hireOff++;
+      if(c.fromHiring===false&&c.toHiring!==false) hireOn++;
+    }
+    const lines=Object.entries(moves).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{const [a,b]=k.split("|");return `<li><b>${v}</b> ${esc(a)}<span class="arrow">→</span>${esc(b)}</li>`});
+    if(hireOff) lines.push(`<li>Hiring turned <b>off</b> in <b>${hireOff}</b></li>`);
+    if(hireOn) lines.push(`<li>Hiring turned <b>on</b> in <b>${hireOn}</b></li>`);
+    const same=n-Object.values(moves).reduce((a,b)=>a+b,0);
+    if(!lines.length) lines.push(`<li>Note update only (no color or hiring change)</li>`);
+    const states=[...new Set(changes.map(c=>CBY[c.fips]?.st).filter(Boolean))].sort();
+    const names=changes.slice(0,10).map(c=>`${CBY[c.fips]?.short} ${CBY[c.fips]?.st}`).join(", ")+(n>10?` and ${n-10} more`:"");
+    card.innerHTML=`<h3 id="bulkTitle">Change ${n} counties at once?</h3>
+      <p class="small muted" style="margin:0">Bulk changes affect every recruiter's view. Please check this is what you mean.</p>
+      <div class="small"><div class="eyebrow">What will change</div><ul>${lines.join("")}</ul>${same&&Object.keys(moves).length?`<div class="muted" style="margin-top:4px">${same} already had that color.</div>`:""}</div>
+      <div class="small"><div class="eyebrow">${states.length>1?"States":"State"}</div>${esc(states.join(", "))}</div>
+      <div class="small"><div class="eyebrow">Counties</div>${esc(names)}</div>
+      <label class="field" for="bulkReason"><span>Reason for this change (required, goes in the log)</span><textarea id="bulkReason" class="txt" maxlength="500" rows="2" placeholder="e.g. Planners moved the Iowa loop to 2 weeks">${esc(presetReason||"")}</textarea></label>
+      ${n>=BULK_TYPE?`<label class="field" for="bulkCount"><span>Type <b>${n}</b> to confirm</span><input id="bulkCount" class="txt" inputmode="numeric" autocomplete="off"></label>`:""}
+      <div class="btns"><button type="button" id="bulkCancel" class="primary">Cancel</button><button type="button" id="bulkOk" class="danger" disabled>Change ${n} counties</button></div>`;
+    dlg.hidden=false;
+    const ok=document.getElementById("bulkOk"), reason=document.getElementById("bulkReason"), cnt=document.getElementById("bulkCount");
+    const check=()=>{ok.disabled=!reason.value.trim()||(cnt&&cnt.value.trim()!==String(n));};
+    reason.addEventListener("input",check); if(cnt) cnt.addEventListener("input",check); check();
+    const done=v=>{dlg.hidden=true; card.innerHTML=""; document.removeEventListener("keydown",onKey,true); resolve(v);};
+    const onKey=e=>{ if(e.key==="Escape"){e.preventDefault();done(null);} else if(e.key==="Enter"&&e.target.tagName!=="TEXTAREA"&&e.target.id!=="bulkOk"){e.preventDefault();} };
+    document.addEventListener("keydown",onKey,true);
+    document.getElementById("bulkCancel").onclick=()=>done(null);
+    ok.onclick=()=>{ if(!ok.disabled) done(reason.value.trim()); };
+    dlg.onclick=e=>{ if(e.target===dlg) done(null); };
+    document.getElementById("bulkCancel").focus();
+  });
+}
+
 function renderQuickbar(){
   const qb=document.getElementById("quickbar");
   if(!editor||asOf||!selected.length){qb.hidden=true;qb.innerHTML="";return}
@@ -800,6 +848,11 @@ function renderQuickbar(){
   qb.hidden=false;
   qb.querySelectorAll("button").forEach(b=>b.onclick=async e=>{
     e.stopPropagation();
+    let reason="Quick change from the map";
+    if(selected.length>=BULK_MIN){
+      const changes=selected.map(f=>{const d=s[f];return {fips:f,fromLevel:d?.level||null,fromHiring:d?d.hiring!==false:true,toLevel:b.dataset.lv||d?.level||"green",toHiring:b.dataset.hire?b.dataset.hire==="on":(d?d.hiring!==false:true)};});
+      const r=await confirmBulk(changes,""); if(r===null) return; reason=r;
+    }
     const msg=document.getElementById("qmsg"); msg.textContent="Saving…";
     qb.querySelectorAll("button").forEach(x=>x.disabled=true);
     // keep each county's own note; group counties that share the same note into one call
@@ -809,7 +862,7 @@ function renderQuickbar(){
     for(const [key,fips] of Object.entries(groups)){
       const [note,curLv,curHi]=JSON.parse(key);
       const level=b.dataset.lv||curLv, hiring=b.dataset.hire?b.dataset.hire==="on":curHi;
-      const {error}=await sb.rpc("set_county",{p_fips:fips,p_level:level,p_hiring:hiring,p_note:note,p_reason:"Quick change from the map"});
+      const {error}=await sb.rpc("set_county",{p_fips:fips,p_level:level,p_hiring:hiring,p_note:note,p_reason:reason});
       if(error){err=error;break;}
     }
     if(err){ msg.textContent=/editor/i.test(err.message)?"Your email isn't on the editor list.":"Couldn't save: "+err.message; qb.querySelectorAll("button").forEach(x=>x.disabled=false); return; }
@@ -860,8 +913,14 @@ function renderDetail(){
   f.addEventListener("input",()=>{btn.disabled=!cur().level});
   f.addEventListener("submit",async e=>{
     e.preventDefault(); const c=cur(); if(!c.level) return;
+    let reason=document.getElementById("reasonIn").value.trim();
+    if(selected.length>=BULK_MIN){
+      const s=stateAt();
+      const r=await confirmBulk(selected.map(f=>({fips:f,fromLevel:s[f]?.level||null,fromHiring:s[f]?s[f].hiring!==false:true,toLevel:c.level,toHiring:c.hiring})),reason);
+      if(r===null) return; reason=r;
+    }
     const msg=document.getElementById("saveMsg"); btn.disabled=true; msg.textContent="Saving…";
-    const {error}=await sb.rpc("set_county",{p_fips:selected,p_level:c.level,p_hiring:c.hiring,p_note:c.note,p_reason:document.getElementById("reasonIn").value.trim()});
+    const {error}=await sb.rpc("set_county",{p_fips:selected,p_level:c.level,p_hiring:c.hiring,p_note:c.note,p_reason:reason});
     if(error){ msg.textContent=/editor/i.test(error.message)?"Your email isn't on the editor list.":"Couldn't save: "+error.message; btn.disabled=false; return; }
     await loadData(); msg.textContent="Saved";
   });
