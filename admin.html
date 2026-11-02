@@ -21,6 +21,7 @@ th{background:#f4f7fa;font-size:.78rem;text-transform:uppercase;letter-spacing:.
 tr:last-child td{border-bottom:none}
 tr.inactive td{background:#f6f7f8;color:var(--muted)}
 td .txt{width:auto;min-width:130px;padding:5px 7px}
+td .txt:disabled{background:#f1f3f5;color:var(--muted);cursor:not-allowed}
 select.txt{width:auto;padding:5px 7px}
 .toggle{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-weight:600}
 .toggle input{width:18px;height:18px;accent-color:var(--g)}
@@ -76,7 +77,7 @@ select.txt{width:auto;padding:5px 7px}
     <div class="grid2">
       <section class="card">
         <h2>Users</h2>
-        <p class="small muted" style="margin:0">Changes save as soon as you make them. Admins can view and edit every page and manage users.</p>
+        <p class="small muted" style="margin:0">Changes save as soon as you make them. Admins can view and edit every page and manage users. Only the owner can make or remove admins, and the owner's account can't be changed by anyone else.</p>
         <div class="tablewrap"><table>
           <thead id="userHead"></thead>
           <tbody id="userBody"></tbody>
@@ -129,11 +130,14 @@ function renderUsers(){
   $("userHead").innerHTML=`<tr><th>Name</th><th>Email</th><th>Level</th><th>Status</th>${PAGES.map(p=>`<th>${esc(p.name)}</th>`).join("")}</tr>`;
   $("userBody").innerHTML=USERS.map((u,i)=>{
     const self=u.email===me.email, admin=u.role==="admin";
+    // Owner protection (mirrors the database rules): only the owner can change the owner, other admins, or admin rights.
+    const locked=!self&&!me.owner&&(u.owner||admin), roleLocked=self||locked||!me.owner;
+    const dis=locked?"disabled":"";
     return `<tr class="${u.active?"":"inactive"}" data-i="${i}">
-      <td><input class="txt" data-f="name" value="${esc(u.name)}" aria-label="Name for ${esc(u.email)}"></td>
-      <td>${esc(u.email)}${self?' <span class="muted small">(you)</span>':""}</td>
-      <td><select class="txt" data-f="role" ${self?"disabled title=\"You can't change your own level\"":""} aria-label="Account level"><option value="user" ${!admin?"selected":""}>User</option><option value="admin" ${admin?"selected":""}>Admin</option></select></td>
-      <td><label class="toggle"><input type="checkbox" data-f="active" ${u.active?"checked":""} ${self?"disabled":""}><span class="badge ${u.active?"on":"off"}">${u.active?"Active":"Inactive"}</span></label></td>
+      <td><input class="txt" data-f="name" value="${esc(u.name)}" ${dis} aria-label="Name for ${esc(u.email)}"></td>
+      <td>${esc(u.email)}${u.owner?' <span class="badge on" title="The owner\'s account can only be changed by the owner">Owner</span>':""}${self?' <span class="muted small">(you)</span>':""}</td>
+      <td><select class="txt" data-f="role" ${roleLocked?`disabled title="${self?"You can't change your own level":"Only the owner can change admin rights"}"`:""} aria-label="Account level"><option value="user" ${!admin?"selected":""}>User</option><option value="admin" ${admin?"selected":""}>Admin</option></select></td>
+      <td><label class="toggle"><input type="checkbox" data-f="active" ${u.active?"checked":""} ${self||locked?"disabled":""}><span class="badge ${u.active?"on":"off"}">${u.active?"Active":"Inactive"}</span></label></td>
       ${PAGES.map(p=>`<td>${admin?'<span class="small muted">View + edit (admin)</span>':accessSelect("",u.pages?.[p.id]||"none").replace("<select",`<select data-page="${p.id}" aria-label="${esc(p.name)} access"`)}</td>`).join("")}
     </tr>`;}).join("")||`<tr><td colspan="${4+PAGES.length}" class="muted">No users yet.</td></tr>`;
   $("userBody").querySelectorAll("tr[data-i]").forEach(tr=>{
@@ -173,7 +177,7 @@ async function save(u){
 
 async function load(){
   const [us,ps,hs]=await Promise.all([
-    sb.from("editors").select("email,name,role,active,pages").order("name"),
+    sb.from("editors").select("*").order("name"),
     sb.from("site_pages").select("id,name,public_view,sort").order("sort"),
     sb.from("account_changes").select("target,summary,changed_by_name,changed_at").order("changed_at",{ascending:false}).limit(100),
   ]);
@@ -201,9 +205,10 @@ $("newRole").onchange=()=>$("newPages").querySelectorAll("select").forEach(s=>s.
   const {data}=await sb.auth.getSession();
   const email=data.session?.user?.email?.toLowerCase();
   if(!email){ $("gateText").innerHTML=`Sign in on the <a href="./">Home page</a> first, then come back here.`; return; }
-  const {data:row}=await sb.from("editors").select("email,name,role,active").eq("email",email).maybeSingle();
+  const {data:row}=await sb.from("editors").select("*").eq("email",email).maybeSingle();
   if(!row||row.role!=="admin"||!row.active){ $("gateText").innerHTML=`This page is for admins. You're signed in as ${esc(email)}. <a href="./">Back to Home</a>`; return; }
   me=row; $("gate").hidden=true; $("adminUI").hidden=false;
+  if(!me.owner){ $("newRole").querySelector('option[value="admin"]').remove(); $("newRole").disabled=true; $("newRole").title="Only the owner can make admins"; }
   await load();
 })();
 </script>
