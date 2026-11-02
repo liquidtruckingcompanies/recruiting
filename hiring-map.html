@@ -314,7 +314,7 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
       <div class="zoombtns">
         <button type="button" id="zin" aria-label="Zoom in">+</button>
         <button type="button" id="zout" aria-label="Zoom out">−</button>
-        <button type="button" id="zreset" aria-label="Back to our home region" title="Back to our home region" style="font-size:.8rem">⤢</button>
+        <button type="button" id="zreset" aria-label="Reset the map: clear selection, search and state focus" title="Reset the map (clears selection, search and state focus)" style="font-size:.66rem;letter-spacing:.02em">RESET</button>
       </div>
     </div>
 
@@ -583,7 +583,20 @@ svg.call(zoom).on("dblclick.zoom",null);
 svg.call(zoom.transform,d3.zoomIdentity);
 document.getElementById("zin").onclick=()=>svg.transition().duration(200).call(zoom.scaleBy,1.5);
 document.getElementById("zout").onclick=()=>svg.transition().duration(200).call(zoom.scaleBy,1/1.5);
-document.getElementById("zreset").onclick=()=>svg.transition().duration(200).call(zoom.transform,d3.zoomIdentity);
+// Reset: clear selection, search pin, state focus, and go back to the default view.
+function resetMap(){
+  const q=document.getElementById("q"); if(q){ q.value=""; document.getElementById("qclear").hidden=true; document.getElementById("qres").hidden=true; }
+  setSpot(null); selected=[];
+  if(focus) setFocus(null,{zoomTo:false}); else paint();
+  svg.transition().duration(300).call(zoom.transform,d3.zoomIdentity);
+}
+document.getElementById("zreset").onclick=resetMap;
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape"||!selected.length) return;
+  if(!document.getElementById("bulkDlg").hidden||!document.getElementById("signInDlg").hidden) return;
+  const t=e.target; if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+  select([]);
+});
 // Jump to a state: fit its outline to the map.
 function zoomToBox([x0,y0,x1,y1],kmax=10){
   const a=P([x0,y1]), b=P([x1,y0]), k=Math.min(kmax,Math.max(.3,.9*Math.min(1000/(b[0]-a[0]),530/(b[1]-a[1]))));
@@ -761,7 +774,8 @@ function stateAt(){
   if(!asOf) return live;
   const cutoff=new Date(asOf+"T23:59:59.999").toISOString();
   const s={};
-  for(const a of audit){ if(a.at<=cutoff && !s[a.fips]) s[a.fips]=a; }
+  for(const a of audit){ if(a.at<=cutoff && !(a.fips in s)) s[a.fips]=a; }
+  for(const f in s) if(!s[f].level) delete s[f]; // "Color cleared" entries
   return s;
 }
 
@@ -780,6 +794,14 @@ function paint(){
   renderDetail(); renderLog(); renderCityTable(); renderAuth();
 }
 
+const STALE_DAYS=60;
+function lastChanged(d){
+  if(!d?.at) return "";
+  const days=Math.floor((Date.now()-new Date(d.at))/864e5);
+  const ago=days<1?"today":days===1?"1 day ago":days<60?`${days} days ago`:`${Math.round(days/30.4)} months ago`;
+  return `<div class="small muted">Last changed ${fmtDate(d.at)}${d.by?` by ${esc(d.by)}`:""} (${ago})</div>`+
+    (!asOf&&days>=STALE_DAYS?`<div class="verdict check small">This county hasn't been updated in ${days} days and may be out of date. Confirm with Planners.</div>`:"");
+}
 function chip(level,hiring){
   if(!level) return `<span class="chip none">No color</span>`;
   return `<span class="chip ${level}">${SHORT[level]}</span>`+(hiring===false?` <span class="chip off">Not hiring</span>`:"");
@@ -796,14 +818,28 @@ function verdictFor(d,many){
 
 // Bulk-change check: any save touching 2+ counties needs a confirmation and a reason; 10+ also needs the count typed in.
 const BULK_MIN=2, BULK_TYPE=10;
+// Clear color: removes counties from the map entirely (not the same as "Not hiring"). Needs supabase/03-clear-county.sql.
+async function clearCounties(list,presetReason,msgEl){
+  const s=stateAt(), fips=list.filter(f=>s[f]);
+  if(!fips.length){ if(msgEl) msgEl.textContent="Nothing to clear: no color set."; return false; }
+  let reason=presetReason||"Color cleared from the map";
+  if(fips.length>=BULK_MIN){
+    const r=await confirmBulk(fips.map(f=>({fips:f,fromLevel:s[f].level,fromHiring:s[f].hiring!==false,toLevel:null,toHiring:null})),presetReason||"");
+    if(r===null) return false; reason=r;
+  }
+  if(msgEl) msgEl.textContent="Clearing…";
+  const {error}=await sb.rpc("clear_county",{p_fips:fips,p_reason:reason});
+  if(error){ if(msgEl) msgEl.textContent=/clear_county|function/i.test(error.message)?"Clearing isn't switched on yet (run supabase/03-clear-county.sql).":"Couldn't clear: "+error.message; return false; }
+  await loadData(); return true;
+}
 function confirmBulk(changes,presetReason){
   return new Promise(resolve=>{
     const n=changes.length, dlg=document.getElementById("bulkDlg"), card=dlg.firstElementChild;
     const lab=(lv,hi)=>lv?SHORT[lv]+(hi===false?" (not hiring)":""):"No color";
     const moves={}; let hireOff=0, hireOn=0;
     for(const c of changes){
-      if(c.fromLevel!==c.toLevel){const k=`${c.fromLevel?SHORT[c.fromLevel]:"No color"}|${SHORT[c.toLevel]}`; moves[k]=(moves[k]||0)+1;}
-      if(c.fromHiring!==false&&c.toHiring===false&&c.fromLevel) hireOff++;
+      if(c.fromLevel!==c.toLevel){const k=`${c.fromLevel?SHORT[c.fromLevel]:"No color"}|${c.toLevel?SHORT[c.toLevel]:"No color (cleared)"}`; moves[k]=(moves[k]||0)+1;}
+      if(c.fromHiring!==false&&c.toHiring===false&&c.fromLevel&&c.toLevel) hireOff++;
       if(c.fromHiring===false&&c.toHiring!==false) hireOn++;
     }
     const lines=Object.entries(moves).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{const [a,b]=k.split("|");return `<li><b>${v}</b> ${esc(a)}<span class="arrow">→</span>${esc(b)}</li>`});
@@ -844,10 +880,12 @@ function renderQuickbar(){
   const label=selected.length>1?`${selected.length} counties`:`${CBY[selected[0]].short} ${CBY[selected[0]].st}`;
   qb.innerHTML=`<span class="qname">${esc(label)}</span>`+
     Object.keys(SHORT).map(k=>`<button type="button" class="q-${k}${lv===k?" on":""}" data-lv="${k}">${SHORT[k]}</button>`).join("")+
-    `<button type="button" data-hire="${hi===false?"on":"off"}">${hi===false?"Turn hiring on":"Not hiring"}</button><span class="qmsg" id="qmsg"></span>`;
+    `<button type="button" data-hire="${hi===false?"on":"off"}">${hi===false?"Turn hiring on":"Not hiring"}</button>`+
+    (selected.some(f=>s[f])?`<button type="button" data-clear="1" title="Remove the color completely">Clear color</button>`:"")+`<span class="qmsg" id="qmsg"></span>`;
   qb.hidden=false;
   qb.querySelectorAll("button").forEach(b=>b.onclick=async e=>{
     e.stopPropagation();
+    if(b.dataset.clear){ qb.querySelectorAll("button").forEach(x=>x.disabled=true); const ok=await clearCounties(selected,"",document.getElementById("qmsg")); if(!ok) qb.querySelectorAll("button").forEach(x=>x.disabled=false); return; }
     let reason="Quick change from the map";
     if(selected.length>=BULK_MIN){
       const changes=selected.map(f=>{const d=s[f];return {fips:f,fromLevel:d?.level||null,fromHiring:d?d.hiring!==false:true,toLevel:b.dataset.lv||d?.level||"green",toHiring:b.dataset.hire?b.dataset.hire==="on":(d?d.hiring!==false:true)};});
@@ -885,7 +923,8 @@ function renderDetail(){
     html+=spotHtml()+`<div><div class="eyebrow">Selected county</div><h3>${esc(c.name)}</h3></div>
       <div>${chip(first?.level,first?.hiring)}</div>
       ${first?.note?`<div class="small"><span class="muted">Hiring note:</span> ${esc(first.note)}</div>`:""}
-      ${verdictFor(first,false)}`;
+      ${verdictFor(first,false)}
+      ${lastChanged(first)}`;
   }
   if(editor && !asOf){
     const lv=same&&first?first.level:"", hi=same&&first?first.hiring!==false:true;
@@ -897,7 +936,7 @@ function renderDetail(){
       <label class="switch" for="hireToggle"><input type="checkbox" id="hireToggle" ${hi?"checked":""}><span>Hiring here</span></label>
       <label class="field" for="noteIn"><span>Hiring note (shown on the map)</span><input type="text" id="noteIn" maxlength="200" placeholder="e.g. Need 3 Class A tanker drivers" value="${esc(!many&&first?.note||"")}" class="txt"></label>
       <label class="field" for="reasonIn"><span>Reason for the change (goes in the log)</span><textarea id="reasonIn" maxlength="500" placeholder="e.g. Planners say loads out of this area picked up"></textarea></label>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="primary" type="submit" id="saveBtn" disabled>Save change</button><span class="msg muted" id="saveMsg"></span></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="primary" type="submit" id="saveBtn" disabled>Save change</button>${selected.some(f=>stateAt()[f])?`<button type="button" id="clearBtn" title="Remove the color completely">Clear color</button>`:""}<span class="msg muted" id="saveMsg"></span></div>
     </form>`;
   }
   html+=cityList(selected);
@@ -911,6 +950,8 @@ function renderDetail(){
   const btn=document.getElementById("saveBtn");
   const cur=()=>({level:f.querySelector("input[name=lv]:checked")?.value,hiring:document.getElementById("hireToggle").checked,note:document.getElementById("noteIn").value.trim()});
   f.addEventListener("input",()=>{btn.disabled=!cur().level});
+  const cb=document.getElementById("clearBtn");
+  if(cb) cb.onclick=async()=>{ cb.disabled=true; const ok=await clearCounties(selected,document.getElementById("reasonIn").value.trim(),document.getElementById("saveMsg")); if(!ok) cb.disabled=false; };
   f.addEventListener("submit",async e=>{
     e.preventDefault(); const c=cur(); if(!c.level) return;
     let reason=document.getElementById("reasonIn").value.trim();
@@ -928,7 +969,8 @@ function renderDetail(){
 
 function changeText(a){
   const parts=[];
-  if(a.prevLevel==null && a.prevHiring==null) parts.push(`Set to ${chip(a.level,a.hiring)}`);
+  if(!a.level) parts.push(`Color cleared${a.prevLevel?` (was ${chip(a.prevLevel,a.prevHiring)})`:""}`);
+  else if(a.prevLevel==null && a.prevHiring==null) parts.push(`Set to ${chip(a.level,a.hiring)}`);
   else{
     if(a.prevLevel!==a.level) parts.push(`${chip(a.prevLevel)}<span class="arrow">→</span>${chip(a.level)}`);
     if(a.prevHiring!==a.hiring) parts.push(a.hiring?`Hiring turned <b>on</b>`:`Hiring turned <b>off</b>`);
