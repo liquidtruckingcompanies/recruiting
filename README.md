@@ -19,6 +19,8 @@ The git history of that file is the permanent audit trail.
 
 The map covers all 48 lower states and every county (3,108). Highway lines come from Natural Earth (public domain) 1:10m roads, in `data/roads.json`. State and county outlines come from the us-atlas package (U.S. Census Bureau data), in `data/states.json` and `data/counties.json`.
 
+Search uses the city list plus `data/zips.json` (`[zip, town, state, lon, lat]`, from the zipcodes package / free ZIP code database), which also supplies small-town names. Road distances are straight-line miles to the nearest line in `data/roads.json`.
+
 City dots and population bands come from GeoNames (places of 1,000+ people, via the all-the-cities package), stored in `data/cities.json` as `[name, state, lon, lat, population]`.
 
 ## Users and admins

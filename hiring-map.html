@@ -88,7 +88,24 @@ button:disabled{opacity:.45;cursor:not-allowed}
 #map.zfar .shield{display:none}
 #map.zfar .road.i{stroke-width:1.3}
 #map.zfar .road.us{stroke-width:.6;opacity:.55}
-.gostate{position:absolute;left:10px;top:10px;z-index:2;font:inherit;font-size:.85rem;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg);box-shadow:0 2px 6px rgba(16,30,48,.12);max-width:60%}
+.mapsearch{position:absolute;left:10px;top:10px;right:56px;z-index:3;display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;pointer-events:none}
+.mapsearch>*{pointer-events:auto}
+.qwrap{position:relative;flex:0 1 340px;min-width:200px;z-index:2}
+@media (max-width:560px){.qwrap{flex:1 1 auto}.mapsearch .gostate{display:none}}
+.qwrap .txt{width:100%;padding:7px 30px 7px 10px;box-shadow:0 2px 6px rgba(16,30,48,.12);font-size:.92rem}
+.qwrap .txt::-webkit-search-cancel-button{display:none}
+#qclear{position:absolute;right:4px;top:4px;border:none;background:none;font-size:1.2rem;line-height:1;padding:3px 7px;color:var(--muted)}
+#qres{position:absolute;left:0;right:0;top:calc(100% + 4px);margin:0;padding:4px;list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:6px;box-shadow:0 6px 18px rgba(16,30,48,.2);max-height:320px;overflow:auto}
+#qres li{padding:7px 9px;border-radius:5px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.88rem}
+#qres li[aria-selected=true],#qres li:hover{background:#eaf1f7}
+#qres li .sub{color:var(--muted);font-size:.78rem}
+#qres li.none{cursor:default;color:var(--muted)}
+#qres .chip{font-size:.72rem;padding:1px 7px;white-space:nowrap}
+.spotpin path{fill:#d4443a;stroke:#fff;stroke-width:1.5}
+.spotpin circle{fill:#fff}
+.spotpin text{font-family:var(--display);font-weight:700;font-size:13px;fill:var(--fg);paint-order:stroke;stroke:#fff;stroke-width:3.5px}
+.spot{background:#f4f7fa;border:1px solid var(--line);border-left:4px solid #d4443a;border-radius:6px;padding:8px 10px;display:grid;gap:3px}
+.gostate{position:relative;font:inherit;font-size:.85rem;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg);box-shadow:0 2px 6px rgba(16,30,48,.12);max-width:60%}
 #map.hide-i .road.i,#map.hide-i .shield.i,#map.hide-us .road.us,#map.hide-us .shield.us{display:none}
 .layers{display:grid;gap:6px}
 .layers label{display:flex;align-items:center;gap:8px;cursor:pointer}
@@ -272,7 +289,14 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
         <g id="labels"><g id="shieldLayer"></g></g>
       </svg>
       <div class="quickbar" id="quickbar" hidden></div>
-      <select id="goState" class="gostate" aria-label="Go to a state"><option value="">Go to a state…</option><option value="us">Whole country</option></select>
+      <div class="mapsearch">
+        <div class="qwrap">
+          <input type="search" id="q" class="txt" placeholder="Search town, ZIP or county  ( / )" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="qres" aria-autocomplete="list" aria-label="Search for a town, ZIP code, county or state">
+          <button type="button" id="qclear" aria-label="Clear search" hidden>×</button>
+          <ul id="qres" role="listbox" hidden></ul>
+        </div>
+        <select id="goState" class="gostate" aria-label="Go to a state"><option value="">Go to a state…</option><option value="us">Whole country</option></select>
+      </div>
       <div class="zoombtns">
         <button type="button" id="zin" aria-label="Zoom in">+</button>
         <button type="button" id="zout" aria-label="Zoom out">−</button>
@@ -281,7 +305,7 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
     </div>
 
     <aside class="panel" id="panel">
-      <div id="detail"><p class="muted small" style="margin:0">Click a county to see its status, cities and history. Hold Shift to select several. Drag the map, zoom out, or use <b>Go to a state</b> to reach any county in the country.</p></div>
+      <div id="detail"><p class="muted small" style="margin:0">Click a county to see its status, cities and history. Hold Shift to select several. Search a town or ZIP above the map (press <b>/</b>), or drag and zoom to reach any county in the country.</p></div>
       <hr>
       <div>
         <h2>How far out?</h2>
@@ -362,7 +386,7 @@ const fmtPop=n=>n.toLocaleString("en-US");
 
 // Supabase project (filled in once it exists). The anon key is public by design; the database rules decide who can write.
 // Data version: bump when data/*.json changes so browsers fetch the new files instead of cached ones.
-const DV="2026-10-29b";
+const DV="2026-11-02a";
 const SUPABASE_URL = "https://bunskxkyzmabbhybbubg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_YPlmQVx-G_A97WaiTSLFqg_xIyl3PC_";
 
@@ -422,10 +446,12 @@ function countyAt(lon,lat){
 }
 
 const labelNodes=[];
-let curT=d3.zoomIdentity;
+let curT=d3.zoomIdentity, spot=null; // spot = searched location pin
 // Highways: Natural Earth 1:10m roads (Interstate and U.S. Highway networks)
 const gRoads=document.getElementById("roads"), gShields=document.getElementById("shieldLayer");
+let ROADDATA=null;
 function buildRoads(ROADS){
+ROADDATA=ROADS;
 const placed=[];
 for(const [cls,list] of [["i",ROADS.I],["us",ROADS.US]]){
   for(const [n,line] of list){
@@ -487,7 +513,7 @@ function layoutCities(){
 function buildCities(rows){
   CITIES=rows.map(([name,st,lon,lat,pop])=>{
     const g=groupOf(pop);
-    const c={name,st,pop,g,xy:P([lon,lat]),county:countyAt(lon,lat)};
+    const c={name,st,pop,g,ll:[lon,lat],xy:P([lon,lat]),county:countyAt(lon,lat)};
     c.dot=el("circle",{class:"cdot "+g.id,r:g.r,display:"none"},gCityDots); c.vis=false; c.show=false;
     c.txt=el("text",{class:"cname "+g.id,display:"none"},gCityNames); c.txt.textContent=name;
     return c;
@@ -534,6 +560,7 @@ const zoom=d3.zoom().scaleExtent([.3,10]).translateExtent(WORLD).extent([[0,0],[
     mapEl.classList.toggle("z2",t.k>=.9);
     mapEl.classList.toggle("zfar",t.k<.45);
     placeShields(t);
+    if(spot) spot.pin.setAttribute("transform",`translate(${t.applyX(spot.xy[0]).toFixed(1)},${t.applyY(spot.xy[1]).toFixed(1)})`);
     curT=t; scheduleCities();
   });
 svg.call(zoom).on("dblclick.zoom",null);
@@ -542,9 +569,139 @@ document.getElementById("zin").onclick=()=>svg.transition().duration(200).call(z
 document.getElementById("zout").onclick=()=>svg.transition().duration(200).call(zoom.scaleBy,1/1.5);
 document.getElementById("zreset").onclick=()=>svg.transition().duration(200).call(zoom.transform,d3.zoomIdentity);
 // Jump to a state: fit its outline to the map.
-function zoomToBox([x0,y0,x1,y1]){
-  const a=P([x0,y1]), b=P([x1,y0]), k=Math.min(10,Math.max(.3,.9*Math.min(1000/(b[0]-a[0]),530/(b[1]-a[1]))));
+function zoomToBox([x0,y0,x1,y1],kmax=10){
+  const a=P([x0,y1]), b=P([x1,y0]), k=Math.min(kmax,Math.max(.3,.9*Math.min(1000/(b[0]-a[0]),530/(b[1]-a[1]))));
   svg.transition().duration(450).call(zoom.transform,d3.zoomIdentity.translate(500-k*(a[0]+b[0])/2,265-k*(a[1]+b[1])/2).scale(k));
+}
+
+// ---------- search: towns, ZIP codes, counties, states ----------
+// Towns come from the city list (1,000+ people) plus post-office town names from the ZIP list, so small towns are covered too.
+// ZIP data (zipcodes package, free ZIP code database) loads the first time someone uses the search.
+const STNAME={AL:"Alabama",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",DC:"District of Columbia",FL:"Florida",GA:"Georgia",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
+const ABBR=Object.fromEntries(Object.entries(STNAME).map(([a,n])=>[n.toLowerCase(),a]));
+const norm=t=>t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
+let IDX=null, ZIPS=null, zipLoading=null, qItems=[], qActive=-1;
+function loadZips(){
+  if(!zipLoading) zipLoading=fetch("data/zips.json?v="+DV).then(r=>r.json()).then(z=>{ZIPS=z;IDX=null;runSearch();}).catch(()=>{});
+  return zipLoading;
+}
+function buildIndex(){
+  const out=[], seen=new Set();
+  for(const c of CITIES){ out.push({kind:"town",name:c.name,st:c.st,ll:c.ll,pop:c.pop,key:norm(c.name)}); seen.add(norm(c.name)+"|"+c.st); }
+  if(ZIPS){ const towns=new Map();
+    for(const [z,city,st,lon,lat] of ZIPS){ const k=norm(city)+"|"+st; if(seen.has(k)) continue; const t=towns.get(k); if(t){t.n++;t.ll[0]+=lon;t.ll[1]+=lat;} else towns.set(k,{name:city,st,ll:[lon,lat],n:1}); }
+    for(const t of towns.values()) out.push({kind:"town",name:t.name,st:t.st,ll:[t.ll[0]/t.n,t.ll[1]/t.n],pop:0,key:norm(t.name)});
+  }
+  for(const c of COUNTIES) out.push({kind:"county",name:c.short+" County",st:c.st,fips:c.fips,pop:-1,key:norm(c.short+" county")});
+  for(const s of STATES) out.push({kind:"state",name:s.n,id:s.id,pop:-2,key:norm(s.n)});
+  IDX=out;
+}
+function runSearch(){
+  const raw=document.getElementById("q").value, q=norm(raw);
+  document.getElementById("qclear").hidden=!raw;
+  if(q.length<2){ showResults([]); return; }
+  if(!ZIPS) loadZips();
+  if(!COUNTIES.length) return;
+  if(/^\d+$/.test(q)){
+    if(!ZIPS){ showResults(null,"Loading ZIP codes…"); return; }
+    if(q.length<3){ showResults([]); return; }
+    showResults(ZIPS.filter(z=>z[0].startsWith(q)).slice(0,8).map(([z,city,st,lon,lat])=>({kind:"zip",name:z,sub:`${city}, ${st}`,st,ll:[lon,lat]}))); return;
+  }
+  if(!IDX) buildIndex();
+  // A trailing state ("ankeny ia", "ankeny, iowa") narrows the list.
+  let words=q.split(" "), st=null;
+  for(let n=Math.min(3,words.length-1);n>=1;n--){ const tail=words.slice(-n).join(" "); const a=tail.length===2?tail.toUpperCase():ABBR[tail]; if(a&&STNAME[a]){st=a;words=words.slice(0,-n);break;} }
+  const term=words.join(" ");
+  const hits=[];
+  for(const e of IDX){
+    if(st && e.st!==st && !(e.kind==="state"&&e.id&&ST[e.id]===st)) continue;
+    const i=e.key.indexOf(term); if(i<0) continue;
+    if(i>0 && e.key[i-1]!==" ") continue;
+    hits.push([i===0?(e.key===term?0:1):2, e]);
+  }
+  hits.sort((a,b)=>a[0]-b[0]||b[1].pop-a[1].pop||a[1].name.localeCompare(b[1].name));
+  showResults(hits.slice(0,8).map(h=>h[1]));
+}
+function placeInfo(e){
+  // county, color chip and sub line for a result
+  const fips=e.kind==="county"?e.fips:e.ll?countyAt(e.ll[0],e.ll[1]):null, c=fips&&CBY[fips], d=fips&&stateAt()[fips];
+  const sub=e.kind==="state"?"State":e.kind==="county"?(STNAME[e.st]||e.st):e.kind==="zip"?`${e.sub}${c?" · "+c.short+" County":""}`:`${c?c.short+" County":""}${e.pop>0?" · "+fmtPop(e.pop):""}`;
+  const tag=e.kind==="state"?"":!c?"":!d?`<span class="chip none">No color</span>`:d.hiring===false?`<span class="chip off">Not hiring</span>`:`<span class="chip ${d.level}">${SHORT[d.level]}</span>`;
+  return {fips,sub,tag};
+}
+function showResults(items,msg){
+  const ul=document.getElementById("qres"), inp=document.getElementById("q");
+  qItems=items||[]; qActive=qItems.length?0:-1;
+  if(!items&&!msg||items&&!items.length&&norm(inp.value).length<2){ ul.hidden=true; inp.setAttribute("aria-expanded","false"); return; }
+  ul.innerHTML=msg?`<li class="none">${esc(msg)}</li>`:!qItems.length?`<li class="none">No matches. Try a town name or a 5-digit ZIP.</li>`:
+    qItems.map((e,i)=>{const p=placeInfo(e); return `<li role="option" id="qo-${i}" data-i="${i}" aria-selected="${i===qActive}"><span><b>${esc(e.kind==="town"||e.kind==="county"?`${e.name}, ${e.st}`:e.name)}</b><br><span class="sub">${esc(p.sub)}</span></span>${p.tag}</li>`}).join("");
+  ul.hidden=false; inp.setAttribute("aria-expanded","true");
+  ul.querySelectorAll("li[data-i]").forEach(li=>li.onmousedown=ev=>{ev.preventDefault();pick(qItems[+li.dataset.i]);});
+}
+function markActive(){ document.querySelectorAll("#qres li[data-i]").forEach(li=>{const on=+li.dataset.i===qActive; li.setAttribute("aria-selected",on); if(on) li.scrollIntoView({block:"nearest"});}); }
+function pick(e){
+  const inp=document.getElementById("q"), ul=document.getElementById("qres");
+  ul.hidden=true; inp.setAttribute("aria-expanded","false");
+  if(e.kind==="state"){ const s=STATES.find(s=>s.id===e.id); if(s) zoomToBox(s.bbox); inp.value=e.name; return; }
+  const fips=e.kind==="county"?e.fips:countyAt(e.ll[0],e.ll[1]);
+  const label=e.kind==="zip"?`${e.name} · ${e.sub}`:`${e.name}, ${e.st}`;
+  inp.value=label; document.getElementById("qclear").hidden=false;
+  setSpot(e.kind==="county"?null:{label,ll:e.ll,fips});
+  if(fips){ zoomToBox(CBY[fips].bbox,6); select([fips]); }
+  else if(e.ll){ const k=5,[x,y]=P(e.ll); svg.transition().duration(450).call(zoom.transform,d3.zoomIdentity.translate(500-k*x,265-k*y).scale(k)); }
+}
+function setSpot(o){
+  if(spot){ spot.pin.remove(); spot=null; }
+  if(!o) return;
+  const pin=el("g",{class:"spotpin"},gLabels);
+  el("path",{d:"M0,0 C-2,-7 -9,-11 -9,-18 A9,9 0 1 1 9,-18 C9,-11 2,-7 0,0Z"},pin);
+  el("circle",{cx:0,cy:-18,r:3.2},pin);
+  el("text",{x:12,y:-14},pin).textContent=o.label;
+  spot={...o,xy:P(o.ll),pin,roads:nearestRoads(o.ll)};
+  pin.setAttribute("transform",`translate(${curT.applyX(spot.xy[0]).toFixed(1)},${curT.applyY(spot.xy[1]).toFixed(1)})`);
+}
+// Straight-line miles to the nearest Interstate and U.S. Highway (flat-earth approximation, fine at these distances).
+function nearestRoads([lon,lat]){
+  if(!ROADDATA) return null;
+  const kx=69.17*Math.cos(lat*Math.PI/180), ky=69.17, res={};
+  for(const [cls,list] of [["I",ROADDATA.I],["US",ROADDATA.US]]){
+    let best=Infinity, name="";
+    for(const [n,line] of list){
+      for(let j=1;j<line.length;j++){
+        const ax=(line[j-1][0]-lon)*kx, ay=(line[j-1][1]-lat)*ky, bx=(line[j][0]-lon)*kx, by=(line[j][1]-lat)*ky;
+        if(Math.min(Math.abs(ax),Math.abs(bx))>best&&ax*bx>0 || Math.min(Math.abs(ay),Math.abs(by))>best&&ay*by>0) continue;
+        const dx=bx-ax, dy=by-ay, L=dx*dx+dy*dy, t=L?Math.max(0,Math.min(1,-(ax*dx+ay*dy)/L)):0;
+        const d=Math.hypot(ax+t*dx,ay+t*dy); if(d<best){best=d;name=n;}
+      }
+    }
+    res[cls]={mi:best,name};
+  }
+  return res;
+}
+const roadName=(cls,n)=>!n?(cls==="I"?"an Interstate":"a U.S. Highway"):(cls==="I"?"I-":"US-")+n;
+const fmtMi=mi=>mi<1?"under 1 mi":Math.round(mi)+" mi";
+function spotHtml(){
+  if(!spot||!selected.includes(spot.fips)) return "";
+  const r=spot.roads||(spot.roads=nearestRoads(spot.ll));
+  return `<div class="spot small"><div class="eyebrow" style="color:#b3261e">Searched location</div><b>${esc(spot.label)}</b>${r?`<div>${fmtMi(r.I.mi)} to <b>${esc(roadName("I",r.I.name))}</b> · ${fmtMi(r.US.mi)} to <b>${esc(roadName("US",r.US.name))}</b></div><div class="muted" style="font-size:.75rem">Straight-line miles, within about a mile.</div>`:""}</div>`;
+}
+{
+  const inp=document.getElementById("q");
+  inp.addEventListener("input",runSearch);
+  inp.addEventListener("focus",()=>{loadZips(); if(inp.value) runSearch();});
+  inp.addEventListener("blur",()=>setTimeout(()=>{document.getElementById("qres").hidden=true;inp.setAttribute("aria-expanded","false");},150));
+  inp.addEventListener("keydown",e=>{
+    if(e.key==="ArrowDown"&&qItems.length){e.preventDefault();qActive=(qActive+1)%qItems.length;markActive();}
+    else if(e.key==="ArrowUp"&&qItems.length){e.preventDefault();qActive=(qActive-1+qItems.length)%qItems.length;markActive();}
+    else if(e.key==="Enter"){e.preventDefault(); if(qActive>=0&&qItems[qActive]) pick(qItems[qActive]);}
+    else if(e.key==="Escape"){document.getElementById("qres").hidden=true;}
+  });
+  document.getElementById("qclear").onclick=()=>{inp.value="";setSpot(null);runSearch();paint();inp.focus();};
+  document.addEventListener("keydown",e=>{
+    if(e.key!=="/"||e.ctrlKey||e.metaKey||e.altKey) return;
+    const t=e.target; if(t&&(t.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    e.preventDefault(); inp.focus(); inp.select();
+  });
 }
 document.getElementById("goState").onchange=e=>{
   const v=e.target.value;
@@ -636,7 +793,7 @@ function renderQuickbar(){
 function renderDetail(){
   renderQuickbar();
   const box=document.getElementById("detail");
-  if(!selected.length){box.innerHTML=`<p class="muted small" style="margin:0">Click a county to see its status, cities and history. Hold Shift to select several. Drag the map, zoom out, or use <b>Go to a state</b> to reach any county in the country.</p>`;return}
+  if(!selected.length){box.innerHTML=`<p class="muted small" style="margin:0">Click a county to see its status, cities and history. Hold Shift to select several. Search a town or ZIP above the map (press <b>/</b>), or drag and zoom to reach any county in the country.</p>`;return}
   const s=stateAt(), many=selected.length>1, first=s[selected[0]];
   const same=selected.every(f=>{const d=s[f];return (d?.level||null)===(first?.level||null)&&(d?.hiring!==false)===(first?.hiring!==false)});
   let html=`<div style="display:grid;gap:10px">`;
@@ -646,7 +803,7 @@ function renderDetail(){
     if(same) html+=verdictFor(first,true);
   }else{
     const c=CBY[selected[0]];
-    html+=`<div><div class="eyebrow">Selected county</div><h3>${esc(c.name)}</h3></div>
+    html+=spotHtml()+`<div><div class="eyebrow">Selected county</div><h3>${esc(c.name)}</h3></div>
       <div>${chip(first?.level,first?.hiring)}</div>
       ${first?.note?`<div class="small"><span class="muted">Hiring note:</span> ${esc(first.note)}</div>`:""}
       ${verdictFor(first,false)}`;
