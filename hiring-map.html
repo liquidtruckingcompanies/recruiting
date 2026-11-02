@@ -86,12 +86,18 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .shield.us text{fill:#1d1d1d}
 #map:not(.z2) .shield.us{display:none}
 #map.zfar .shield{display:none}
+#map.focused .state:not(.focus){fill:#dfe3e7;stroke:none}
+#map.focused .state.focus{stroke:#1b2633;stroke-width:1.6}
+#map.focused #zones,#map.focused #roads{clip-path:url(#focusClip)}
+.stwrap{display:flex;gap:4px;align-items:center;flex:none}
+.stwrap .gostate{max-width:none;min-width:150px}
+#stClear{padding:4px 10px;font-size:1rem;line-height:1.2;box-shadow:0 2px 6px rgba(16,30,48,.12)}
 #map.zfar .road.i{stroke-width:1.3}
 #map.zfar .road.us{stroke-width:.6;opacity:.55}
 .mapsearch{position:absolute;left:10px;top:10px;right:56px;z-index:3;display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;pointer-events:none}
 .mapsearch>*{pointer-events:auto}
 .qwrap{position:relative;flex:0 1 340px;min-width:200px;z-index:2}
-@media (max-width:560px){.qwrap{flex:1 1 auto}.mapsearch .gostate{display:none}}
+@media (max-width:560px){.qwrap{flex:1 1 auto}.mapsearch .stwrap{display:none}}
 .qwrap .txt{width:100%;padding:7px 30px 7px 10px;box-shadow:0 2px 6px rgba(16,30,48,.12);font-size:.92rem}
 .qwrap .txt::-webkit-search-cancel-button{display:none}
 #qclear{position:absolute;right:4px;top:4px;border:none;background:none;font-size:1.2rem;line-height:1;padding:3px 7px;color:var(--muted)}
@@ -281,6 +287,7 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
     <div class="mapbox">
       <svg id="map" viewBox="0 0 1000 530" role="img" aria-label="County map of home-time colors across the United States">
         <defs>
+          <clipPath id="focusClip" clipPathUnits="userSpaceOnUse"><path id="focusClipPath" d=""></path></clipPath>
           <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
             <line class="hatchline" x1="0" y1="0" x2="0" y2="8"></line>
           </pattern>
@@ -295,7 +302,7 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
           <button type="button" id="qclear" aria-label="Clear search" hidden>×</button>
           <ul id="qres" role="listbox" hidden></ul>
         </div>
-        <select id="goState" class="gostate" aria-label="Go to a state"><option value="">Go to a state…</option><option value="us">Whole country</option></select>
+        <div class="stwrap"><select id="goState" class="gostate" aria-label="Focus on a state"><option value="">Go to a state…</option><option value="us">Whole country</option></select><button type="button" id="stClear" aria-label="Clear state focus and return to the default view" title="Back to the full map" hidden>×</button></div>
       </div>
       <div class="zoombtns">
         <button type="button" id="zin" aria-label="Zoom in">+</button>
@@ -339,7 +346,7 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
   <section class="log">
     <div class="loghead">
       <div>
-        <h2>Cities by hiring color</h2>
+        <h2 id="cityTitle">Cities by hiring color</h2>
         <p class="small muted" style="margin:2px 0 0">How many counties, cities and people fall in each color, by population band. Click a row to highlight those counties on the map.</p>
       </div>
     </div>
@@ -410,8 +417,8 @@ function buildStates(list){
   STATES=list.map(s=>{
     let x0=180,x1=-180,y0=90,y1=-90;
     for(const poly of s.p) for(const [x,y] of poly[0]){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y)}
-    el("path",{class:"state",d:pathOf(s.p.flat()),"fill-rule":"evenodd"},gStates);
-    return {n:s.n,id:s.id,bbox:[x0,y0,x1,y1]};
+    const d=pathOf(s.p.flat()), path=el("path",{class:"state",d,"fill-rule":"evenodd"},gStates);
+    return {n:s.n,id:s.id,bbox:[x0,y0,x1,y1],p:s.p,d,path};
   });
   const xs=[],ys=[]; for(const s of STATES){const a=P([s.bbox[0],s.bbox[3]]),b=P([s.bbox[2],s.bbox[1]]);xs.push(a[0],b[0]);ys.push(a[1],b[1]);}
   WORLD=[[Math.min(...xs)-60,Math.min(...ys)-60],[Math.max(...xs)+60,Math.max(...ys)+60]];
@@ -477,7 +484,7 @@ for(const [cls,list] of [["i",ROADS.I],["us",ROADS.US]]){
         el("text",{x:0,y:0.5},g).textContent=n;
       }
       g.setAttribute("aria-label",(cls==="i"?"Interstate ":"U.S. Highway ")+n);
-      labelNodes.push({g,xy:q});
+      labelNodes.push({g,xy:q,ll:line[j]});
     }
   }
 }
@@ -498,7 +505,7 @@ function layoutCities(){
   const taken=[];
   for(const c of CITIES){
     const x=t.applyX(c.xy[0]), y=t.applyY(c.xy[1]);
-    const vis=on[c.g.id] && t.k>=c.g.dotAt && x>-10 && x<1010 && y>-10 && y<540;
+    const vis=on[c.g.id] && t.k>=c.g.dotAt && (!focusSt||c.st===focusSt) && x>-10 && x<1010 && y>-10 && y<540;
     if(vis!==c.vis){c.dot.setAttribute("display",vis?"inline":"none");c.vis=vis;}
     if(vis){c.dot.setAttribute("cx",x.toFixed(1));c.dot.setAttribute("cy",y.toFixed(1));}
     let show=false;
@@ -533,11 +540,13 @@ function renderCityTable(){
   const s=stateAt();
   const keyOf=f=>{const d=s[f]; return !d?"none":d.hiring===false?"off":d.level};
   const ROWS=[["green","Green","about 1 week"],["yellow","Yellow","1–2 weeks"],["orange","Orange","2–3 weeks"],["red","Red","3+ weeks"],["off","Not hiring",""],["none","No color set",""]];
+  const inFocus=c=>!focus||c.fips.startsWith(focus.id);
+  const ttl=document.getElementById("cityTitle"); if(ttl) ttl.textContent=focus?`Cities by hiring color in ${focus.n}`:"Cities by hiring color";
   body.innerHTML=ROWS.map(([k,label,sub])=>{
-    const cos=COUNTIES.filter(c=>keyOf(c.fips)===k); const set=new Set(cos.map(c=>c.fips));
+    const cos=COUNTIES.filter(c=>inFocus(c)&&keyOf(c.fips)===k); const set=new Set(cos.map(c=>c.fips));
     const cs=CITIES.filter(c=>set.has(c.county)); const pop=cs.reduce((a,c)=>a+c.pop,0);
     return `<tr class="zrow" data-key="${k}" tabindex="0"><td><span class="chip ${k}">${label}</span> <span class="muted small">${sub}</span></td><td class="num">${cos.length}</td>${CGROUPS.map(g=>`<td class="num">${cs.filter(c=>c.g===g).length||"–"}</td>`).join("")}<td class="num">${fmtPop(pop)}</td></tr>`}).join("");
-  body.querySelectorAll(".zrow").forEach(tr=>{const go=()=>{select(COUNTIES.filter(c=>keyOf(c.fips)===tr.dataset.key).map(c=>c.fips));document.getElementById("map").scrollIntoView({behavior:"smooth",block:"center"})};tr.onclick=go;tr.onkeydown=e=>{if(e.key==="Enter")go()}});
+  body.querySelectorAll(".zrow").forEach(tr=>{const go=()=>{select(COUNTIES.filter(c=>inFocus(c)&&keyOf(c.fips)===tr.dataset.key).map(c=>c.fips));document.getElementById("map").scrollIntoView({behavior:"smooth",block:"center"})};tr.onclick=go;tr.onkeydown=e=>{if(e.key==="Enter")go()}});
 }
 
 // Zoom & pan
@@ -642,8 +651,10 @@ function markActive(){ document.querySelectorAll("#qres li[data-i]").forEach(li=
 function pick(e){
   const inp=document.getElementById("q"), ul=document.getElementById("qres");
   ul.hidden=true; inp.setAttribute("aria-expanded","false");
-  if(e.kind==="state"){ const s=STATES.find(s=>s.id===e.id); if(s) zoomToBox(s.bbox); inp.value=e.name; return; }
+  if(e.kind==="state"){ setFocus(e.id); inp.value=e.name; document.getElementById("qclear").hidden=false; return; }
   const fips=e.kind==="county"?e.fips:countyAt(e.ll[0],e.ll[1]);
+  // A place in another state moves the focus there so the map is never blank.
+  if(focus){ const sid=fips?fips.slice(0,2):Object.keys(ST).find(k=>ST[k]===e.st); if(sid&&sid!==focus.id) setFocus(sid,{zoomTo:false}); }
   const label=e.kind==="zip"?`${e.name} · ${e.sub}`:`${e.name}, ${e.st}`;
   inp.value=label; document.getElementById("qclear").hidden=false;
   setSpot(e.kind==="county"?null:{label,ll:e.ll,fips});
@@ -703,12 +714,27 @@ function spotHtml(){
     e.preventDefault(); inp.focus(); inp.select();
   });
 }
+// State focus: show one state only (counties, highways, cities, shields outside it are hidden) until cleared.
+let focus=null, focusSt=null;
+const inState=(ll,st)=>st.p.some(poly=>inPoly(ll,poly[0])&&!poly.slice(1).some(h=>inPoly(ll,h)));
+function setFocus(id,{zoomTo=true}={}){
+  const st=id?STATES.find(s=>s.id===id):null;
+  focus=st||null; focusSt=st?ST[st.id]:null;
+  for(const s of STATES) s.path.classList.toggle("focus",s===st);
+  mapEl.classList.toggle("focused",!!st);
+  document.getElementById("focusClipPath").setAttribute("d",st?st.d:"");
+  for(const n of labelNodes) n.g.style.display=st&&!inState(n.ll,st)?"none":"";
+  const sel=document.getElementById("goState"); sel.value=st?st.id:"";
+  document.getElementById("stClear").hidden=!st;
+  if(st){ selected=selected.filter(f=>f.startsWith(st.id)); if(zoomTo) zoomToBox(st.bbox); }
+  layoutCities(); paint();
+}
 document.getElementById("goState").onchange=e=>{
   const v=e.target.value;
-  if(v==="us"){const k=.3,cx=(WORLD[0][0]+WORLD[1][0])/2,cy=(WORLD[0][1]+WORLD[1][1])/2;svg.transition().duration(450).call(zoom.transform,d3.zoomIdentity.translate(500-k*cx,265-k*cy).scale(k));}
-  else{const s=STATES.find(s=>s.id===v); if(s) zoomToBox(s.bbox);}
-  e.target.value="";
+  if(v==="us"){ setFocus(null); const k=.3,cx=(WORLD[0][0]+WORLD[1][0])/2,cy=(WORLD[0][1]+WORLD[1][1])/2;svg.transition().duration(450).call(zoom.transform,d3.zoomIdentity.translate(500-k*cx,265-k*cy).scale(k)); }
+  else if(v) setFocus(v);
 };
+document.getElementById("stClear").onclick=()=>{ setFocus(null); svg.transition().duration(450).call(zoom.transform,d3.zoomIdentity); };
 document.getElementById("map").addEventListener("click",e=>{ if(!e.shiftKey&&!e.ctrlKey&&!e.metaKey) select([]); });
 
 // ---------- state ----------
