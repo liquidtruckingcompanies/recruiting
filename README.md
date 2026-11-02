@@ -1,6 +1,8 @@
 # Liquid Trucking Recruiting: Hiring Map
 
-Public, view-only map of driver home-time zones for recruiting.
+Recruiting site for Liquid Trucking: home page, Hiring Map and admin.
+
+Live at https://recruiting.liquidtrucking.io . It's hosted on Cloudflare (Worker "recruiting" with static assets), which redeploys automatically on every push to `main`. `.assetsignore` keeps README and SQL files off the live site.
 
 - Green: about 1 week out
 - Yellow: 1–2 weeks (St. Louis runs 2)
