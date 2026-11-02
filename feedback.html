@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Product Feedback · Liquid Trucking Recruiting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Open+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+/* Feedback: admins get the Feedback Center (list + detail with status, priority, notes, history); everyone gets My feedback. */
+[hidden]{display:none!important}
+body{margin:0}
+.tabs{display:flex;gap:6px;border-bottom:2px solid var(--line)}
+.tabs button{border:none;border-bottom:3px solid transparent;border-radius:0;background:none;padding:8px 14px;margin-bottom:-2px;font-family:var(--display);font-size:1.05rem;text-transform:uppercase;color:var(--muted)}
+.tabs button[aria-selected=true]{color:var(--heading);border-bottom-color:var(--brand-gold)}
+.counts{display:flex;gap:8px;flex-wrap:wrap}
+.count{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;display:grid;gap:0;min-width:96px;text-align:left;color:var(--fg);font-weight:400}
+.count b{font-family:var(--display);font-size:1.5rem;line-height:1.1}
+.count span{font-size:.78rem;color:var(--muted)}
+.count[aria-pressed=true]{border-color:var(--brand-deep);box-shadow:inset 0 0 0 1px var(--brand-deep)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filters .txt{width:auto}
+.center{display:grid;grid-template-columns:minmax(0,1fr) minmax(380px,460px);gap:16px;align-items:start}
+@media (max-width:1000px){.center{grid-template-columns:minmax(0,1fr)}}
+.list{display:grid;gap:8px}
+.item{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;gap:4px;cursor:pointer;text-align:left;color:var(--fg);font-weight:400}
+.item:hover{box-shadow:0 3px 10px rgba(16,30,48,.1)}
+.item[aria-current=true]{border-color:var(--brand-deep);border-left-color:var(--brand-deep);box-shadow:0 3px 12px rgba(16,30,48,.15)}
+.item .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
+.item .msg{font-size:.92rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.item.k-bug{border-left-color:#d4443a}.item.k-idea{border-left-color:var(--brand-gold)}.item.k-other{border-left-color:var(--brand-blue)}
+.st{display:inline-block;border-radius:999px;padding:1px 9px;font-size:.75rem;font-weight:700;border:1px solid}
+.st.new{background:#e8f0fb;color:#1d4f91;border-color:#b7cdee}
+.st.triage{background:#f1eafb;color:#5b2d91;border-color:#d4c1ef}
+.st.planned{background:#e3f4f4;color:#14625f;border-color:#b5e0de}
+.st.in_progress{background:#fdf4d3;color:#7a5a00;border-color:#ecd47a}
+.st.shipped{background:#e3f3e9;color:#1f6b3c;border-color:#b5dcc3}
+.st.wont_fix,.st.duplicate{background:#eceeef;color:#4a5562;border-color:#cfd5da}
+.st.needs_info{background:#fde9dc;color:#8a3d0c;border-color:#f3c3a3}
+.pr{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.pr.critical{color:#b3261e}.pr.high{color:#c2561a}.pr.medium{color:#7a5a00}.pr.low{color:var(--muted)}
+.detail{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+.body{white-space:pre-wrap;font-size:.95rem;background:#f7f9fb;border:1px solid var(--line);border-radius:6px;padding:10px}
+.gallery{display:flex;gap:8px;flex-wrap:wrap}
+.gallery a,.gallery video{display:block;width:120px;height:90px;border-radius:6px;overflow:hidden;border:1px solid var(--line);background:#eef2f5}
+.gallery img{width:100%;height:100%;object-fit:cover}
+.gallery video{object-fit:cover}
+.ctx{font-size:.8rem;color:var(--muted);display:grid;gap:2px}
+.ctx b{color:var(--fg);font-weight:600}
+.timeline{display:grid;gap:8px;font-size:.85rem}
+.ev{border-left:3px solid var(--line);padding-left:9px}
+.ev.note{border-left-color:var(--brand-gold);background:#fffbea;padding:6px 9px;border-radius:0 6px 6px 0}
+.ev .when{color:var(--muted);font-size:.78rem}
+.msgline{font-size:.85rem;min-height:1.2em;color:var(--muted)}
+.msgline.err{color:#b3261e}
+.mine{display:grid;gap:10px}
+.mine .card{border-top-width:4px}
+.empty{color:var(--muted)}
+.lock{font-size:.75rem;color:#7a5a00;background:#fdf4d3;border-radius:4px;padding:1px 6px}
+</style>
+</head>
+<body>
+<div class="sitebar"><div class="sitebar-in">
+  <a class="brand" href="./" aria-label="Recruiting home"><img src="https://liquidtrucking.com/wp-content/uploads/2021/03/LiquidTrucking-Logo-transparent-1.png" alt="Liquid Trucking" height="56"></a>
+  <nav class="sitenav" aria-label="Site">
+    <a href="./">Home</a>
+    <a href="hiring-map.html" data-page="hiring-map" hidden>Hiring map</a>
+    <a href="admin.html" data-page="admin" hidden>Admin</a>
+    <a href="feedback.html" aria-current="page" data-page="feedback" hidden>Feedback</a>
+  </nav>
+</div></div>
+<div class="subbar"><div class="sitebar-in subbar-in">
+  <span id="subTitle">Recruiting · Feedback</span>
+  <span>844-GO-TANKS</span>
+</div></div>
+
+<div class="wrap">
+  <header><div>
+    <h1 id="pageTitle">Product Feedback</h1>
+    <p class="small muted" style="margin:4px 0 0" id="pageSub">Ideas, problems and requests from the team, and what we're doing about them.</p>
+  </div></header>
+
+  <div class="card" id="gate"><p class="muted" style="margin:0" id="gateText">Checking your account…</p></div>
+
+  <div id="ui" hidden style="display:grid;gap:16px">
+    <div class="tabs" role="tablist" id="tabs" hidden>
+      <button type="button" role="tab" id="tabAll" aria-selected="true">Feedback Center</button>
+      <button type="button" role="tab" id="tabMine" aria-selected="false">My feedback</button>
+    </div>
+
+    <section id="centerView" hidden style="display:grid;gap:12px">
+      <div class="counts" id="counts"></div>
+      <div class="filters">
+        <input type="search" id="fSearch" class="txt" placeholder="Search message or person" aria-label="Search feedback" style="min-width:220px">
+        <select id="fStatus" class="txt" aria-label="Filter by status"></select>
+        <select id="fKind" class="txt" aria-label="Filter by type"><option value="">All types</option><option value="idea">💡 Ideas</option><option value="bug">🐞 Problems</option><option value="other">💬 Other</option></select>
+        <select id="fPage" class="txt" aria-label="Filter by page"><option value="">All pages</option></select>
+        <select id="fSort" class="txt" aria-label="Sort"><option value="new">Newest first</option><option value="updated">Recently updated</option><option value="priority">Priority</option></select>
+      </div>
+      <div class="center">
+        <div class="list" id="list"></div>
+        <aside class="card detail" id="detail"><p class="muted" style="margin:0">Pick a submission to see the details, change its status, add internal notes and see its history.</p></aside>
+      </div>
+    </section>
+
+    <section id="mineView" hidden class="mine"></section>
+  </div>
+</div>
+
+<footer class="sitefoot"><div class="sitefoot-in">
+  <div><b>Liquid Trucking</b> · 108 East Bay Rd, Plattsmouth, NE 68048</div>
+  <div>844-GO-TANKS · <a href="./">recruiting.liquidtrucking.io</a></div>
+</div></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
+<script src="assets/nav.js"></script>
+<script src="assets/feedback.js"></script>
+<script>
+const SUPABASE_URL = "https://bunskxkyzmabbhybbubg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_YPlmQVx-G_A97WaiTSLFqg_xIyl3PC_";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $=id=>document.getElementById(id);
+const fmtWhen=iso=>new Date(iso).toLocaleString(undefined,{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});
+const fmtDate=iso=>new Date(iso).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+
+// Statuses, in workflow order. "mine" is the plain-language line the sender sees.
+const STATUSES=[
+  ["new","New","We got it and haven't looked yet."],
+  ["triage","Triage","We're reviewing it."],
+  ["needs_info","Needs Info","We need a bit more detail. Expect a follow-up."],
+  ["planned","Planned","We're going to do this."],
+  ["in_progress","In Progress","We're working on it now."],
+  ["shipped","Shipped","Done and live on the site."],
+  ["wont_fix","Won't Fix","We decided not to do this one."],
+  ["duplicate","Duplicate","Someone already sent this. We're tracking it there."],
+];
+const SLABEL=Object.fromEntries(STATUSES.map(s=>[s[0],s[1]])), SMINE=Object.fromEntries(STATUSES.map(s=>[s[0],s[2]]));
+const PRIOS=[["critical","Critical"],["high","High"],["medium","Medium"],["low","Low"]], PRANK={critical:0,high:1,medium:2,low:3};
+const KIND={idea:"💡 Idea",bug:"🐞 Problem",other:"💬 Other"};
+const PAGENAME=p=>({index:"Home","hiring-map":"Hiring Map",admin:"Admin",feedback:"Feedback"}[p]||p||"Unknown page");
+const stChip=s=>`<span class="st ${s}">${esc(SLABEL[s]||s)}</span>`;
+
+let sb=null, me=null, isAdmin=false, ITEMS=[], current=null, filterStatus="";
+const urlCache={};
+async function signedUrl(path){
+  if(urlCache[path]) return urlCache[path];
+  const {data,error}=await sb.storage.from("feedback").createSignedUrl(path,3600);
+  if(error) return null; return (urlCache[path]=data.signedUrl);
+}
+async function galleryHtml(atts){
+  if(!atts?.length) return "";
+  const parts=await Promise.all(atts.map(async a=>{
+    const u=await signedUrl(a.path); if(!u) return `<span class="small muted">${esc(a.name)} (unavailable)</span>`;
+    return a.type?.startsWith("video/")?`<video src="${esc(u)}" controls preload="metadata" title="${esc(a.name)}"></video>`
+      :`<a href="${esc(u)}" target="_blank" rel="noopener" title="Open ${esc(a.name)} full size"><img src="${esc(u)}" alt="${esc(a.name)}" loading="lazy"></a>`;
+  }));
+  return `<div class="gallery">${parts.join("")}</div>`;
+}
+
+// ---------- Feedback Center (admins) ----------
+function renderCounts(){
+  const n=s=>ITEMS.filter(i=>i.status===s).length;
+  const open=ITEMS.filter(i=>!["shipped","wont_fix","duplicate"].includes(i.status)).length;
+  $("counts").innerHTML=[["","All",ITEMS.length],["open","Open",open],...STATUSES.map(([k,l])=>[k,l,n(k)])]
+    .map(([k,l,c])=>`<button type="button" class="count" data-s="${k}" aria-pressed="${filterStatus===k}"><b>${c}</b><span>${esc(l)}</span></button>`).join("");
+  $("counts").querySelectorAll(".count").forEach(b=>b.onclick=()=>{filterStatus=b.dataset.s;$("fStatus").value=filterStatus;renderCounts();renderList();});
+}
+function filtered(){
+  const q=$("fSearch").value.trim().toLowerCase(), k=$("fKind").value, pg=$("fPage").value, sort=$("fSort").value;
+  let out=ITEMS.filter(i=>(!filterStatus||(filterStatus==="open"?!["shipped","wont_fix","duplicate"].includes(i.status):i.status===filterStatus))
+    &&(!k||i.kind===k)&&(!pg||i.page===pg)&&(!q||(i.message+" "+i.submitted_name+" "+i.submitted_email+" #"+i.id).toLowerCase().includes(q)));
+  if(sort==="updated") out.sort((a,b)=>b.updated_at.localeCompare(a.updated_at));
+  else if(sort==="priority") out.sort((a,b)=>(PRANK[a.priority]??9)-(PRANK[b.priority]??9)||b.created_at.localeCompare(a.created_at));
+  else out.sort((a,b)=>b.created_at.localeCompare(a.created_at));
+  return out;
+}
+function renderList(){
+  const rows=filtered();
+  $("list").innerHTML=rows.map(i=>`<button type="button" class="item k-${i.kind}" data-id="${i.id}" aria-current="${current===i.id}">
+      <div class="top"><b>#${i.id}</b><span>${KIND[i.kind]}</span>${stChip(i.status)}${i.priority?`<span class="pr ${i.priority}">${i.priority}</span>`:""}<span>${esc(PAGENAME(i.page))}</span>${i.attachments?.length?`<span>📎 ${i.attachments.length}</span>`:""}</div>
+      <div class="msg">${esc(i.message)}</div>
+      <div class="top"><span>${esc(i.submitted_name)} · ${fmtWhen(i.created_at)}</span></div>
+    </button>`).join("")||`<p class="empty">No feedback matches these filters.</p>`;
+  $("list").querySelectorAll(".item").forEach(b=>b.onclick=()=>openItem(+b.dataset.id));
+}
+async function openItem(id){
+  current=id; renderList(); history.replaceState(null,"","#id="+id);
+  const i=ITEMS.find(x=>x.id===id); if(!i) return;
+  const box=$("detail");
+  box.innerHTML=`<p class="muted">Loading #${id}…</p>`;
+  const [{data:ev},gal]=await Promise.all([
+    sb.from("feedback_events").select("*").eq("feedback_id",id).order("at",{ascending:true}),
+    galleryHtml(i.attachments)
+  ]);
+  if(current!==id) return;
+  const c=i.context||{};
+  const ctx=[["Page",PAGENAME(i.page)],["Screen",c.screen],["Selected on map",(c.map_selected||[]).join(", ")],["State focus",c.map_state_focus],["Map search",c.map_search],["Viewing as of",c.map_as_of],["Browser",c.browser]]
+    .filter(r=>r[1]).map(([k,v])=>`<div><b>${esc(k)}:</b> ${esc(v)}</div>`).join("");
+  const evHtml=(ev||[]).map(e=>{
+    const head=e.kind==="created"?`Submitted`:e.kind==="status"?`Status ${e.from_value?stChip(e.from_value)+" → ":""}${stChip(e.to_value)}`:e.kind==="priority"?`Priority ${esc(e.from_value||"none")} → <b>${esc(e.to_value||"none")}</b>`:`<span class="lock">Internal note</span>`;
+    return `<div class="ev ${e.kind}"><div>${head}</div>${e.body?`<div>${esc(e.body)}</div>`:""}<div class="when">${esc(e.by_name)} · ${fmtWhen(e.at)}</div></div>`;
+  }).join("");
+  box.innerHTML=`<div style="display:grid;gap:12px">
+    <div><div class="eyebrow">#${i.id} · ${KIND[i.kind]}</div><h2 style="font-size:1.2rem">${esc(i.submitted_name)}</h2><div class="small muted">${esc(i.submitted_email)} · ${fmtWhen(i.created_at)}</div></div>
+    <div class="body">${esc(i.message)}</div>
+    ${gal}
+    <div class="ctx">${ctx}</div>
+    <hr style="border:none;border-top:1px solid var(--line);margin:0">
+    <form id="stForm" style="display:grid;gap:8px">
+      <div class="eyebrow">Status</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><select id="stSel" class="txt" style="width:auto">${STATUSES.map(([k,l])=>`<option value="${k}" ${k===i.status?"selected":""}>${l}</option>`).join("")}</select>
+      <select id="prSel" class="txt" style="width:auto" aria-label="Priority"><option value="">No priority</option>${PRIOS.map(([k,l])=>`<option value="${k}" ${k===i.priority?"selected":""}>${l} priority</option>`).join("")}</select></div>
+      <textarea id="stReason" class="txt" rows="2" maxlength="1000" placeholder="Why the change? e.g. Planned for next week / Not doing this because…" hidden></textarea>
+      <div style="display:flex;gap:8px;align-items:center"><button type="submit" class="primary" id="stSave" hidden>Save status</button><span class="msgline" id="stMsg"></span></div>
+    </form>
+    <form id="noteForm" style="display:grid;gap:8px">
+      <div class="eyebrow">Internal note <span class="lock">admins only</span></div>
+      <textarea id="noteText" class="txt" rows="2" maxlength="2000" placeholder="Only admins can see this"></textarea>
+      <div><button type="submit">Add note</button> <span class="msgline" id="noteMsg"></span></div>
+    </form>
+    <div><div class="eyebrow">History</div><div class="timeline">${evHtml||'<span class="muted">No history yet.</span>'}</div></div>
+  </div>`;
+  const sel=$("stSel"), rs=$("stReason"), save=$("stSave");
+  sel.onchange=()=>{const changed=sel.value!==i.status; rs.hidden=!changed; save.hidden=!changed; if(changed) rs.focus();};
+  $("stForm").onsubmit=async e=>{e.preventDefault(); const m=$("stMsg");
+    if(!rs.value.trim()){m.className="msgline err";m.textContent="Add a short reason first.";rs.focus();return;}
+    save.disabled=true; const {error}=await sb.rpc("feedback_set_status",{p_id:id,p_status:sel.value,p_reason:rs.value.trim()});
+    if(error){m.className="msgline err";m.textContent=error.message;save.disabled=false;return;} await reload(id);};
+  $("prSel").onchange=async e=>{const m=$("stMsg"); const {error}=await sb.rpc("feedback_set_priority",{p_id:id,p_priority:e.target.value}); if(error){m.className="msgline err";m.textContent=error.message;return;} await reload(id);};
+  $("noteForm").onsubmit=async e=>{e.preventDefault(); const t=$("noteText").value.trim(), m=$("noteMsg"); if(!t) return;
+    const {error}=await sb.rpc("feedback_add_note",{p_id:id,p_body:t}); if(error){m.className="msgline err";m.textContent=error.message;return;} await reload(id);};
+}
+async function reload(keep){
+  const {data,error}=await sb.from("feedback").select("*").order("created_at",{ascending:false});
+  if(error){ $("gateText").textContent=/feedback/i.test(error.message)?"Feedback isn't switched on yet. Run supabase/05-feedback.sql in Supabase.":"Couldn't load feedback: "+error.message; $("gate").hidden=false; $("ui").hidden=true; return false; }
+  ITEMS=data||[];
+  const pages=[...new Set(ITEMS.map(i=>i.page))].sort();
+  const fp=$("fPage"), keepPg=fp.value; fp.innerHTML=`<option value="">All pages</option>`+pages.map(p=>`<option value="${esc(p)}">${esc(PAGENAME(p))}</option>`).join(""); fp.value=keepPg;
+  if(isAdmin){ renderCounts(); renderList(); if(keep&&ITEMS.some(i=>i.id===keep)) await openItem(keep); }
+  if(!$("mineView").hidden) renderMine();
+  return true;
+}
+
+// ---------- My feedback (everyone) ----------
+async function renderMine(){
+  const mine=ITEMS.filter(i=>i.submitted_email===me.email).sort((a,b)=>b.created_at.localeCompare(a.created_at));
+  if(!mine.length){ $("mineView").innerHTML=`<div class="card"><p style="margin:0">You haven't sent any feedback yet. Use the <b>💡 Got an idea or spot a problem?</b> button at the top of any page.</p></div>`; return; }
+  const cards=await Promise.all(mine.map(async i=>`<div class="card"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:.85rem" class="muted"><b style="color:var(--fg)">#${i.id}</b><span>${KIND[i.kind]}</span><span>${esc(PAGENAME(i.page))}</span><span>Sent ${fmtDate(i.created_at)}</span></div>
+    <div>${stChip(i.status)} <span class="small">${esc(SMINE[i.status]||"")}</span> <span class="small muted">· updated ${fmtDate(i.updated_at)}</span></div>
+    <div class="body">${esc(i.message)}</div>${await galleryHtml(i.attachments)}</div>`));
+  $("mineView").innerHTML=cards.join("");
+}
+
+function showTab(which){
+  $("tabAll").setAttribute("aria-selected",which==="all"); $("tabMine").setAttribute("aria-selected",which==="mine");
+  $("centerView").hidden=which!=="all"; $("mineView").hidden=which!=="mine";
+  if(which==="mine") renderMine();
+}
+$("tabAll").onclick=()=>showTab("all"); $("tabMine").onclick=()=>showTab("mine");
+for(const id of ["fSearch","fKind","fPage","fSort"]) $(id).addEventListener("input",renderList);
+$("fStatus").innerHTML=`<option value="">All statuses</option><option value="open">Open (not closed)</option>`+STATUSES.map(([k,l])=>`<option value="${k}">${l}</option>`).join("");
+$("fStatus").onchange=e=>{filterStatus=e.target.value;renderCounts();renderList();};
+
+(async()=>{
+  if(!window.supabase){ $("gateText").textContent="Couldn't reach the sign-in service. Refresh to try again."; return; }
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{flowType:"implicit",detectSessionInUrl:true,persistSession:true}}); window.ltSb=sb;
+  const {data}=await sb.auth.getSession();
+  const email=data.session?.user?.email?.toLowerCase();
+  if(!email){ $("gateText").innerHTML=`Sign in on the <a href="./">Home page</a> first, then come back here.`; return; }
+  const {data:row}=await sb.from("editors").select("*").eq("email",email).maybeSingle();
+  { let pg=null; try{ const r=await sb.from("site_pages").select("id,public_view"); if(!r.error) pg=r.data; }catch(e){} ltNav(row,pg); }
+  if(!row||row.active===false){ $("gateText").innerHTML=`Your account isn't active, so feedback isn't available. Ask an admin for access. <a href="./">Back to Home</a>`; return; }
+  me=row; isAdmin=row.role==="admin";
+  $("gate").hidden=true; $("ui").hidden=false;
+  if(isAdmin){ $("tabs").hidden=false; $("pageTitle").textContent="Product Feedback Center"; $("subTitle").textContent="Recruiting · Feedback Center"; document.title="Feedback Center · Liquid Trucking Recruiting"; }
+  else { $("pageTitle").textContent="My Feedback"; $("pageSub").textContent="What you've sent and where it stands."; }
+  if(!(await reload())) return;
+  showTab(isAdmin?"all":"mine");
+  window.addEventListener("lt-feedback-sent",()=>reload());
+  const m=location.hash.match(/id=(\d+)/); if(isAdmin&&m) openItem(+m[1]);
+})();
+</script>
+</body>
+</html>

@@ -1,9 +1,11 @@
 // Shared menu rule: before sign-in only Home shows. After sign-in, a page link shows when the account is active and
-// is an admin, has view/edit access to that page, or the page is public. The Admin link shows for active admins only.
+// is an admin, has view/edit access to that page, or the page is public. The Admin link shows for active admins only;
+// Feedback shows for every active user.
 window.ltCanSee=function(acct,pages,id){
   const active=!!acct&&acct.active!==false, admin=active&&acct.role==="admin";
   if(id==="admin") return admin;
   if(!active) return false;
+  if(id==="feedback") return true; // every active user can send feedback and see their own
   const acc=acct.pages&&acct.pages[id], pg=(pages||[]).find(p=>p.id===id);
   return admin||acc==="view"||acc==="edit"||!pages||!pg||!!pg.public_view;
 };

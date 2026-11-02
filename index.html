@@ -32,6 +32,7 @@ a.tile:hover{box-shadow:0 6px 18px rgba(16,30,48,.14);transform:translateY(-1px)
     <a href="./" aria-current="page">Home</a>
     <a href="hiring-map.html" data-page="hiring-map" hidden>Hiring map</a>
     <a href="admin.html" data-page="admin" hidden>Admin</a>
+    <a href="feedback.html" data-page="feedback" hidden>Feedback</a>
   </nav>
 </div></div>
 <div class="subbar"><div class="sitebar-in subbar-in">
@@ -49,6 +50,7 @@ a.tile:hover{box-shadow:0 6px 18px rgba(16,30,48,.14);transform:translateY(-1px)
     <div style="display:grid;gap:16px;min-width:0">
       <nav class="tiles" aria-label="Pages">
         <a class="tile" href="hiring-map.html" data-page="hiring-map"><h2>Hiring Map</h2></a>
+        <a class="tile" href="feedback.html" data-page="feedback" hidden><h2>Product Feedback</h2></a>
         <a class="tile" href="admin.html" id="adminTile" hidden><h2>Admin</h2></a>
       </nav>
       <p class="muted" id="noTiles" hidden style="margin:0">Sign in to see your pages.</p>
@@ -81,6 +83,7 @@ a.tile:hover{box-shadow:0 6px 18px rgba(16,30,48,.14);transform:translateY(-1px)
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
 <script src="assets/nav.js"></script>
+<script src="assets/feedback.js"></script>
 <script>
 // Same project and key as the hiring map, so one sign-in covers every page.
 const SUPABASE_URL = "https://bunskxkyzmabbhybbubg.supabase.co";
@@ -139,7 +142,7 @@ $("signOut").onclick=async()=>{ await sb.auth.signOut(); await renderUser(null);
 
 (async()=>{
   if(!window.supabase){ $("authCard").hidden=true; return; }
-  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{flowType:"implicit",detectSessionInUrl:true,persistSession:true}});
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{flowType:"implicit",detectSessionInUrl:true,persistSession:true}}); window.ltSb=sb;
   try{ const {data}=await sb.auth.getSession(); await renderUser(data.session); }catch(e){ await renderUser(null); }
 })();
 </script>

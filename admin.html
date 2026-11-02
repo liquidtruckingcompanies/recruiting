@@ -45,6 +45,7 @@ select.txt{width:auto;padding:5px 7px}
     <a href="./">Home</a>
     <a href="hiring-map.html" data-page="hiring-map" hidden>Hiring map</a>
     <a href="admin.html" aria-current="page" data-page="admin" hidden>Admin</a>
+    <a href="feedback.html" data-page="feedback" hidden>Feedback</a>
   </nav>
 </div></div>
 <div class="subbar"><div class="sitebar-in subbar-in">
@@ -106,6 +107,7 @@ select.txt{width:auto;padding:5px 7px}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
 <script src="assets/nav.js"></script>
+<script src="assets/feedback.js"></script>
 <script>
 // Same project and key as the other pages, so one sign-in covers every page.
 const SUPABASE_URL = "https://bunskxkyzmabbhybbubg.supabase.co";
@@ -202,7 +204,7 @@ $("newRole").onchange=()=>$("newPages").querySelectorAll("select").forEach(s=>s.
 
 (async()=>{
   if(!window.supabase){ $("gateText").textContent="Couldn't reach the sign-in service. Refresh to try again."; return; }
-  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{flowType:"implicit",detectSessionInUrl:true,persistSession:true}});
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{flowType:"implicit",detectSessionInUrl:true,persistSession:true}}); window.ltSb=sb;
   const {data}=await sb.auth.getSession();
   const email=data.session?.user?.email?.toLowerCase();
   if(!email){ $("gateText").innerHTML=`Sign in on the <a href="./">Home page</a> first, then come back here.`; return; }

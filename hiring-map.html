@@ -258,6 +258,7 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
     <a href="./">Home</a>
     <a href="hiring-map.html" aria-current="page" data-page="hiring-map" hidden>Hiring map</a>
     <a href="admin.html" data-page="admin" hidden>Admin</a>
+    <a href="feedback.html" data-page="feedback" hidden>Feedback</a>
   </nav>
 </div></div>
 <div class="subbar"><div class="sitebar-in subbar-in">
@@ -401,6 +402,7 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
 <script src="assets/nav.js"></script>
+<script src="assets/feedback.js"></script>
 <script>
 
 // City population bands (GeoNames, places of 1,000+ people). labelAt / dotAt = zoom level where names / dots appear.
@@ -618,6 +620,13 @@ sizeMap(true);
 if(window.ResizeObserver) new ResizeObserver(()=>{ const r=mapEl.getBoundingClientRect(); if(Math.round(r.width)!==VW||Math.round(r.height)!==VH) sizeMap(false); }).observe(mapEl);
 document.getElementById("zin").onclick=()=>svg.transition().duration(200).call(zoom.scaleBy,1.5);
 document.getElementById("zout").onclick=()=>svg.transition().duration(200).call(zoom.scaleBy,1/1.5);
+// Extra details attached to feedback sent from this page.
+window.ltFeedbackContext=()=>({
+  map_selected:selected.slice(0,20).map(f=>CBY[f]?.name||f),
+  map_state_focus:focus?focus.n:null,
+  map_search:spot?spot.label:null,
+  map_as_of:asOf||null,
+});
 // Reset: clear selection, search pin, state focus, and go back to the default view.
 function resetMap(){
   const q=document.getElementById("q"); if(q){ q.value=""; document.getElementById("qclear").hidden=true; document.getElementById("qres").hidden=true; }
@@ -1148,7 +1157,7 @@ async function loadData(){
       // Read any sign-in result the email link left in the address bar before the client consumes it.
       const hp=new URLSearchParams(location.hash.slice(1)), qp=new URLSearchParams(location.search);
       const linkErr=hp.get("error_description")||qp.get("error_description");
-      sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{flowType:"implicit",detectSessionInUrl:true,persistSession:true}});
+      sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{flowType:"implicit",detectSessionInUrl:true,persistSession:true}}); window.ltSb=sb;
       try{
         let {data}=await sb.auth.getSession();
         if(!data.session && hp.get("access_token") && hp.get("refresh_token")){
