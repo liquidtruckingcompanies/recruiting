@@ -30,7 +30,8 @@ a.tile:hover{box-shadow:0 6px 18px rgba(16,30,48,.14);transform:translateY(-1px)
   <a class="brand" href="./" aria-label="Recruiting home"><img src="https://liquidtrucking.com/wp-content/uploads/2021/03/LiquidTrucking-Logo-transparent-1.png" alt="Liquid Trucking" height="56"></a>
   <nav class="sitenav" aria-label="Site">
     <a href="./" aria-current="page">Home</a>
-    <a href="hiring-map.html">Hiring map</a>
+    <a href="hiring-map.html" data-page="hiring-map" hidden>Hiring map</a>
+    <a href="admin.html" data-page="admin" hidden>Admin</a>
   </nav>
 </div></div>
 <div class="subbar"><div class="sitebar-in subbar-in">
@@ -79,6 +80,7 @@ a.tile:hover{box-shadow:0 6px 18px rgba(16,30,48,.14);transform:translateY(-1px)
 </div></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
+<script src="assets/nav.js"></script>
 <script>
 // Same project and key as the hiring map, so one sign-in covers every page.
 const SUPABASE_URL = "https://bunskxkyzmabbhybbubg.supabase.co";
@@ -92,12 +94,10 @@ let sb=null;
 async function renderTiles(editor){
   let pages=null;
   try{ const r=await sb.from("site_pages").select("id,public_view"); if(!r.error) pages=r.data; }catch(e){}
-  const admin=editor?.role==="admin"&&editor.active!==false;
-  document.querySelectorAll(".tile[data-page]").forEach(t=>{
-    const pg=pages?.find(p=>p.id===t.dataset.page), acc=editor&&editor.active!==false?editor.pages?.[t.dataset.page]:null;
-    t.hidden=!(!pages||!pg||pg.public_view||admin||acc==="view"||acc==="edit");
-  });
-  $("adminTile").hidden=!admin;
+  // Signed out: nothing but Home. Signed in: the pages this account can see (see assets/nav.js).
+  document.querySelectorAll(".tile[data-page]").forEach(t=>{ t.hidden=!ltCanSee(editor,pages,t.dataset.page); });
+  $("adminTile").hidden=!ltCanSee(editor,pages,"admin");
+  ltNav(editor,pages);
   $("noTiles").hidden=!![...document.querySelectorAll(".tile")].some(t=>!t.hidden);
 }
 

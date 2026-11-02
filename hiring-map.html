@@ -243,7 +243,8 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
   <a class="brand" href="./" aria-label="Recruiting home"><img src="https://liquidtrucking.com/wp-content/uploads/2021/03/LiquidTrucking-Logo-transparent-1.png" alt="Liquid Trucking" height="56"></a>
   <nav class="sitenav" aria-label="Site">
     <a href="./">Home</a>
-    <a href="hiring-map.html" aria-current="page">Hiring map</a>
+    <a href="hiring-map.html" aria-current="page" data-page="hiring-map" hidden>Hiring map</a>
+    <a href="admin.html" data-page="admin" hidden>Admin</a>
   </nav>
 </div></div>
 <div class="subbar"><div class="sitebar-in subbar-in">
@@ -385,6 +386,7 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
+<script src="assets/nav.js"></script>
 <script>
 
 // City population bands (GeoNames, places of 1,000+ people). labelAt / dotAt = zoom level where names / dots appear.
@@ -765,7 +767,7 @@ let asOf=null;      // "YYYY-MM-DD" or null
 let selected=[];    // fips list
 let logLimit=25;
 let sb=null, editor=null; // supabase client, {name,email} when the signed-in person is an approved editor
-let sessionEmail=null, account=null, locked=false;
+let sessionEmail=null, account=null, locked=false, sitePages=null;
 
 const fmtDate=iso=>new Date(iso).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
 const fmtWhen=iso=>new Date(iso).toLocaleString(undefined,{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});
@@ -1049,6 +1051,8 @@ async function refreshEditor(session){
     if(account && account.active!==false && (!account.role || account.role==="admin" || account.pages?.["hiring-map"]==="edit")) editor=account;
   }
   }catch(err){ console.warn("Editor check failed",err); }
+  try{ if(!sitePages){ const r=await sb.from("site_pages").select("id,public_view"); if(!r.error) sitePages=r.data; } }catch(e){}
+  ltNav(account,sitePages);
   if(loaded) await loadData().catch(()=>{});
   paint();
 }
