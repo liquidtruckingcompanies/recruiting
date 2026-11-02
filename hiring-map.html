@@ -86,6 +86,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .shield.us text{fill:#1d1d1d}
 #map:not(.z2) .shield.us{display:none}
 #map.zfar .shield{display:none}
+body.locked .main,body.locked section.log,body.locked .asof,body.locked .rule:not(#lockBanner),body.locked .past{display:none!important}
 #map.focused .state:not(.focus){fill:#dfe3e7;stroke:none}
 #map.focused .state.focus{stroke:#1b2633;stroke-width:1.6}
 #map.focused #zones,#map.focused #roads{clip-path:url(#focusClip)}
@@ -285,7 +286,7 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
     <div class="msg small" id="signInMsg"></div>
   </form></div>
 
-  <div class="rule" id="lockBanner" hidden><span aria-hidden="true">🔒</span><div><b>This map is for signed-in team members.</b> Sign in with an account that has access to see hiring colors. <button type="button" id="lockSignIn" onclick="document.getElementById('signInDlg').hidden=false">Sign in</button></div></div>
+  <div class="rule" id="lockBanner" hidden><span aria-hidden="true">🔒</span><div><b>This page is for signed-in team members.</b> Sign in with an account that has access to the Hiring Map. <button type="button" id="lockSignIn" onclick="document.getElementById('signInDlg').hidden=false">Sign in</button></div></div>
 
   <div class="past" id="pastBanner" hidden><span id="pastText"></span><button type="button" id="pastBack">Back to today</button></div>
 
@@ -1003,6 +1004,7 @@ function renderAuth(){
     box.innerHTML=`<span class="small">${why}</span> <button type="button" id="signOut">Sign out</button>`;}
   else {box.innerHTML=`<button type="button" id="signInBtn">Sign in</button>`;}
   document.getElementById("lockBanner").hidden=!locked;
+  document.body.classList.toggle("locked",locked); // sign-in-only page: hide the map and tables entirely
   const lb=document.getElementById("lockSignIn"); if(lb) lb.hidden=!!sessionEmail;
   const so=document.getElementById("signOut"); if(so) so.onclick=async()=>{await sb.auth.signOut(); editor=null; sessionEmail=null; paint();};
   const si=document.getElementById("signInBtn"); if(si) si.onclick=()=>{document.getElementById("signInDlg").hidden=false; document.getElementById("otpEmail").focus();};
