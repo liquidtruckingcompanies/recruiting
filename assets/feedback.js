@@ -81,7 +81,8 @@
     try{ if(typeof window.ltFeedbackContext==="function") Object.assign(c,window.ltFeedbackContext()||{}); }catch(e){}
     return c;
   }
-  function pageId(){ const p=location.pathname.split("/").pop()||"index.html"; return p.replace(/\.html$/,"")||"index"; }
+  // Page id from the address: /recruiting/hiring-map -> "hiring-map", /recruiting/ -> "recruiting", / -> "index".
+  function pageId(){ const parts=location.pathname.replace(/\.html$/,"").split("/").filter(Boolean); if(parts.at(-1)==="index") parts.pop(); return parts.at(-1)||"index"; }
 
   function open(){
     files=[]; sending=false;
@@ -97,7 +98,7 @@
       <div class="fbfiles" id="fbFiles"></div>
       <p class="fbsmall">We'll include the page you're on and your screen size automatically.</p>
       <div class="fbmsg" id="fbMsg" role="status"></div>
-      <div class="fbrow"><a href="feedback.html" class="fbsmall">See my feedback</a><div class="btns"><button type="button" class="b" id="fbCancel">Cancel</button><button type="submit" class="b primary" id="fbSend">Send</button></div></div>
+      <div class="fbrow"><a href="/feedback" class="fbsmall">See my feedback</a><div class="btns"><button type="button" class="b" id="fbCancel">Cancel</button><button type="submit" class="b primary" id="fbSend">Send</button></div></div>
     </form>`;
     document.body.appendChild(dlg);
     const close=()=>{ if(sending) return; dlg.remove(); document.removeEventListener("keydown",onKey,true); document.removeEventListener("paste",onPaste); };
@@ -134,7 +135,7 @@
         if(error) throw new Error(/submit_feedback|function/i.test(error.message)&&!/active/i.test(error.message)?"Feedback isn't switched on yet (run supabase/05-feedback.sql).":error.message);
         sending=false;
         try{ window.dispatchEvent(new CustomEvent("lt-feedback-sent")); }catch(e){}
-        dlg.querySelector(".fbcard").innerHTML=`<h3>Thanks, we got it! 🙌</h3><p>Your ${kind==="bug"?"report":"idea"} is in. You can check its status any time under <a href="feedback.html">My feedback</a>.</p><div class="fbrow" style="justify-content:flex-end"><button type="button" class="b primary" id="fbDone">Close</button></div>`;
+        dlg.querySelector(".fbcard").innerHTML=`<h3>Thanks, we got it! 🙌</h3><p>Your ${kind==="bug"?"report":"idea"} is in. You can check its status any time under <a href="/feedback">My feedback</a>.</p><div class="fbrow" style="justify-content:flex-end"><button type="button" class="b primary" id="fbDone">Close</button></div>`;
         document.getElementById("fbDone").onclick=close; document.getElementById("fbDone").focus();
       }catch(err){ sending=false; send.disabled=false; msg.className="fbmsg err"; msg.textContent=err.message||String(err); }
     });

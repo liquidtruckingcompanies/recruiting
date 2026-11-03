@@ -52,3 +52,15 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .card h2{color:var(--heading);text-transform:uppercase;letter-spacing:.02em}
 h1{color:var(--heading);text-transform:uppercase;letter-spacing:.02em}
 .eyebrow{color:var(--brand-blue)}
+[hidden]{display:none!important}
+/* Tiles: the dashboard and department pages list what you can open as tiles. */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;align-content:start}
+.tile{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--brand-gold);border-radius:8px;padding:20px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none;color:inherit;transition:box-shadow .15s,transform .15s}
+a.tile:hover{box-shadow:0 6px 18px rgba(16,30,48,.14);transform:translateY(-1px)}
+.tile h2{color:var(--heading);text-transform:uppercase;letter-spacing:.02em;font-size:1.35rem}
+.tile p{margin:6px 0 0;color:var(--muted);font-size:.9rem}
+.tile::after{content:"→";font-family:var(--display);font-weight:700;color:var(--brand-deep);font-size:1.3rem}
+.tile.tool{border-left-color:var(--brand-blue)}
+.sectionhead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:8px}
+.sectionhead h2{color:var(--heading);text-transform:uppercase;letter-spacing:.02em}
+@media (prefers-reduced-motion:reduce){.tile{transition:none}}

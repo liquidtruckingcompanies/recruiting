@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Operations Dashboard · Liquid Trucking Operations Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Open+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="/assets/site.css">
+<style>body{margin:0}</style>
+</head>
+<body>
+<div id="ltTop" data-current="dashboard" data-crumbs="Dashboard"></div>
+<script src="/assets/nav.js"></script>
+
+<main class="wrap" id="main" hidden>
+  <section>
+    <h1 id="hello">Operations Dashboard</h1>
+    <p class="muted" style="margin:6px 0 0">Pick a department to get started.</p>
+  </section>
+  <div class="sectionhead"><h2>Departments</h2></div>
+  <nav class="tiles" id="deptTiles" aria-label="Departments"></nav>
+  <p class="muted" id="noDepts" hidden style="margin:0">You don't have access to any department pages yet. Ask an admin to give you access.</p>
+  <div class="sectionhead"><h2>Tools</h2></div>
+  <nav class="tiles" id="toolTiles" aria-label="Tools"></nav>
+</main>
+
+<div id="ltFoot"></div>
+<script>ltDrawShell()</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
+<script src="/assets/portal.js"></script>
+<script src="/assets/feedback.js"></script>
+<script>
+(async()=>{
+  const a=await ltRequireAccount(); if(!a) return;
+  const {acct,pages}=a, $=id=>document.getElementById(id);
+  const first=(acct?.name||"").split(" ")[0]; if(first) $("hello").textContent=`Welcome, ${first}`;
+  const depts=LT_SITE.departments.filter(d=>ltDeptPages(acct,pages,d.id).length);
+  $("deptTiles").innerHTML=depts.map(d=>ltTile(d.href,d.name,d.blurb)).join("");
+  $("noDepts").hidden=depts.length>0;
+  const tools=[["/feedback","Product Feedback","Send an idea or report a problem, and see where yours stand.","feedback"],
+               ["/admin","Admin","Users, page access and account history.","admin"]].filter(t=>ltCanSee(acct,pages,t[3]));
+  $("toolTiles").innerHTML=tools.map(t=>ltTile(t[0],t[1],t[2]).replace('class="tile"','class="tile tool"')).join("");
+  $("main").hidden=false;
+})();
+</script>
+</body>
+</html>

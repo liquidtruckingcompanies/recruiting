@@ -1,6 +1,6 @@
-# Liquid Trucking Recruiting: Hiring Map
+# Liquid Trucking Operations Center
 
-Recruiting site for Liquid Trucking: home page, Hiring Map and admin.
+Internal site for the Liquid Trucking team: one sign-in, an Operations Dashboard, and a section per department (Recruiting & Onboarding first, with the Hiring Map), plus Admin and Product Feedback.
 
 Live at https://recruiting.liquidtrucking.io . It's hosted on Cloudflare (Worker "recruiting" with static assets), which redeploys automatically on every push to `main`. `.assetsignore` keeps README and SQL files off the live site.
 
@@ -28,14 +28,21 @@ City dots and population bands come from GeoNames (places of 1,000+ people, via 
 Run `supabase/setup.sql`, then `supabase/02-admin.sql`, then `supabase/03-clear-county.sql`, then `supabase/04-owner.sql`, then `supabase/05-feedback.sql`, then `supabase/06-feedback-email.sql` (after saving the Resend API key in Vault as `resend_api_key`), each once (Supabase → SQL Editor).
 After that, admins manage everything on `admin.html`: add users by email, set each person's level (User or Admin), turn accounts active or inactive, give per-page access (No access, View, View + edit), and choose whether each page is public or sign-in only.
 People sign in on the Home page with an emailed 6-digit code. Every account change is listed under Account history.
-New pages get a row in `public.site_pages` (id, name, public_view, sort), a Home tile with a matching `data-page`, and a hidden menu link with the same `data-page` on every page. `assets/nav.js` decides what shows: only Home before sign-in, then the pages each account can see.
+New pages get a row in `public.site_pages` (id, name, public_view, sort) and an entry in `LT_SITE` in `assets/nav.js`, which decides what shows: only the sign-in page before sign-in, then the departments and pages each account can see.
 
 Every page also loads `assets/feedback.js`, which adds the "Got an idea or spot a problem?" button for signed-in users (set `window.ltSb` to the page's Supabase client; a page can add details with `window.ltFeedbackContext = () => ({...})`). Submissions, screenshots and videos (private `feedback` storage bucket) show up in `feedback.html`: admins get the Feedback Center (status with reasons, priority, internal notes, full history); everyone else sees their own submissions and status.
 
 ## Pages
 
-- `index.html`: home page with editor sign-in and a name-only tile for each page.
-- `hiring-map.html`: the county hiring map.
-- `assets/site.css`: shared brand styles (header, footer, colors, fonts) for new pages.
+Addresses are clean URLs (Cloudflare serves `/dashboard` from `dashboard.html` and `/recruiting/` from `recruiting/index.html`).
 
-To add a page, copy the header, sub-bar and footer from `index.html`, link `assets/site.css`, add the page to the nav on every page, and add a tile on the home page.
+- `/` (`index.html`): sign-in. Signed-in users go straight to `?next=` or the dashboard.
+- `/dashboard` (`dashboard.html`): Operations Dashboard, a tile per department the user can see, plus Feedback and Admin.
+- `/recruiting/` (`recruiting/index.html`): Recruiting & Onboarding, a tile per page in the department.
+- `/recruiting/hiring-map` (`recruiting/hiring-map.html`): the county hiring map. The old `/hiring-map.html` forwards here.
+- `/admin`, `/feedback`: admin and the feedback center.
+- `assets/nav.js`: the site map (`LT_SITE`: departments and pages), the shared header, breadcrumbs and footer, and the "who can see what" rules.
+- `assets/portal.js`: sign-in helpers for the sign-in, dashboard and department pages.
+- `assets/site.css`: shared brand styles.
+
+To add a page: put the file in its department's folder, use `<div id="ltTop" data-current="<page id>" data-crumbs="Department|/dept/;Page name">` + `<script src="/assets/nav.js">` at the top of `<body>` and `<div id="ltFoot"></div><script>ltDrawShell()</script>` at the bottom, add it to `LT_SITE.pages` and its department's `pages` list, and add a matching row to `public.site_pages` so admins can grant access. To add a department, add it to `LT_SITE.departments` with a folder like `recruiting/index.html`.

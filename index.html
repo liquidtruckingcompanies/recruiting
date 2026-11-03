@@ -3,148 +3,87 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Liquid Trucking Recruiting</title>
+<title>Sign in · Liquid Trucking Operations Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Open+Sans:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="/assets/site.css">
 <style>
-/* Layout: welcome band, then a grid of page-name tiles beside the sign-in card. */
-[hidden]{display:none!important}
-body{margin:0}
-.hello{display:grid;gap:6px}
-.hello h1{font-size:2.4rem}
-.home{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
-@media (max-width:900px){.home{grid-template-columns:minmax(0,1fr)} #authCard{order:-1}}
-.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;align-content:start}
-.tile{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--brand-gold);border-radius:8px;padding:22px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none;color:inherit;transition:box-shadow .15s,transform .15s}
-a.tile:hover{box-shadow:0 6px 18px rgba(16,30,48,.14);transform:translateY(-1px)}
-.tile h2{color:var(--heading);text-transform:uppercase;letter-spacing:.02em;font-size:1.35rem}
-.tile::after{content:"→";font-family:var(--display);font-weight:700;color:var(--brand-deep);font-size:1.3rem}
-.who{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+body{margin:0;min-height:100vh;display:flex;flex-direction:column}
+.signin{flex:1;display:grid;place-items:start center;padding:48px 16px 64px}
+.signin-in{width:100%;max-width:440px;display:grid;gap:16px}
+.signin h1{font-size:2.3rem}
 .msg{font-size:.85rem;min-height:1.2em;color:var(--muted)}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.msg.err{color:#b3261e}
 </style>
 </head>
 <body>
-<div class="sitebar"><div class="sitebar-in">
-  <a class="brand" href="./" aria-label="Recruiting home"><img src="https://liquidtrucking.com/wp-content/uploads/2021/03/LiquidTrucking-Logo-transparent-1.png" alt="Liquid Trucking" height="56"></a>
-  <nav class="sitenav" aria-label="Site">
-    <a href="./" aria-current="page">Home</a>
-    <a href="hiring-map.html" data-page="hiring-map" hidden>Hiring map</a>
-    <a href="admin.html" data-page="admin" hidden>Admin</a>
-    <a href="feedback.html" data-page="feedback" hidden>Feedback</a>
-  </nav>
-</div></div>
-<div class="subbar"><div class="sitebar-in subbar-in">
-  <span>Recruiting · Home</span>
-  <span>844-GO-TANKS</span>
-</div></div>
+<div id="ltTop" data-current="signin" data-crumbs="Sign in"></div>
+<script src="/assets/nav.js"></script>
 
-<div class="wrap">
-  <section class="hello">
-    <h1 id="hello">Welcome</h1>
-    <p class="muted" style="margin:0">The Liquid Trucking recruiting hub: where we're hiring right now and the tools the team uses to recruit drivers.</p>
-  </section>
-
-  <div class="home">
-    <div style="display:grid;gap:16px;min-width:0">
-      <nav class="tiles" aria-label="Pages">
-        <a class="tile" href="hiring-map.html" data-page="hiring-map"><h2>Hiring Map</h2></a>
-        <a class="tile" href="feedback.html" data-page="feedback" hidden><h2>Product Feedback</h2></a>
-        <a class="tile" href="admin.html" id="adminTile" hidden><h2>Admin</h2></a>
-      </nav>
-      <p class="muted" id="noTiles" hidden style="margin:0">Sign in to see your pages.</p>
-    </div>
-
-    <aside class="card" id="authCard">
-      <h2 id="authTitle">Sign in</h2>
-      <div id="signedOut" style="display:grid;gap:10px">
-        <p class="small muted" style="margin:0">Sign in to see your pages and make changes. We'll email you a 6-digit code.</p>
-        <label class="field" for="otpEmail"><span>Email</span><input type="email" id="otpEmail" class="txt" autocomplete="email"></label>
-        <div><button type="button" class="primary" id="sendCode">Email me a code</button></div>
-        <div id="codeStep" hidden style="display:grid;gap:10px">
-          <label class="field" for="otpCode"><span>Code from the email</span><input type="text" id="otpCode" class="txt" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456"></label>
-          <div><button type="button" class="primary" id="verifyCode">Sign in</button></div>
-        </div>
-      </div>
-      <div id="signedIn" hidden style="display:grid;gap:10px">
-        <div class="who"><span id="whoText"></span></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="signOut">Sign out</button></div>
-      </div>
-      <div class="msg" id="authMsg"></div>
-    </aside>
+<main class="signin"><div class="signin-in">
+  <div>
+    <h1>Operations Center</h1>
+    <p class="muted" style="margin:6px 0 0">Liquid Trucking's home for team tools: recruiting, onboarding and more as we build them.</p>
   </div>
-</div>
+  <section class="card" id="authCard" aria-labelledby="authTitle">
+    <h2 id="authTitle">Sign in</h2>
+    <div id="signedOut" style="display:grid;gap:10px">
+      <p class="small muted" style="margin:0">Enter your work email and we'll send you a 6-digit code. No password needed.</p>
+      <label class="field" for="otpEmail"><span>Email</span><input type="email" id="otpEmail" class="txt" autocomplete="email"></label>
+      <div><button type="button" class="primary" id="sendCode">Email me a code</button></div>
+      <div id="codeStep" hidden style="display:grid;gap:10px">
+        <label class="field" for="otpCode"><span>Code from the email</span><input type="text" id="otpCode" class="txt" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456"></label>
+        <div><button type="button" class="primary" id="verifyCode">Sign in</button></div>
+      </div>
+    </div>
+    <div id="signedIn" hidden style="display:grid;gap:10px">
+      <p id="whoText" style="margin:0"></p>
+      <div><button type="button" id="signOut">Sign out</button></div>
+    </div>
+    <div class="msg" id="authMsg" role="status"></div>
+  </section>
+</div></main>
 
-<footer class="sitefoot"><div class="sitefoot-in">
-  <div><b>Liquid Trucking</b> · 108 East Bay Rd, Plattsmouth, NE 68048</div>
-  <div>844-GO-TANKS · <a href="./">recruiting.liquidtrucking.io</a></div>
-</div></footer>
-
+<div id="ltFoot"></div>
+<script>ltDrawShell()</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
-<script src="assets/nav.js"></script>
-<script src="assets/feedback.js"></script>
+<script src="/assets/portal.js"></script>
 <script>
-// Same project and key as the hiring map, so one sign-in covers every page.
-const SUPABASE_URL = "https://bunskxkyzmabbhybbubg.supabase.co";
-const SUPABASE_KEY = "sb_publishable_YPlmQVx-G_A97WaiTSLFqg_xIyl3PC_";
-const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const $=id=>document.getElementById(id);
+// Where to go after sign-in: ?next=/some/page on this site, otherwise the dashboard.
+const NEXT=(()=>{ const n=new URLSearchParams(location.search).get("next")||""; return /^\/(?!\/)/.test(n)?n:"/dashboard"; })();
 
-let sb=null;
-
-// Show a tile when its page is public or this person has view or edit access. Admins see everything.
-async function renderTiles(editor){
-  let pages=null;
-  try{ const r=await sb.from("site_pages").select("id,public_view"); if(!r.error) pages=r.data; }catch(e){}
-  // Signed out: nothing but Home. Signed in: the pages this account can see (see assets/nav.js).
-  document.querySelectorAll(".tile[data-page]").forEach(t=>{ t.hidden=!ltCanSee(editor,pages,t.dataset.page); });
-  $("adminTile").hidden=!ltCanSee(editor,pages,"admin");
-  ltNav(editor,pages);
-  $("noTiles").hidden=!![...document.querySelectorAll(".tile")].some(t=>!t.hidden);
-}
-
-async function renderUser(session){
-  const email=session?.user?.email?.toLowerCase()||null;
-  let editor=null;
-  if(email){ try{ const r=await sb.from("editors").select("name,role,active,pages").eq("email",email).maybeSingle(); editor=r.data;
-    if(r.error){ const r2=await sb.from("editors").select("name").eq("email",email).maybeSingle(); editor=r2.data; } }catch(e){} }
-  await renderTiles(editor);
+async function route(){
+  const {email,acct,offline}=await ltLoadAccount();
+  if(offline){ $("authMsg").textContent="Couldn't reach the sign-in service. Refresh to try again."; return; }
+  if(email&&acct&&acct.active!==false){ location.replace(NEXT); return; }
   $("signedOut").hidden=!!email; $("signedIn").hidden=!email; $("authTitle").textContent=email?"Your account":"Sign in";
-  if(email){
-    const first=(editor?.name||"").split(" ")[0];
-    $("hello").textContent=first?`Welcome, ${first}`:"Welcome";
-    $("whoText").innerHTML=!editor?`Signed in as ${esc(email)}. This email hasn't been added as a user yet, so ask an admin for access.`
-      :editor.active===false?`Signed in as <b>${esc(editor.name)}</b>. Your account is inactive, so ask an admin to turn it back on.`
-      :`Signed in as <b>${esc(editor.name)}</b>${editor.role==="admin"?" (admin)":""}.`;
-  }else{ $("hello").textContent="Welcome"; }
+  if(email) $("whoText").innerHTML=!acct
+    ?`You're signed in as <b>${ltEsc(email)}</b>, but this email hasn't been added as a user yet. Ask an admin to add you.`
+    :`You're signed in as <b>${ltEsc(acct.name)}</b>, but your account is turned off. Ask an admin to turn it back on.`;
 }
 
 $("sendCode").onclick=async()=>{
   const email=$("otpEmail").value.trim().toLowerCase(), msg=$("authMsg");
   if(!email){ msg.textContent="Enter your email first."; return; }
-  msg.textContent="Sending…";
-  const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true}});
-  if(error){ msg.textContent="Couldn't send the code: "+error.message; return; }
+  msg.className="msg"; msg.textContent="Sending…";
+  const {error}=await ltClient().auth.signInWithOtp({email,options:{shouldCreateUser:true}});
+  if(error){ msg.className="msg err"; msg.textContent="Couldn't send the code: "+error.message; return; }
   msg.textContent="Code sent to "+email+". It can take a minute to arrive; check Junk too.";
   $("codeStep").hidden=false; $("otpCode").focus();
 };
+$("otpEmail").addEventListener("keydown",e=>{ if(e.key==="Enter") $("sendCode").click(); });
 $("verifyCode").onclick=async()=>{
   const email=$("otpEmail").value.trim().toLowerCase(), token=$("otpCode").value.replace(/\s/g,""), msg=$("authMsg");
   if(!token) return;
-  msg.textContent="Checking…";
-  const {data,error}=await sb.auth.verifyOtp({email,token,type:"email"});
-  if(error){ msg.textContent="That code didn't work. Codes expire after an hour, so request a new one if needed."; return; }
-  $("otpCode").value=""; $("codeStep").hidden=true; msg.textContent="";
-  await renderUser(data.session);
+  msg.className="msg"; msg.textContent="Checking…";
+  const {error}=await ltClient().auth.verifyOtp({email,token,type:"email"});
+  if(error){ msg.className="msg err"; msg.textContent="That code didn't work. Codes expire after an hour, so request a new one if needed."; return; }
+  msg.textContent=""; await route();
 };
-$("signOut").onclick=async()=>{ await sb.auth.signOut(); await renderUser(null); };
-
-(async()=>{
-  if(!window.supabase){ $("authCard").hidden=true; return; }
-  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{flowType:"implicit",detectSessionInUrl:true,persistSession:true}}); window.ltSb=sb;
-  try{ const {data}=await sb.auth.getSession(); await renderUser(data.session); }catch(e){ await renderUser(null); }
-})();
+$("otpCode").addEventListener("keydown",e=>{ if(e.key==="Enter") $("verifyCode").click(); });
+$("signOut").onclick=async()=>{ await ltClient().auth.signOut(); location.replace("/"); };
+route();
 </script>
 </body>
 </html>

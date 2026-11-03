@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Product Feedback · Liquid Trucking Recruiting</title>
+<title>Product Feedback · Liquid Trucking Operations Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Open+Sans:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="/assets/site.css">
 <style>
 /* Feedback: admins get the Feedback Center (list + detail with status, priority, notes, history); everyone gets My feedback. */
 [hidden]{display:none!important}
@@ -61,19 +61,8 @@ body{margin:0}
 </style>
 </head>
 <body>
-<div class="sitebar"><div class="sitebar-in">
-  <a class="brand" href="./" aria-label="Recruiting home"><img src="https://liquidtrucking.com/wp-content/uploads/2021/03/LiquidTrucking-Logo-transparent-1.png" alt="Liquid Trucking" height="56"></a>
-  <nav class="sitenav" aria-label="Site">
-    <a href="./">Home</a>
-    <a href="hiring-map.html" data-page="hiring-map" hidden>Hiring map</a>
-    <a href="admin.html" data-page="admin" hidden>Admin</a>
-    <a href="feedback.html" aria-current="page" data-page="feedback" hidden>Feedback</a>
-  </nav>
-</div></div>
-<div class="subbar"><div class="sitebar-in subbar-in">
-  <span id="subTitle">Recruiting · Feedback</span>
-  <span>844-GO-TANKS</span>
-</div></div>
+<div id="ltTop" data-current="feedback" data-crumbs="Feedback"></div>
+<script src="/assets/nav.js"></script>
 
 <div class="wrap">
   <header><div>
@@ -108,14 +97,11 @@ body{margin:0}
   </div>
 </div>
 
-<footer class="sitefoot"><div class="sitefoot-in">
-  <div><b>Liquid Trucking</b> · 108 East Bay Rd, Plattsmouth, NE 68048</div>
-  <div>844-GO-TANKS · <a href="./">recruiting.liquidtrucking.io</a></div>
-</div></footer>
+<div id="ltFoot"></div>
+<script>ltDrawShell()</script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
-<script src="assets/nav.js"></script>
-<script src="assets/feedback.js"></script>
+<script src="/assets/feedback.js"></script>
 <script>
 const SUPABASE_URL = "https://bunskxkyzmabbhybbubg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_YPlmQVx-G_A97WaiTSLFqg_xIyl3PC_";
@@ -138,7 +124,7 @@ const STATUSES=[
 const SLABEL=Object.fromEntries(STATUSES.map(s=>[s[0],s[1]])), SMINE=Object.fromEntries(STATUSES.map(s=>[s[0],s[2]]));
 const PRIOS=[["critical","Critical"],["high","High"],["medium","Medium"],["low","Low"]], PRANK={critical:0,high:1,medium:2,low:3};
 const KIND={idea:"💡 Idea",bug:"🐞 Problem",other:"💬 Other"};
-const PAGENAME=p=>({index:"Home","hiring-map":"Hiring Map",admin:"Admin",feedback:"Feedback"}[p]||p||"Unknown page");
+const PAGENAME=p=>({index:"Sign-in page",dashboard:"Operations Dashboard",recruiting:"Recruiting & Onboarding","hiring-map":"Hiring Map",admin:"Admin",feedback:"Feedback"}[p]||p||"Unknown page");
 const stChip=s=>`<span class="st ${s}">${esc(SLABEL[s]||s)}</span>`;
 
 let sb=null, me=null, isAdmin=false, ITEMS=[], current=null, filterStatus="";
@@ -267,13 +253,13 @@ $("fStatus").onchange=e=>{filterStatus=e.target.value;renderCounts();renderList(
   sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{flowType:"implicit",detectSessionInUrl:true,persistSession:true}}); window.ltSb=sb;
   const {data}=await sb.auth.getSession();
   const email=data.session?.user?.email?.toLowerCase();
-  if(!email){ $("gateText").innerHTML=`Sign in on the <a href="./">Home page</a> first, then come back here.`; return; }
+  if(!email){ location.replace(ltSignInUrl()); return; }
   const {data:row}=await sb.from("editors").select("*").eq("email",email).maybeSingle();
   { let pg=null; try{ const r=await sb.from("site_pages").select("id,public_view"); if(!r.error) pg=r.data; }catch(e){} ltNav(row,pg); }
-  if(!row||row.active===false){ $("gateText").innerHTML=`Your account isn't active, so feedback isn't available. Ask an admin for access. <a href="./">Back to Home</a>`; return; }
+  if(!row||row.active===false){ $("gateText").innerHTML=`Your account isn't active, so feedback isn't available. Ask an admin for access. <a href="/dashboard">Back to the dashboard</a>`; return; }
   me=row; isAdmin=row.role==="admin";
   $("gate").hidden=true; $("ui").hidden=false;
-  if(isAdmin){ $("tabs").hidden=false; $("pageTitle").textContent="Product Feedback Center"; $("subTitle").textContent="Recruiting · Feedback Center"; document.title="Feedback Center · Liquid Trucking Recruiting"; }
+  if(isAdmin){ $("tabs").hidden=false; $("pageTitle").textContent="Product Feedback Center"; document.title="Feedback Center · Liquid Trucking Operations Center"; }
   else { $("pageTitle").textContent="My Feedback"; $("pageSub").textContent="What you've sent and where it stands."; }
   if(!(await reload())) return;
   showTab(isAdmin?"all":"mine");

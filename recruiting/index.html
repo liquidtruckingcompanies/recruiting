@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Recruiting &amp; Onboarding · Liquid Trucking Operations Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Open+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="/assets/site.css">
+<style>body{margin:0}</style>
+</head>
+<body>
+<div id="ltTop" data-current="recruiting" data-crumbs="Recruiting & Onboarding"></div>
+<script src="/assets/nav.js"></script>
+
+<main class="wrap" id="main" hidden>
+  <section>
+    <h1>Recruiting &amp; Onboarding</h1>
+    <p class="muted" style="margin:6px 0 0" id="blurb"></p>
+  </section>
+  <nav class="tiles" id="pageTiles" aria-label="Recruiting and onboarding pages"></nav>
+  <p class="muted" id="noPages" hidden style="margin:0">You don't have access to any Recruiting &amp; Onboarding pages yet. Ask an admin to give you access. <a href="/dashboard">Back to the dashboard</a></p>
+</main>
+
+<div id="ltFoot"></div>
+<script>ltDrawShell()</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
+<script src="/assets/portal.js"></script>
+<script src="/assets/feedback.js"></script>
+<script>
+// Department page: one tile per page in this department that the account can see (list lives in /assets/nav.js).
+const DEPT="recruiting";
+(async()=>{
+  const a=await ltRequireAccount(); if(!a) return;
+  const {acct,pages}=a, $=id=>document.getElementById(id), d=LT_SITE.departments.find(x=>x.id===DEPT);
+  $("blurb").textContent=d.blurb;
+  const ids=ltDeptPages(acct,pages,DEPT);
+  $("pageTiles").innerHTML=ids.map(id=>{const p=LT_SITE.pages[id];return ltTile(p.href,p.name,p.blurb);}).join("");
+  $("noPages").hidden=ids.length>0;
+  $("main").hidden=false;
+})();
+</script>
+</body>
+</html>
