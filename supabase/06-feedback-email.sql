@@ -53,7 +53,7 @@ begin
     || '<p style="color:#8a97a6;font-size:12px">Reply to this email to answer ' || v_name || ' directly.</p></div>';
 
   return jsonb_build_object(
-    'from',     'Liquid Trucking Recruiting <no-reply@liquidtrucking.io>',
+    'from',     'Liquid Trucking Operations Center <no-reply@liquidtrucking.io>',
     'to',       jsonb_build_array(v_to),
     'reply_to', f.submitted_email,
     'subject',  regexp_replace('New feedback #' || f.id || ': ' || v_kind || ' from ' || f.submitted_name, '[^ -~]', '', 'g'),
