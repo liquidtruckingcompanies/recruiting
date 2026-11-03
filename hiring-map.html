@@ -61,7 +61,11 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .past[hidden]{display:none}
 @media (max-width:900px){.main{grid-template-columns:minmax(0,1fr)}}
 .mapbox{background:var(--water);border:1px solid var(--line);border-radius:8px;overflow:hidden;position:relative}
-.mapbox svg{display:block;width:100%;height:auto;aspect-ratio:1000/530;touch-action:none;cursor:grab}
+.mapbox svg{display:block;width:100%;height:auto;aspect-ratio:1000/530;touch-action:pan-x pan-y;cursor:grab}
+body.fullmap .mapbox svg{touch-action:none}
+.zhint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(16,40,64,.35);color:#fff;font:600 17px/1.3 "Open Sans",sans-serif;text-align:center;padding:20px;pointer-events:none;opacity:0;transition:opacity .25s;z-index:3}
+.zhint.on{opacity:1}
+.zhint span{background:rgba(16,40,64,.88);padding:10px 18px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 /* Larger screens: use the full width and fill the window height */
 @media (min-width:901px){
   .wrap,.sitebar-in,.sitefoot-in{max-width:none;padding-left:24px;padding-right:24px}
@@ -307,6 +311,7 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
 
   <div class="main">
     <div class="mapbox">
+      <div class="zhint" id="zhint" aria-hidden="true"></div>
       <svg id="map" viewBox="0 0 1000 530" role="img" aria-label="County map of home-time colors across the United States">
         <defs>
           <clipPath id="focusClip" clipPathUnits="userSpaceOnUse"><path id="focusClipPath" d=""></path></clipPath>
@@ -335,7 +340,7 @@ tr.zrow:hover td{background:color-mix(in srgb,var(--steel) 40%,transparent)}
     </div>
 
     <aside class="panel" id="panel">
-      <div id="detail"><p class="muted small" style="margin:0">Click a county to see its status, cities and history. Hold Shift to select several. Search a town or ZIP above the map (press <b>/</b>), or drag and zoom to reach any county in the country.</p></div>
+      <div id="detail"><p class="muted small" style="margin:0">Click a county to see its status, cities and history. Hold Shift to select several. Search a town or ZIP above the map (press <b>/</b>), or drag the map and use Ctrl + scroll (two fingers on a phone) to zoom to any county.</p></div>
       <hr>
       <div>
         <h2>How far out?</h2>
@@ -601,6 +606,43 @@ const zoom=d3.zoom().scaleExtent([.2,12]).translateExtent(WORLD).extent(()=>[[0,
     if(spot) spot.pin.setAttribute("transform",`translate(${t.applyX(spot.xy[0]).toFixed(1)},${t.applyY(spot.xy[1]).toFixed(1)})`);
     curT=t; scheduleCities();
   });
+// Scroll the page past the map: plain wheel / one finger scroll the page; Ctrl/⌘+wheel, trackpad pinch
+// or two fingers move the map. In full-screen mode the map takes every gesture.
+const isFull=()=>document.body.classList.contains("fullmap");
+const isMac=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent);
+let hintTimer=null;
+function zoomHint(touch){
+  if(isFull()) return; const h=document.getElementById("zhint");
+  h.innerHTML=`<span>${touch?"Use two fingers to move the map":`Hold ${isMac?"⌘":"Ctrl"} and scroll to zoom the map`}</span>`;
+  h.classList.add("on"); clearTimeout(hintTimer); hintTimer=setTimeout(()=>h.classList.remove("on"),1300);
+}
+// Mouse Ctrl+wheel moves in big notches; trackpad pinch sends small deltas, so only boost those.
+zoom.wheelDelta(e=>-e.deltaY*(e.deltaMode===1?.05:e.deltaMode?1:.002)*(e.ctrlKey&&Math.abs(e.deltaY)<50?10:1));
+zoom.filter(e=>{
+  if(e.type==="wheel") return isFull()||e.ctrlKey||e.metaKey;
+  if(e.type.startsWith("touch")) return isFull();
+  return !e.ctrlKey&&!e.button;
+});
+mapEl.addEventListener("wheel",e=>{ if(!(isFull()||e.ctrlKey||e.metaKey)) zoomHint(false); },{passive:true});
+// Two-finger pan + pinch on phones (outside full screen).
+let pinch=null;
+const tmid=t=>[(t[0].clientX+t[1].clientX)/2,(t[0].clientY+t[1].clientY)/2];
+const tdist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY)||1;
+const tpt=c=>{const r=mapEl.getBoundingClientRect();return [(c[0]-r.left)*VW/r.width,(c[1]-r.top)*VH/r.height]};
+mapEl.addEventListener("touchstart",e=>{
+  if(isFull()) return;
+  if(e.touches.length===2){ const m=tpt(tmid(e.touches)); pinch={t0:curT,w:curT.invert(m),d0:tdist(e.touches)}; }
+},{passive:true});
+mapEl.addEventListener("touchmove",e=>{
+  if(isFull()) return;
+  if(e.touches.length===1&&!pinch){ zoomHint(true); return; }
+  if(e.touches.length!==2||!pinch) return;
+  e.preventDefault();
+  const [lo,hi]=zoom.scaleExtent(), k=Math.max(lo,Math.min(hi,pinch.t0.k*tdist(e.touches)/pinch.d0)), m=tpt(tmid(e.touches));
+  const t=d3.zoomIdentity.translate(m[0]-k*pinch.w[0],m[1]-k*pinch.w[1]).scale(k);
+  svg.call(zoom.transform,zoom.constrain()(t,[[0,0],[VW,VH]],zoom.translateExtent()));
+},{passive:false});
+mapEl.addEventListener("touchend",e=>{ if(e.touches.length<2) pinch=null; },{passive:true});
 svg.call(zoom).on("dblclick.zoom",null);
 // Size the map to its box and keep it sized as the window or full-screen mode changes.
 function sizeMap(first){
@@ -965,7 +1007,7 @@ function renderQuickbar(){
 function renderDetail(){
   renderQuickbar();
   const box=document.getElementById("detail");
-  if(!selected.length){box.innerHTML=`<p class="muted small" style="margin:0">Click a county to see its status, cities and history. Hold Shift to select several. Search a town or ZIP above the map (press <b>/</b>), or drag and zoom to reach any county in the country.</p>`;return}
+  if(!selected.length){box.innerHTML=`<p class="muted small" style="margin:0">Click a county to see its status, cities and history. Hold Shift to select several. Search a town or ZIP above the map (press <b>/</b>), or drag the map and use Ctrl + scroll (two fingers on a phone) to zoom to any county.</p>`;return}
   const s=stateAt(), many=selected.length>1, first=s[selected[0]];
   const same=selected.every(f=>{const d=s[f];return (d?.level||null)===(first?.level||null)&&(d?.hiring!==false)===(first?.hiring!==false)});
   let html=`<div style="display:grid;gap:10px">`;
