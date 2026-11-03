@@ -4,10 +4,10 @@
 -- Then: SQL Editor -> New query -> paste all of this -> Run. Safe to run again.
 -- If the key is missing or Resend is down, feedback still saves; only the email is skipped.
 
-create extension if not exists pg_net;
+-- Uses the "http" extension (pg_net requests were rejected by Resend as invalid JSON).
+create extension if not exists http with schema extensions;
 
--- pg_net can cut off request bodies that contain emoji or accented letters, so the email body is kept
--- plain ASCII: anything else becomes an HTML code (&#...;) that email programs display normally.
+-- The email body is kept plain ASCII to be safe: anything else becomes an HTML code (&#...;) that email programs display normally.
 create or replace function public.ascii_html(t text)
 returns text language sql immutable as $$
   select coalesce(string_agg(case when ascii(c) < 128 then c else '&#' || ascii(c) || ';' end, '' order by i), '')
@@ -65,9 +65,13 @@ create table if not exists public.feedback_email_log (
   id          bigint generated always as identity primary key,
   feedback_id bigint,
   request_id  bigint,
+  status      int,
+  reply       text,
   error       text,
   at          timestamptz not null default now()
 );
+alter table public.feedback_email_log add column if not exists status int;
+alter table public.feedback_email_log add column if not exists reply text;
 alter table public.feedback_email_log enable row level security;
 
 create or replace function public.feedback_notify_owner()
@@ -79,7 +83,7 @@ as $$
 declare
   v_key  text;
   v_body jsonb;
-  v_req  bigint;
+  v_res  extensions.http_response;
 begin
   begin
     select decrypted_secret into v_key from vault.decrypted_secrets where name = 'resend_api_key' limit 1;
@@ -92,11 +96,13 @@ begin
       insert into public.feedback_email_log (feedback_id, error) values (new.id, 'no owner email');
       return new;
     end if;
-    v_req := net.http_post(
-      url     := 'https://api.resend.com/emails',
-      body    := v_body,
-      headers := jsonb_build_object('Authorization', 'Bearer ' || v_key, 'Content-Type', 'application/json'));
-    insert into public.feedback_email_log (feedback_id, request_id) values (new.id, v_req);
+    perform extensions.http_set_curlopt('CURLOPT_TIMEOUT_MS', '6000');
+    v_res := extensions.http((
+      'POST', 'https://api.resend.com/emails',
+      array[extensions.http_header('Authorization', 'Bearer ' || v_key)],
+      'application/json',
+      v_body::text)::extensions.http_request);
+    insert into public.feedback_email_log (feedback_id, status, reply) values (new.id, v_res.status, left(v_res.content, 500));
   exception when others then
     begin
       insert into public.feedback_email_log (feedback_id, error) values (new.id, sqlerrm);
