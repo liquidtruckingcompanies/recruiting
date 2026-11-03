@@ -86,7 +86,7 @@ declare
   v_res  extensions.http_response;
 begin
   begin
-    select decrypted_secret into v_key from vault.decrypted_secrets where name = 'resend_api_key' limit 1;
+    select btrim(decrypted_secret, E' \t\r\n') into v_key from vault.decrypted_secrets where name = 'resend_api_key' limit 1;
     if v_key is null then
       insert into public.feedback_email_log (feedback_id, error) values (new.id, 'no resend_api_key in vault');
       return new;
