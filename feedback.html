@@ -57,6 +57,20 @@ body{margin:0}
 .mine{display:grid;gap:10px}
 .mine .card{border-top-width:4px}
 .empty{color:var(--muted)}
+/* Owner-only delete: checkboxes, the bulk bar, the Deleted tab and the confirm box. */
+.irow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start}
+.irow .pick{margin-top:14px;width:20px;height:20px;accent-color:var(--brand-deep);cursor:pointer}
+.bulk{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.9rem}
+.bulk.on{background:#fdf4d3;border:1px solid #ecd47a;border-radius:8px;padding:8px 12px}
+.linky{background:none;border:none;padding:0;color:var(--brand-blue);text-decoration:underline;font-weight:600}
+button.danger{background:#b3261e;color:#fff;border-color:#b3261e}
+.ev.deleted{border-left-color:#b3261e}.ev.restored{border-left-color:#1f6b3c}
+.delbox{border:1px solid #f0c9c5;background:#fdf1f0;border-radius:8px;padding:10px 12px;display:grid;gap:8px;font-size:.88rem}
+.gone{border-top-color:#b3261e!important}
+.gone .why{font-size:.88rem;background:#fdf1f0;border:1px solid #f0c9c5;border-radius:6px;padding:8px 10px}
+dialog#delDlg{border:none;border-radius:10px;padding:0;max-width:min(440px,calc(100vw - 32px));box-shadow:0 12px 40px rgba(16,30,48,.3)}
+dialog#delDlg::backdrop{background:rgba(16,30,48,.45)}
+dialog#delDlg form{display:grid;gap:10px;padding:18px}
 .lock{font-size:.75rem;color:#7a5a00;background:#fdf4d3;border-radius:4px;padding:1px 6px}
 </style>
 </head>
@@ -76,6 +90,7 @@ body{margin:0}
     <div class="tabs" role="tablist" id="tabs" hidden>
       <button type="button" role="tab" id="tabAll" aria-selected="true">Feedback Center</button>
       <button type="button" role="tab" id="tabMine" aria-selected="false">My feedback</button>
+      <button type="button" role="tab" id="tabDel" aria-selected="false" hidden>Deleted</button>
     </div>
 
     <section id="centerView" hidden style="display:grid;gap:12px">
@@ -87,6 +102,7 @@ body{margin:0}
         <select id="fPage" class="txt" aria-label="Filter by page"><option value="">All pages</option></select>
         <select id="fSort" class="txt" aria-label="Sort"><option value="new">Newest first</option><option value="updated">Recently updated</option><option value="priority">Priority</option></select>
       </div>
+      <div class="bulk" id="bulk" hidden></div>
       <div class="center">
         <div class="list" id="list"></div>
         <aside class="card detail" id="detail"><p class="muted" style="margin:0">Pick a submission to see the details, change its status, add internal notes and see its history.</p></aside>
@@ -94,7 +110,16 @@ body{margin:0}
     </section>
 
     <section id="mineView" hidden class="mine"></section>
+
+    <section id="delView" hidden class="mine"></section>
   </div>
+  <dialog id="delDlg"><form method="dialog" id="delForm">
+    <h2 style="font-size:1.15rem;margin:0" id="delTitle">Delete feedback?</h2>
+    <p class="small" style="margin:0" id="delText"></p>
+    <textarea id="delReason" class="txt" rows="2" maxlength="500" placeholder="Reason (optional), e.g. Test item"></textarea>
+    <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center"><span class="msgline err" id="delMsg" style="margin-right:auto"></span>
+      <button type="button" id="delCancel">Cancel</button><button type="submit" class="danger" id="delGo">Delete</button></div>
+  </form></dialog>
 </div>
 
 <div id="ltFoot"></div>
@@ -127,7 +152,8 @@ const KIND={idea:"💡 Idea",bug:"🐞 Problem",other:"💬 Other"};
 const PAGENAME=p=>({index:"Sign-in page",dashboard:"Operations Dashboard",recruiting:"Recruiting & Onboarding","hiring-map":"Hiring Map",admin:"Admin",feedback:"Feedback"}[p]||p||"Unknown page");
 const stChip=s=>`<span class="st ${s}">${esc(SLABEL[s]||s)}</span>`;
 
-let sb=null, me=null, isAdmin=false, ITEMS=[], current=null, filterStatus="";
+let sb=null, me=null, isAdmin=false, isOwner=false, ITEMS=[], DELETED=[], current=null, filterStatus="";
+const picked=new Set(); // owner's checked items in the list
 const urlCache={};
 async function signedUrl(path){
   if(urlCache[path]) return urlCache[path];
@@ -163,12 +189,41 @@ function filtered(){
 }
 function renderList(){
   const rows=filtered();
-  $("list").innerHTML=rows.map(i=>`<button type="button" class="item k-${i.kind}" data-id="${i.id}" aria-current="${current===i.id}">
+  $("list").innerHTML=rows.map(i=>(isOwner?`<div class="irow"><input type="checkbox" class="pick" data-id="${i.id}" aria-label="Select #${i.id}" ${picked.has(i.id)?"checked":""}>`:"")+`<button type="button" class="item k-${i.kind}" data-id="${i.id}" aria-current="${current===i.id}">
       <div class="top"><b>#${i.id}</b><span>${KIND[i.kind]}</span>${stChip(i.status)}${i.priority?`<span class="pr ${i.priority}">${i.priority}</span>`:""}<span>${esc(PAGENAME(i.page))}</span>${i.attachments?.length?`<span>📎 ${i.attachments.length}</span>`:""}</div>
       <div class="msg">${esc(i.message)}</div>
       <div class="top"><span>${esc(i.submitted_name)} · ${fmtWhen(i.created_at)}</span></div>
-    </button>`).join("")||`<p class="empty">No feedback matches these filters.</p>`;
+    </button>`+(isOwner?`</div>`:"")).join("")||`<p class="empty">No feedback matches these filters.</p>`;
   $("list").querySelectorAll(".item").forEach(b=>b.onclick=()=>openItem(+b.dataset.id));
+  $("list").querySelectorAll(".pick").forEach(c=>c.onchange=()=>{ c.checked?picked.add(+c.dataset.id):picked.delete(+c.dataset.id); renderBulk(); });
+  renderBulk();
+}
+// Owner only: select several items in the list and delete them in one go.
+function renderBulk(){
+  const bar=$("bulk"); if(!isOwner){ bar.hidden=true; return; }
+  const shown=filtered().map(i=>i.id);
+  bar.hidden=!shown.length && !picked.size; bar.className="bulk"+(picked.size?" on":"");
+  bar.innerHTML=picked.size
+    ? `<b>${picked.size} selected</b><button type="button" class="danger" id="bulkDel">Delete selected</button><button type="button" class="linky" id="bulkClear">Clear</button>`
+    : `<span class="muted">Owner: tick the boxes to delete several at once.</span><button type="button" class="linky" id="bulkAll">Select all ${shown.length} shown</button>`;
+  if($("bulkDel")) $("bulkDel").onclick=()=>askDelete([...picked]);
+  if($("bulkClear")) $("bulkClear").onclick=()=>{ picked.clear(); renderList(); };
+  if($("bulkAll")) $("bulkAll").onclick=()=>{ shown.forEach(id=>picked.add(id)); renderList(); };
+}
+function askDelete(ids){
+  const d=$("delDlg"), one=ids.length===1;
+  $("delTitle").textContent=one?`Delete #${ids[0]}?`:`Delete ${ids.length} items?`;
+  $("delText").textContent=`${one?"It":"They"} will disappear for everyone, including the person who sent ${one?"it":"them"}, and move to the Deleted tab, which only you can see. You can restore ${one?"it":"them"} from there.`;
+  $("delReason").value=""; $("delMsg").textContent=""; $("delGo").disabled=false;
+  $("delCancel").onclick=()=>d.close();
+  $("delForm").onsubmit=async e=>{ e.preventDefault(); $("delGo").disabled=true;
+    const {error}=await sb.rpc("feedback_delete",{p_ids:ids,p_reason:$("delReason").value.trim()});
+    if(error){ $("delMsg").textContent=/feedback_delete|function/i.test(error.message)?"Run supabase/07-feedback-delete.sql in Supabase first.":error.message; $("delGo").disabled=false; return; }
+    d.close(); ids.forEach(id=>picked.delete(id));
+    if(ids.includes(current)){ current=null; history.replaceState(null,"",location.pathname); $("detail").innerHTML=`<p class="muted" style="margin:0">Deleted. It's in the Deleted tab if you need it back.</p>`; }
+    await reload(current);
+  };
+  d.showModal(); $("delReason").focus();
 }
 async function openItem(id){
   current=id; renderList(); history.replaceState(null,"","#id="+id);
@@ -184,7 +239,7 @@ async function openItem(id){
   const ctx=[["Page",PAGENAME(i.page)],["Screen",c.screen],["Selected on map",(c.map_selected||[]).join(", ")],["State focus",c.map_state_focus],["Map search",c.map_search],["Viewing as of",c.map_as_of],["Browser",c.browser]]
     .filter(r=>r[1]).map(([k,v])=>`<div><b>${esc(k)}:</b> ${esc(v)}</div>`).join("");
   const evHtml=(ev||[]).map(e=>{
-    const head=e.kind==="created"?`Submitted`:e.kind==="status"?`Status ${e.from_value?stChip(e.from_value)+" → ":""}${stChip(e.to_value)}`:e.kind==="priority"?`Priority ${esc(e.from_value||"none")} → <b>${esc(e.to_value||"none")}</b>`:`<span class="lock">Internal note</span>`;
+    const head=e.kind==="created"?`Submitted`:e.kind==="status"?`Status ${e.from_value?stChip(e.from_value)+" → ":""}${stChip(e.to_value)}`:e.kind==="priority"?`Priority ${esc(e.from_value||"none")} → <b>${esc(e.to_value||"none")}</b>`:e.kind==="deleted"?`<b style="color:#b3261e">Deleted</b>`:e.kind==="restored"?`<b style="color:#1f6b3c">Restored</b>`:`<span class="lock">Internal note</span>`;
     return `<div class="ev ${e.kind}"><div>${head}</div>${e.body?`<div>${esc(e.body)}</div>`:""}<div class="when">${esc(e.by_name)} · ${fmtWhen(e.at)}</div></div>`;
   }).join("");
   box.innerHTML=`<div style="display:grid;gap:12px">
@@ -206,7 +261,9 @@ async function openItem(id){
       <div><button type="submit">Add note</button> <span class="msgline" id="noteMsg"></span></div>
     </form>
     <div><div class="eyebrow">History</div><div class="timeline">${evHtml||'<span class="muted">No history yet.</span>'}</div></div>
+    ${isOwner?`<div class="delbox"><div><b>Delete this item</b> <span class="lock">owner only</span></div><div class="muted">It moves to the Deleted tab and can be restored.</div><div><button type="button" class="danger" id="delOne">Delete #${i.id}</button></div></div>`:""}
   </div>`;
+  if($("delOne")) $("delOne").onclick=()=>askDelete([id]);
   const sel=$("stSel"), rs=$("stReason"), save=$("stSave");
   sel.onchange=()=>{const changed=sel.value!==i.status; rs.hidden=!changed; save.hidden=!changed; if(changed) rs.focus();};
   $("stForm").onsubmit=async e=>{e.preventDefault(); const m=$("stMsg");
@@ -220,12 +277,31 @@ async function openItem(id){
 async function reload(keep){
   const {data,error}=await sb.from("feedback").select("*").order("created_at",{ascending:false});
   if(error){ $("gateText").textContent=/feedback/i.test(error.message)?"Feedback isn't switched on yet. Run supabase/05-feedback.sql in Supabase.":"Couldn't load feedback: "+error.message; $("gate").hidden=false; $("ui").hidden=true; return false; }
-  ITEMS=data||[];
+  ITEMS=(data||[]).filter(i=>!i.deleted_at);
+  DELETED=(data||[]).filter(i=>i.deleted_at).sort((a,b)=>b.deleted_at.localeCompare(a.deleted_at));
+  for(const id of [...picked]) if(!ITEMS.some(i=>i.id===id)) picked.delete(id);
+  $("tabDel").textContent=`Deleted (${DELETED.length})`;
   const pages=[...new Set(ITEMS.map(i=>i.page))].sort();
   const fp=$("fPage"), keepPg=fp.value; fp.innerHTML=`<option value="">All pages</option>`+pages.map(p=>`<option value="${esc(p)}">${esc(PAGENAME(p))}</option>`).join(""); fp.value=keepPg;
   if(isAdmin){ renderCounts(); renderList(); if(keep&&ITEMS.some(i=>i.id===keep)) await openItem(keep); }
   if(!$("mineView").hidden) renderMine();
+  if(!$("delView").hidden) renderDeleted();
   return true;
+}
+
+// ---------- Deleted (owner only) ----------
+function renderDeleted(){
+  if(!DELETED.length){ $("delView").innerHTML=`<div class="card"><p style="margin:0">Nothing has been deleted. Deleted feedback shows up here, and you can restore it.</p></div>`; return; }
+  $("delView").innerHTML=`<p class="small muted" style="margin:0">Only you can see these. Restore puts an item back in the Feedback Center (and back in the sender's My feedback).</p>`+DELETED.map(i=>`<div class="card gone" style="display:grid;gap:8px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:.85rem" class="muted"><b style="color:var(--fg)">#${i.id}</b><span>${KIND[i.kind]}</span>${stChip(i.status)}<span>${esc(PAGENAME(i.page))}</span><span>From ${esc(i.submitted_name)} · ${fmtDate(i.created_at)}</span></div>
+    <div class="body">${esc(i.message)}</div>
+    <div class="why">Deleted ${fmtWhen(i.deleted_at)}${i.deleted_by_name?` by ${esc(i.deleted_by_name)}`:""}${i.delete_reason?`. Reason: <b>${esc(i.delete_reason)}</b>`:""}</div>
+    <div style="display:flex;gap:8px;align-items:center"><button type="button" class="primary" data-restore="${i.id}">Restore #${i.id}</button><span class="msgline" id="rm${i.id}"></span></div>
+  </div>`).join("");
+  $("delView").querySelectorAll("[data-restore]").forEach(b=>b.onclick=async()=>{ const id=+b.dataset.restore; b.disabled=true;
+    const {error}=await sb.rpc("feedback_restore",{p_ids:[id]});
+    if(error){ const m=$("rm"+id); m.className="msgline err"; m.textContent=error.message; b.disabled=false; return; }
+    await reload(); });
 }
 
 // ---------- My feedback (everyone) ----------
@@ -239,11 +315,12 @@ async function renderMine(){
 }
 
 function showTab(which){
-  $("tabAll").setAttribute("aria-selected",which==="all"); $("tabMine").setAttribute("aria-selected",which==="mine");
-  $("centerView").hidden=which!=="all"; $("mineView").hidden=which!=="mine";
+  $("tabAll").setAttribute("aria-selected",which==="all"); $("tabMine").setAttribute("aria-selected",which==="mine"); $("tabDel").setAttribute("aria-selected",which==="deleted");
+  $("centerView").hidden=which!=="all"; $("mineView").hidden=which!=="mine"; $("delView").hidden=which!=="deleted";
   if(which==="mine") renderMine();
+  if(which==="deleted") renderDeleted();
 }
-$("tabAll").onclick=()=>showTab("all"); $("tabMine").onclick=()=>showTab("mine");
+$("tabAll").onclick=()=>showTab("all"); $("tabMine").onclick=()=>showTab("mine"); $("tabDel").onclick=()=>showTab("deleted");
 for(const id of ["fSearch","fKind","fPage","fSort"]) $(id).addEventListener("input",renderList);
 $("fStatus").innerHTML=`<option value="">All statuses</option><option value="open">Open (not closed)</option>`+STATUSES.map(([k,l])=>`<option value="${k}">${l}</option>`).join("");
 $("fStatus").onchange=e=>{filterStatus=e.target.value;renderCounts();renderList();};
@@ -257,7 +334,7 @@ $("fStatus").onchange=e=>{filterStatus=e.target.value;renderCounts();renderList(
   const {data:row}=await sb.from("editors").select("*").eq("email",email).maybeSingle();
   { let pg=null; try{ const r=await sb.from("site_pages").select("id,public_view"); if(!r.error) pg=r.data; }catch(e){} ltNav(row,pg); }
   if(!row||row.active===false){ $("gateText").innerHTML=`Your account isn't active, so feedback isn't available. Ask an admin for access. <a href="/dashboard">Back to the dashboard</a>`; return; }
-  me=row; isAdmin=row.role==="admin";
+  me=row; isAdmin=row.role==="admin"; isOwner=isAdmin&&row.owner===true; $("tabDel").hidden=!isOwner;
   $("gate").hidden=true; $("ui").hidden=false;
   if(isAdmin){ $("tabs").hidden=false; $("pageTitle").textContent="Product Feedback Center"; document.title="Feedback Center · Liquid Trucking Operations Center"; }
   else { $("pageTitle").textContent="My Feedback"; $("pageSub").textContent="What you've sent and where it stands."; }

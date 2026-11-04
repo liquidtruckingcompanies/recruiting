@@ -25,7 +25,7 @@ City dots and population bands come from GeoNames (places of 1,000+ people, via 
 
 ## Users and admins
 
-Run `supabase/setup.sql`, then `supabase/02-admin.sql`, then `supabase/03-clear-county.sql`, then `supabase/04-owner.sql`, then `supabase/05-feedback.sql`, then `supabase/06-feedback-email.sql` (after saving the Resend API key in Vault as `resend_api_key`), each once (Supabase → SQL Editor).
+Run `supabase/setup.sql`, then `supabase/02-admin.sql`, then `supabase/03-clear-county.sql`, then `supabase/04-owner.sql`, then `supabase/05-feedback.sql`, then `supabase/06-feedback-email.sql` (after saving the Resend API key in Vault as `resend_api_key`), then `supabase/07-feedback-delete.sql` (lets the owner delete and restore feedback), each once (Supabase → SQL Editor).
 After that, admins manage everything on `admin.html`: add users by email, set each person's level (User or Admin), turn accounts active or inactive, give per-page access (No access, View, View + edit), and choose whether each page is public or sign-in only.
 People sign in on the Home page with an emailed 6-digit code. Every account change is listed under Account history.
 New pages get a row in `public.site_pages` (id, name, public_view, sort) and an entry in `LT_SITE` in `assets/nav.js`, which decides what shows: only the sign-in page before sign-in, then the departments and pages each account can see.
