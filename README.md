@@ -25,7 +25,7 @@ City dots and population bands come from GeoNames (places of 1,000+ people, via 
 
 ## Users and admins
 
-Run `supabase/setup.sql`, then `supabase/02-admin.sql`, then `supabase/03-clear-county.sql`, then `supabase/04-owner.sql`, then `supabase/05-feedback.sql`, then `supabase/06-feedback-email.sql` (after saving the Resend API key in Vault as `resend_api_key`), then `supabase/07-feedback-delete.sql` (lets the owner delete and restore feedback), each once (Supabase → SQL Editor).
+Run `supabase/setup.sql`, then `supabase/02-admin.sql`, then `supabase/03-clear-county.sql`, then `supabase/04-owner.sql`, then `supabase/05-feedback.sql`, then `supabase/06-feedback-email.sql` (after saving the Resend API key in Vault as `resend_api_key`), then `supabase/07-feedback-delete.sql` (lets the owner delete and restore feedback), then `supabase/08-faq.sql` (Driver FAQ tables, history and file storage) and `supabase/09-faq-load.sql` (the starting 115 FAQs), each once (Supabase → SQL Editor).
 After that, admins manage everything on `admin.html`: add users by email, set each person's level (User or Admin), turn accounts active or inactive, give per-page access (No access, View, View + edit), and choose whether each page is public or sign-in only.
 People sign in on the Home page with an emailed 6-digit code. Every account change is listed under Account history.
 New pages get a row in `public.site_pages` (id, name, public_view, sort) and an entry in `LT_SITE` in `assets/nav.js`, which decides what shows: only the sign-in page before sign-in, then the departments and pages each account can see.
@@ -46,3 +46,7 @@ Addresses are clean URLs (Cloudflare serves `/dashboard` from `dashboard.html` a
 - `assets/site.css`: shared brand styles.
 
 To add a page: put the file in its department's folder, use `<div id="ltTop" data-current="<page id>" data-crumbs="Department|/dept/;Page name">` + `<script src="/assets/nav.js">` at the top of `<body>` and `<div id="ltFoot"></div><script>ltDrawShell()</script>` at the bottom, add it to `LT_SITE.pages` and its department's `pages` list, and add a matching row to `public.site_pages` so admins can grant access. To add a department, add it to `LT_SITE.departments` with a folder like `recruiting/index.html`.
+
+## Driver FAQ
+
+`recruiting/faq.html` (at `/recruiting/faq`). Every active user who can see the page reads it, searches it, opens any FAQ's history and can view the whole FAQ as of a past date. People with Edit access to Driver FAQ on the Admin page (and admins) can add, edit, hide, reorder and restore older versions; every change needs a reason and is saved in `faq_versions` with before and after. Only the owner can delete (soft delete, restorable from the Deleted tab). Each FAQ holds web links (open in a new tab after a "leaving the site" warning) and photos, videos and documents in the private `faq` storage bucket. All writes go through the `faq_*` functions in `08-faq.sql`.

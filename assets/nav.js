@@ -10,11 +10,13 @@ window.LT_SITE = {
   departments: [
     { id: "recruiting", name: "Recruiting & Onboarding", short: "Recruiting", href: "/recruiting/",
       blurb: "Where we're hiring, driver home time, and the tools for bringing new drivers on.",
-      pages: ["hiring-map"] }
+      pages: ["hiring-map", "faq"] }
   ],
   pages: {
     "hiring-map": { name: "Hiring Map", href: "/recruiting/hiring-map", dept: "recruiting",
-      blurb: "County-by-county hiring areas and how often drivers get home." }
+      blurb: "County-by-county hiring areas and how often drivers get home." },
+    "faq": { name: "Driver FAQ", href: "/recruiting/faq", dept: "recruiting",
+      blurb: "Answers on hiring, pay, benefits and life on the road, with a full change history." }
   }
 };
 

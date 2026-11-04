@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Driver FAQ · Liquid Trucking Operations Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Open+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="/assets/site.css">
+<style>
+/* Driver FAQ: everyone with access reads and sees history; editors (Admin page) add, edit, hide and reorder; the owner deletes. */
+[hidden]{display:none!important}
+body{margin:0}
+.tabs{display:flex;gap:6px;border-bottom:2px solid var(--line);flex-wrap:wrap}
+.tabs button{border:none;border-bottom:3px solid transparent;border-radius:0;background:none;padding:8px 14px;margin-bottom:-2px;font-family:var(--display);font-size:1.05rem;text-transform:uppercase;color:var(--muted)}
+.tabs button[aria-selected=true]{color:var(--heading);border-bottom-color:var(--brand-gold)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bar .txt{width:auto}
+#q{flex:1 1 260px;min-width:0}
+.asof{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.88rem;color:var(--muted)}
+.asof input{width:auto}
+.banner{background:#fdf4d3;border:1px solid #ecd47a;border-radius:8px;padding:10px 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.92rem}
+.jump{display:flex;gap:6px;flex-wrap:wrap}
+.jump a{font-size:.82rem;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 10px;color:var(--brand-deep);text-decoration:none;font-weight:600}
+.jump a:hover{border-color:var(--brand-deep)}
+.jump a span{color:var(--muted);font-weight:400}
+.cat{display:grid;gap:8px;scroll-margin-top:12px}
+.cathead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-bottom:2px solid var(--brand-gold);padding-bottom:4px}
+.cathead h2{margin:0;font-size:1.3rem;flex:1 1 auto}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:8px;scroll-margin-top:12px}
+.q[open]{box-shadow:0 3px 12px rgba(16,30,48,.12);border-color:#b9c7d3}
+.q summary{cursor:pointer;padding:12px 14px;font-weight:700;color:var(--heading);display:flex;gap:10px;align-items:flex-start;list-style:none}
+.q summary::-webkit-details-marker{display:none}
+.q summary::before{content:"+";flex:0 0 auto;width:1.1em;font-family:var(--display);font-size:1.2rem;line-height:1.15;color:var(--brand-blue)}
+.q[open] summary::before{content:"−"}
+.q summary .qt{flex:1 1 auto}
+.q .a{padding:0 14px 14px 38px;display:grid;gap:10px}
+.q.hid{border-style:dashed;background:#f7f9fb}
+.q.hit summary{background:#fffbea;border-radius:8px}
+.tag{display:inline-block;border-radius:999px;padding:1px 9px;font-size:.72rem;font-weight:700;border:1px solid;white-space:nowrap}
+.tag.hid{background:#eceeef;color:#4a5562;border-color:#cfd5da}
+.md{font-size:.95rem;line-height:1.55;display:grid;gap:8px;overflow-wrap:anywhere}
+.md p,.md ul,.md ol{margin:0}
+.md ul,.md ol{padding-left:1.3em;display:grid;gap:3px}
+.md .src{font-size:.8rem;color:var(--muted)}
+.md a{color:var(--brand-blue);font-weight:600}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.md table{border-collapse:collapse;font-size:.88rem;min-width:100%}
+.md th,.md td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.md table{overflow-wrap:normal}
+.md th{background:#eef3f7;color:var(--heading);white-space:nowrap}
+.media{display:flex;gap:8px;flex-wrap:wrap}
+.media .ph{display:block;width:150px;height:110px;border-radius:6px;overflow:hidden;border:1px solid var(--line);background:#eef2f5}
+.media .ph img{width:100%;height:100%;object-fit:cover}
+.media video{max-width:min(100%,420px);border-radius:6px;background:#000}
+.media audio{max-width:100%}
+.doc{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:6px 10px;background:#f7f9fb;color:var(--brand-deep);text-decoration:none;font-weight:600;font-size:.88rem}
+.doc span{color:var(--muted);font-weight:400}
+.links{margin:0;padding:0;list-style:none;display:flex;gap:6px;flex-wrap:wrap}
+.links a{display:inline-flex;gap:4px;align-items:center;border:1px solid #b7cdee;background:#e8f0fb;border-radius:6px;padding:5px 10px;color:#1d4f91;font-weight:600;font-size:.88rem;text-decoration:none}
+.meta{font-size:.8rem;color:var(--muted);display:flex;gap:6px 12px;flex-wrap:wrap;align-items:center}
+.tools{display:flex;gap:6px;flex-wrap:wrap;border-top:1px dashed var(--line);padding-top:10px}
+.tools button,.cathead button{font-size:.82rem;padding:4px 10px}
+.linky{background:none;border:none;padding:0;color:var(--brand-blue);text-decoration:underline;font-weight:600;font-size:inherit}
+button.danger{background:#b3261e;color:#fff;border-color:#b3261e}
+.empty{color:var(--muted)}
+.feed{display:grid;gap:8px}
+.chg{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--brand-blue);border-radius:8px;padding:10px 12px;display:grid;gap:4px;font-size:.9rem}
+.chg .when{font-size:.78rem;color:var(--muted)}
+.chg.deleted{border-left-color:#b3261e}.chg.hidden{border-left-color:#8b928d}.chg.created{border-left-color:#2f9a57}
+.why{font-size:.86rem;background:#f7f9fb;border:1px solid var(--line);border-radius:6px;padding:6px 9px}
+dialog{border:none;border-radius:10px;padding:0;box-shadow:0 12px 40px rgba(16,30,48,.3);max-height:calc(100vh - 32px)}
+dialog::backdrop{background:rgba(16,30,48,.45)}
+dialog form,dialog .dbody{display:grid;gap:10px;padding:18px}
+dialog h2{font-size:1.15rem;margin:0}
+.dsm{width:min(460px,calc(100vw - 32px))}
+.dlg{width:min(760px,calc(100vw - 24px))}
+.dfoot{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap}
+.msgline{font-size:.85rem;min-height:1.2em;color:var(--muted);margin-right:auto}
+.msgline.err{color:#b3261e}
+.lrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) auto;gap:6px}
+@media (max-width:560px){.lrow{grid-template-columns:minmax(0,1fr) auto}.lrow .lu{grid-column:1}.lrow .ll{grid-column:1/-1}}
+.frow{display:flex;gap:8px;align-items:center;font-size:.88rem;border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:#f7f9fb}
+.frow span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hint{font-size:.78rem;color:var(--muted)}
+.ver{border-left:3px solid var(--line);padding:2px 0 2px 10px;display:grid;gap:6px;font-size:.88rem}
+.ver.cur{border-left-color:var(--brand-gold)}
+.ver .vh{font-weight:700;color:var(--heading)}
+.ver .vh span{font-weight:400;color:var(--muted)}
+.dif{white-space:pre-wrap;background:#f7f9fb;border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:.86rem;max-height:260px;overflow:auto;overflow-wrap:anywhere}
+.dif del{background:#fbe1df;color:#8c1d16}
+.dif ins{background:#dcf1e3;color:#155c30;text-decoration:none}
+.lbl{font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1b2633;color:#fff;border-radius:8px;padding:8px 14px;font-size:.9rem;z-index:50}
+@media (max-width:560px){.q .a{padding-left:14px}}
+</style>
+</head>
+<body>
+<div id="ltTop" data-current="faq" data-crumbs="Recruiting & Onboarding|/recruiting/;Driver FAQ"></div>
+<script src="/assets/nav.js"></script>
+
+<div class="wrap">
+  <header><div>
+    <h1>Driver FAQ</h1>
+    <p class="small muted" style="margin:4px 0 0">Answers on hiring, pay, benefits and life on the road. Every change is saved with who made it, when and why.</p>
+  </div></header>
+
+  <div class="card" id="gate"><p class="muted" style="margin:0" id="gateText">Checking your account…</p></div>
+
+  <div id="ui" hidden style="display:grid;gap:14px">
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" id="tabFaq" aria-selected="true">FAQ</button>
+      <button type="button" role="tab" id="tabRecent" aria-selected="false">Recent changes</button>
+      <button type="button" role="tab" id="tabDel" aria-selected="false" hidden>Deleted</button>
+    </div>
+
+    <section id="faqView" style="display:grid;gap:14px">
+      <div class="bar">
+        <input type="search" id="q" class="txt" placeholder="Search questions and answers" aria-label="Search the FAQ">
+        <button type="button" class="primary" id="newBtn" hidden>+ New FAQ</button>
+      </div>
+      <div class="bar" style="justify-content:space-between">
+        <span class="small muted" id="countLine"></span>
+        <span class="asof"><label for="asofDate">See it as of</label><input type="date" id="asofDate" class="txt"><button type="button" id="asofGo">View</button></span>
+      </div>
+      <div class="banner" id="asofBanner" hidden><span id="asofText" style="flex:1 1 auto"></span><button type="button" id="asofOff">Back to today</button></div>
+      <nav class="jump" id="jump" aria-label="Categories"></nav>
+      <div id="list" style="display:grid;gap:22px"></div>
+    </section>
+
+    <section id="recentView" hidden style="display:grid;gap:10px">
+      <p class="small muted" style="margin:0">The latest 100 changes across the whole FAQ. Open History on any FAQ to see every version.</p>
+      <div class="feed" id="feed"></div>
+    </section>
+
+    <section id="delView" hidden style="display:grid;gap:10px">
+      <p class="small muted" style="margin:0">Only you can see deleted FAQs. Restoring puts one back exactly as it was, with its full history.</p>
+      <div class="feed" id="delList"></div>
+    </section>
+  </div>
+</div>
+
+<!-- Add or edit a FAQ -->
+<dialog id="edDlg" class="dlg"><form id="edForm" method="dialog">
+  <h2 id="edTitle">New FAQ</h2>
+  <label class="field"><span>Category</span>
+    <select id="edCat" class="txt"></select></label>
+  <label class="field" id="edNewCatWrap" hidden><span>New category name</span><input id="edNewCat" class="txt" maxlength="80"></label>
+  <label class="field"><span>Question</span><input id="edQ" class="txt" maxlength="500" required></label>
+  <label class="field"><span>Answer</span><textarea id="edA" class="txt" rows="10" maxlength="20000"></textarea></label>
+  <p class="hint" style="margin:-4px 0 0">Formatting: start a line with "- " for a bullet or "1. " for a numbered step, wrap words in **double stars** for bold, write FAQ 12 to link another FAQ, and [text](https://…) for a web link. Leave a blank line between paragraphs.</p>
+  <div class="field"><span>Web links <small class="muted">(open in a new tab after a "leaving the site" warning)</small></span>
+    <div id="edLinks" style="display:grid;gap:6px"></div>
+    <div><button type="button" id="edAddLink">+ Add link</button></div></div>
+  <div class="field"><span>Photos, videos and documents <small class="muted">(up to 50 MB each)</small></span>
+    <div id="edFiles" style="display:grid;gap:6px"></div>
+    <div><label class="doc" style="cursor:pointer">+ Add files<input type="file" id="edFile" multiple hidden accept="image/*,video/*,audio/*,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx"></label></div></div>
+  <label class="field"><span>Reason for this change <small class="muted">(required, shows in the history)</small></span>
+    <textarea id="edReason" class="txt" rows="2" maxlength="1000" placeholder="e.g. Updated for the 2027 benefits year"></textarea></label>
+  <div class="dfoot"><span class="msgline" id="edMsg"></span><button type="button" id="edCancel">Cancel</button><button type="submit" class="primary" id="edSave">Save</button></div>
+</form></dialog>
+
+<!-- Reason prompt for hide, move, delete, restore -->
+<dialog id="rsDlg" class="dsm"><form id="rsForm" method="dialog">
+  <h2 id="rsTitle"></h2>
+  <p class="small" style="margin:0" id="rsText"></p>
+  <textarea id="rsReason" class="txt" rows="2" maxlength="1000" placeholder="Reason (required)"></textarea>
+  <div class="dfoot"><span class="msgline err" id="rsMsg"></span><button type="button" id="rsCancel">Cancel</button><button type="submit" class="primary" id="rsGo">Save</button></div>
+</form></dialog>
+
+<!-- History of one FAQ -->
+<dialog id="hiDlg" class="dlg"><div class="dbody">
+  <div style="display:flex;gap:8px;align-items:start"><h2 id="hiTitle" style="flex:1 1 auto">History</h2><button type="button" id="hiClose">Close</button></div>
+  <div id="hiBody" style="display:grid;gap:14px"></div>
+</div></dialog>
+
+<!-- Leaving the site -->
+<dialog id="lvDlg" class="dsm"><form id="lvForm" method="dialog">
+  <h2>You're leaving the Operations Center</h2>
+  <p class="small" style="margin:0">This link opens another website in a new tab. Liquid Trucking doesn't control that site.</p>
+  <p class="small" style="margin:0;overflow-wrap:anywhere"><b id="lvHost"></b><br><span class="muted" id="lvUrl"></span></p>
+  <div class="dfoot"><button type="button" id="lvStay">Stay here</button><button type="submit" class="primary" id="lvGo">Continue</button></div>
+</form></dialog>
+
+<div id="ltFoot"></div>
+<script>ltDrawShell()</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
+<script src="/assets/portal.js"></script>
+<script src="/assets/feedback.js"></script>
+<script>
+const $=id=>document.getElementById(id), E=ltEsc;
+let sb=null, canEdit=false, isOwner=false, uid=null;
+let CATS=[], FAQS=[], DELETED=[], ASOF=null;   // ASOF = {label, rows} while viewing a past date
+const signed=new Map();                         // storage path -> {url, exp}
+const MAXFILE=50*1024*1024;
+
+// ---------- Small helpers ----------
+const fmtDate=s=>s?new Date(s).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}):"";
+const fmtWhen=s=>s?new Date(s).toLocaleString(undefined,{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"}):"";
+const fmtSize=n=>!n?"":n<1024*1024?Math.max(1,Math.round(n/1024))+" KB":(n/1048576).toFixed(1)+" MB";
+const byId=id=>FAQS.find(f=>f.id===id)||DELETED.find(f=>f.id===id);
+const safeUrl=u=>/^https?:\/\/[^\s]+$/i.test(String(u||"").trim());
+function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2200);}
+function errText(e){return (e&&(e.message||e.error_description))||"Something went wrong. Try again.";}
+
+// ---------- Answer formatting (a small, safe subset of Markdown; everything is escaped first) ----------
+const INLINE=/\\([*_\\|\[\]])|\*\*(.+?)\*\*|\*(?!\s)(.+?)\*|\[([^\]]+)\]\(((?:https?:\/\/|mailto:|tel:|\/)[^\s)]+)\)|(https?:\/\/[^\s<]*[^\s<.,;:!?)\]])|([\w.+-]+@[\w-]+(?:\.[\w-]+)+)|((?:1-)?(?:\(\d{3}\) ?|\b\d{3}[-.])\d{3}-\d{4}\b)|\b(FAQs?) (\d+)((?:\s*(?:-|–|,|and|&)\s*\d+)*)|\b(Hiring Map)\b/g;
+function linkHtml(url,text){
+  if(/^(mailto|tel):/i.test(url)) return `<a href="${E(url)}">${text}</a>`;
+  if(url.startsWith("/")) return `<a href="${E(url)}">${text}</a>`;
+  return `<a href="${E(url)}" data-ext="1" rel="noopener">${text} ↗</a>`;
+}
+function inline(s){
+  let out="", last=0, m; const re=new RegExp(INLINE.source,"g");
+  while((m=re.exec(s))){
+    out+=E(s.slice(last,m.index)); last=re.lastIndex;
+    if(m[1]) out+=E(m[1]);
+    else if(m[2]) out+=`<strong>${inline(m[2])}</strong>`;
+    else if(m[3]) out+=`<em>${inline(m[3])}</em>`;
+    else if(m[4]) out+=linkHtml(m[5],inline(m[4]));
+    else if(m[6]) out+=linkHtml(m[6],E(m[6]));
+    else if(m[7]) out+=`<a href="mailto:${E(m[7])}">${E(m[7])}</a>`;
+    else if(m[8]) out+=`<a href="tel:+1${m[8].replace(/\D/g,"").replace(/^1(?=\d{10}$)/,"")}">${E(m[8])}</a>`;
+    else if(m[9]){ // "FAQ 12" or "FAQs 97-99": link each number that exists
+      const rest=(m[11]||"").replace(/\d+/g,n=>refLink(n));
+      out+=E(m[9])+" "+refLink(m[10])+rest;
+    }
+    else if(m[12]) out+=`<a href="/recruiting/hiring-map">Hiring Map</a>`;
+  }
+  return out+E(s.slice(last));
+}
+function refLink(n){const id=+n, known=(ASOF?ASOF.rows:FAQS).some(f=>f.id===id);return known?`<a href="#faq-${id}" data-ref="${id}">${n}</a>`:E(n);}
+const cells=row=>row.trim().replace(/^\|/,"").replace(/(?<!\\)\|$/,"").split(/(?<!\\)\|/).map(c=>c.trim());
+function md(text){
+  const lines=String(text||"").replace(/\r/g,"").split("\n"), out=[]; let i=0;
+  while(i<lines.length){
+    const l=lines[i];
+    if(!l.trim()){i++;continue;}
+    if(/^\s*\|/.test(l)){
+      const rows=[]; while(i<lines.length&&/^\s*\|/.test(lines[i])) rows.push(lines[i++]);
+      const head=cells(rows[0]), body=rows.slice(1).filter(r=>!/^\s*\|[\s:|-]+\|?\s*$/.test(r)).map(cells);
+      out.push(`<div class="tw"><table><thead><tr>${head.map(c=>`<th>${inline(c)}</th>`).join("")}</tr></thead><tbody>${body.map(r=>`<tr>${r.map(c=>`<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`);
+      continue;
+    }
+    if(/^\s*[-•] /.test(l)||/^\s*\d+[.)] /.test(l)){
+      const ol=/^\s*\d+[.)] /.test(l), re=ol?/^\s*\d+[.)] /:/^\s*[-•] /, items=[];
+      while(i<lines.length&&re.test(lines[i])){let t=lines[i++].replace(re,"");while(i<lines.length&&/^\s{2,}\S/.test(lines[i])&&!re.test(lines[i]))t+="\n"+lines[i++].trim();items.push(t);}
+      out.push(`<${ol?"ol":"ul"}>${items.map(t=>`<li>${inline(t).replace(/\n/g,"<br>")}</li>`).join("")}</${ol?"ol":"ul"}>`);
+      continue;
+    }
+    const para=[]; while(i<lines.length&&lines[i].trim()&&!/^\s*\|/.test(lines[i])&&!/^\s*[-•] /.test(lines[i])&&!/^\s*\d+[.)] /.test(lines[i])) para.push(lines[i++]);
+    const src=/^\*Source:/i.test(para[0]);
+    out.push(`<p${src?' class="src"':""}>${para.map(inline).join("<br>")}</p>`);
+  }
+  return out.join("");
+}
+const plain=s=>String(s||"").replace(/\\\*/g,"*").replace(/\*\*?/g,"").toLowerCase();
+
+// ---------- Loading ----------
+async function load(){
+  const [c,f]=await Promise.all([
+    sb.from("faq_categories").select("name,sort").order("sort"),
+    sb.from("faq").select("*").order("sort").range(0,4999)]);
+  if(c.error||f.error) throw (c.error||f.error);
+  CATS=c.data||[]; const all=f.data||[];
+  FAQS=all.filter(x=>!x.deleted_at); DELETED=all.filter(x=>x.deleted_at).sort((a,b)=>b.deleted_at.localeCompare(a.deleted_at));
+  $("tabDel").hidden=!isOwner; $("tabDel").textContent=`Deleted (${DELETED.length})`;
+}
+function catOrder(rows){
+  const names=CATS.map(c=>c.name); rows.forEach(r=>{if(!names.includes(r.category))names.push(r.category);});
+  return names;
+}
+
+// ---------- FAQ view ----------
+function openIds(){return [...document.querySelectorAll("#list details[open]")].map(d=>+d.dataset.id);}
+function render(keepOpen=[]){
+  const rows=(ASOF?ASOF.rows:FAQS).slice().sort((a,b)=>a.sort-b.sort||a.id-b.id);
+  const words=$("q").value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const hit=r=>{const t=plain(r.question+" "+r.answer+" "+(r.links||[]).map(l=>l.label).join(" ")+" "+r.category);return words.every(w=>t.includes(w));};
+  const shown=words.length?rows.filter(hit):rows, live=!ASOF&&canEdit;
+  const cats=catOrder(rows).filter(n=>live||shown.some(r=>r.category===n));
+  let html="", jump="";
+  cats.forEach((name,ci)=>{
+    const items=shown.filter(r=>r.category===name); if(!items.length&&(words.length||!live)) return;
+    const slug="cat-"+ci;
+    jump+=`<a href="#${slug}">${E(name)} <span>${items.length}</span></a>`;
+    html+=`<section class="cat" id="${slug}"><div class="cathead"><h2>${E(name)}</h2>${live&&!words.length?`<button type="button" data-catmove="-1" data-cat="${E(name)}" aria-label="Move ${E(name)} up" ${ci===0?"disabled":""}>▲</button><button type="button" data-catmove="1" data-cat="${E(name)}" aria-label="Move ${E(name)} down" ${ci===cats.length-1?"disabled":""}>▼</button>`:""}</div>`;
+    html+=items.length?items.map((r,ii)=>itemHtml(r,ii,items.length,words.length>0||keepOpen.includes(r.id))).join(""):`<p class="empty small" style="margin:0">No FAQs in this category yet.</p>`;
+    html+=`</section>`;
+  });
+  $("list").innerHTML=html||`<p class="empty">${words.length?"Nothing matches that search. Try fewer or different words.":"No FAQs yet."}</p>`;
+  $("jump").innerHTML=words.length?"":jump;
+  const hid=ASOF||!canEdit?0:FAQS.filter(r=>r.hidden).length;
+  $("countLine").textContent=words.length?`${shown.length} of ${rows.length} FAQs match`:`${rows.length} FAQs${hid?` · ${hid} hidden from readers`:""}`;
+  document.querySelectorAll("#list details[open]").forEach(loadMedia);
+}
+function itemHtml(r,i,n,open){
+  const live=!ASOF&&canEdit, links=r.links||[], media=r.media||[];
+  const changedAt=ASOF?r.changed_at:r.updated_at, changedBy=ASOF?r.changed_by:r.updated_by_name;
+  return `<details class="q${r.hidden?" hid":""}" id="faq-${r.id}" data-id="${r.id}"${open?" open":""}>
+  <summary><span class="qt">${E(r.question)}</span>${r.hidden?`<span class="tag hid">Hidden</span>`:""}</summary>
+  <div class="a">
+    <div class="md">${md(r.answer)}</div>
+    ${media.length?`<div class="media" data-media="${r.id}"><span class="small muted">Loading files…</span></div>`:""}
+    ${links.length?`<ul class="links">${links.filter(l=>safeUrl(l.url)).map(l=>`<li>${linkHtml(l.url,E(l.label||l.url))}</li>`).join("")}</ul>`:""}
+    <div class="meta"><span>FAQ ${r.id} · Last changed ${fmtDate(changedAt)}${changedBy?` by ${E(changedBy)}`:""}</span>
+      <button type="button" class="linky" data-hist="${r.id}">History</button>
+      <button type="button" class="linky" data-copy="${r.id}">Copy link</button></div>
+    ${live?`<div class="tools">
+      <button type="button" data-edit="${r.id}">Edit</button>
+      <button type="button" data-hide="${r.id}">${r.hidden?"Unhide":"Hide"}</button>
+      <button type="button" data-move="-1" data-id="${r.id}" ${i===0?"disabled":""}>▲ Move up</button>
+      <button type="button" data-move="1" data-id="${r.id}" ${i===n-1?"disabled":""}>▼ Move down</button>
+      ${isOwner?`<button type="button" class="danger" data-del="${r.id}">Delete</button>`:""}</div>`:""}
+  </div></details>`;
+}
+async function signedUrl(path){
+  const c=signed.get(path); if(c&&c.exp>Date.now()) return c.url;
+  const {data,error}=await sb.storage.from("faq").createSignedUrl(path,3600);
+  if(error||!data) return null; signed.set(path,{url:data.signedUrl,exp:Date.now()+50*60*1000}); return data.signedUrl;
+}
+async function loadMedia(det){
+  const box=det.querySelector("[data-media]"); if(!box||box.dataset.done) return; box.dataset.done="1";
+  const id=+box.dataset.media, r=(ASOF?ASOF.rows:FAQS).find(x=>x.id===id); if(!r) return;
+  const parts=await Promise.all((r.media||[]).map(async m=>{
+    const u=await signedUrl(m.path); if(!u) return `<span class="doc">⚠ ${E(m.name)} <span>(can't open)</span></span>`;
+    const t=m.type||"";
+    if(t.startsWith("image/")) return `<a class="ph" href="${E(u)}" target="_blank" rel="noopener" title="${E(m.name)}"><img src="${E(u)}" alt="${E(m.name)}" loading="lazy"></a>`;
+    if(t.startsWith("video/")) return `<video controls preload="metadata" src="${E(u)}" title="${E(m.name)}"></video>`;
+    if(t.startsWith("audio/")) return `<audio controls preload="metadata" src="${E(u)}" title="${E(m.name)}"></audio>`;
+    return `<a class="doc" href="${E(u)}" target="_blank" rel="noopener">📄 ${E(m.name)} <span>${fmtSize(m.size)}</span></a>`;
+  }));
+  box.innerHTML=parts.join("");
+}
+function goTo(id){
+  const d=$("faq-"+id); if(!d){ if($("q").value){$("q").value="";render();return goTo(id);} return; }
+  if($("faqView").hidden) showTab("faq");
+  d.open=true; loadMedia(d); d.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+// ---------- Reason prompt ----------
+let rsResolve=null;
+function askReason(title,text,go,danger){
+  $("rsTitle").textContent=title; $("rsText").textContent=text||""; $("rsReason").value=""; $("rsMsg").textContent="";
+  $("rsGo").textContent=go||"Save"; $("rsGo").className=danger?"danger":"primary";
+  $("rsDlg").showModal(); $("rsReason").focus();
+  return new Promise(res=>{rsResolve=res;});
+}
+$("rsForm").addEventListener("submit",e=>{
+  e.preventDefault(); const r=$("rsReason").value.trim();
+  if(!r){$("rsMsg").textContent="Please add a reason.";return;}
+  $("rsDlg").close(); rsResolve&&rsResolve(r); rsResolve=null;
+});
+$("rsCancel").onclick=()=>$("rsDlg").close();
+$("rsDlg").addEventListener("close",()=>{if(rsResolve){rsResolve(null);rsResolve=null;}});
+
+async function act(fn,args,okText,reopen){
+  const keep=openIds(); const {error}=await sb.rpc(fn,args);
+  if(error){alert(errText(error));return false;}
+  await load(); render(reopen?keep.concat(reopen):keep); if(okText) toast(okText); return true;
+}
+
+// ---------- Add / edit ----------
+let ED=null;
+function linkRow(l){
+  const d=document.createElement("div"); d.className="lrow";
+  d.innerHTML=`<input class="txt ll" placeholder="Label, e.g. Paycor sign-in" maxlength="200" value="${E(l.label||"")}"><input class="txt lu" placeholder="https://…" inputmode="url" value="${E(l.url||"")}"><button type="button" aria-label="Remove link">✕</button>`;
+  d.querySelector("button").onclick=()=>d.remove(); return d;
+}
+function drawFiles(){
+  $("edFiles").innerHTML=ED.media.map((m,i)=>`<div class="frow"><span>${m.type.startsWith("image/")?"🖼":m.type.startsWith("video/")?"🎬":"📄"} ${E(m.name)} <small class="muted">${fmtSize(m.size)}</small></span><button type="button" data-rmfile="${i}">Remove</button></div>`).join("")+(ED.uploading?`<div class="small muted">Uploading ${ED.uploading} file${ED.uploading>1?"s":""}…</div>`:"");
+}
+function openEditor(r){
+  ED={id:r?r.id:null, version:r?r.version:null, media:r?JSON.parse(JSON.stringify(r.media||[])):[], uploading:0};
+  $("edTitle").textContent=r?`Edit FAQ ${r.id}`:"New FAQ";
+  const names=catOrder(FAQS), cur=r?r.category:"";
+  $("edCat").innerHTML=(r?"":`<option value="">Pick a category…</option>`)+names.map(n=>`<option${n===cur?" selected":""}>${E(n)}</option>`).join("")+`<option value="__new">+ New category…</option>`;
+  $("edNewCatWrap").hidden=true; $("edNewCat").value="";
+  $("edQ").value=r?r.question:""; $("edA").value=r?r.answer:""; $("edReason").value=""; $("edMsg").textContent=""; $("edMsg").className="msgline";
+  $("edLinks").innerHTML=""; (r?r.links||[]:[]).forEach(l=>$("edLinks").appendChild(linkRow(l)));
+  drawFiles(); $("edSave").disabled=false; $("edDlg").showModal(); $("edQ").focus();
+}
+$("edCat").onchange=()=>{$("edNewCatWrap").hidden=$("edCat").value!=="__new"; if($("edCat").value==="__new")$("edNewCat").focus();};
+$("edAddLink").onclick=()=>{const row=linkRow({});$("edLinks").appendChild(row);row.querySelector(".ll").focus();};
+$("edFiles").onclick=e=>{const b=e.target.closest("[data-rmfile]");if(b){ED.media.splice(+b.dataset.rmfile,1);drawFiles();}};
+$("edFile").onchange=async e=>{
+  const files=[...e.target.files]; e.target.value="";
+  for(const f of files){
+    if(f.size>MAXFILE){alert(`${f.name} is over 50 MB. Try a smaller file, or put it online and add a web link instead.`);continue;}
+    if(ED.media.length+ED.uploading>=30){alert("A FAQ can hold up to 30 files.");break;}
+    ED.uploading++; drawFiles();
+    const path=`${uid}/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${f.name.replace(/[^\w.-]+/g,"_").slice(-80)}`;
+    const {error}=await sb.storage.from("faq").upload(path,f,{contentType:f.type||"application/octet-stream",upsert:false});
+    ED.uploading--;
+    if(error) alert(`Couldn't upload ${f.name}: ${errText(error)}`);
+    else ED.media.push({path,name:f.name,type:f.type||"application/octet-stream",size:f.size});
+    drawFiles();
+  }
+};
+$("edCancel").onclick=()=>$("edDlg").close();
+$("edForm").addEventListener("submit",async e=>{
+  e.preventDefault(); const msg=t=>{$("edMsg").textContent=t;$("edMsg").className="msgline err";};
+  const cat=$("edCat").value==="__new"?$("edNewCat").value.trim():$("edCat").value;
+  if(!cat) return msg("Pick a category.");
+  if($("edQ").value.trim().length<3) return msg("Write the question.");
+  const links=[]; for(const row of $("edLinks").children){const label=row.querySelector(".ll").value.trim(), url=row.querySelector(".lu").value.trim(); if(!url&&!label)continue; if(!safeUrl(url)) return msg(`"${url||label}" isn't a full web address. Links need to start with https://`); links.push({label,url});}
+  if(ED.uploading) return msg("Wait for the files to finish uploading.");
+  const reason=$("edReason").value.trim(); if(!reason){$("edReason").focus();return msg("Add a reason for this change.");}
+  $("edSave").disabled=true; $("edMsg").className="msgline"; $("edMsg").textContent="Saving…";
+  const {data,error}=await sb.rpc("faq_save",{p_id:ED.id,p_category:cat,p_question:$("edQ").value,p_answer:$("edA").value,p_links:links,p_media:ED.media,p_reason:reason,p_version:ED.version});
+  $("edSave").disabled=false;
+  if(error) return msg(errText(error));
+  const id=(data&&data.id)||ED.id; $("edDlg").close();
+  const keep=openIds(); await load(); $("q").value=""; render(keep.concat([id])); toast(ED.id?"Saved":"FAQ added"); goTo(id);
+});
+
+// ---------- History ----------
+const ACT={imported:"Imported",created:"Created",edited:"Edited",moved:"Moved",hidden:"Hidden",unhidden:"Unhidden",restored:"Restored an older version",deleted:"Deleted",undeleted:"Brought back",categories:"Changed category order"};
+function diffWords(a,b){
+  a=String(a||""); b=String(b||""); if(a===b) return E(a);
+  const A=a.split(/(\s+)/), B=b.split(/(\s+)/); let s=0; while(s<A.length&&s<B.length&&A[s]===B[s]) s++;
+  let ea=A.length, eb=B.length; while(ea>s&&eb>s&&A[ea-1]===B[eb-1]){ea--;eb--;}
+  const pre=A.slice(0,s).join(""), post=A.slice(ea).join(""), x=A.slice(s,ea), y=B.slice(s,eb);
+  let mid="";
+  if(x.length*y.length>2500000){mid=(x.length?`<del>${E(x.join(""))}</del>`:"")+(y.length?`<ins>${E(y.join(""))}</ins>`:"");}
+  else{
+    const n=x.length, m=y.length, L=Array.from({length:n+1},()=>new Uint32Array(m+1));
+    for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)L[i][j]=x[i]===y[j]?L[i+1][j+1]+1:Math.max(L[i+1][j],L[i][j+1]);
+    let i=0,j=0,del="",ins=""; const flush=()=>{if(del)mid+=`<del>${E(del)}</del>`;if(ins)mid+=`<ins>${E(ins)}</ins>`;del=ins="";};
+    while(i<n&&j<m){ if(x[i]===y[j]){flush();mid+=E(x[i]);i++;j++;} else if(L[i+1][j]>=L[i][j+1]) del+=x[i++]; else ins+=y[j++]; }
+    while(i<n) del+=x[i++]; while(j<m) ins+=y[j++]; flush();
+  }
+  return E(pre)+mid+E(post);
+}
+function listDiff(before,after,key,show){
+  const bk=(before||[]).map(key), ak=(after||[]).map(key);
+  const add=(after||[]).filter(x=>!bk.includes(key(x))), rem=(before||[]).filter(x=>!ak.includes(key(x)));
+  return add.map(x=>`<div><ins>+ ${E(show(x))}</ins></div>`).join("")+rem.map(x=>`<div><del>− ${E(show(x))}</del></div>`).join("");
+}
+function versionBody(v){
+  const b=v.before, a=v.after;
+  if(!a) return "";
+  if(!b) return `<div class="lbl">Question</div><div class="dif">${E(a.question)}</div><div class="lbl">Answer</div><div class="dif">${E(a.answer)}</div>`+
+    ((a.links||[]).length?`<div class="lbl">Links</div><div class="dif">${a.links.map(l=>E((l.label||"")+" "+l.url)).join("\n")}</div>`:"")+
+    ((a.media||[]).length?`<div class="lbl">Files</div><div class="dif">${a.media.map(m=>E(m.name)).join("\n")}</div>`:"");
+  let h="";
+  if(b.category!==a.category) h+=`<div class="lbl">Category</div><div class="dif"><del>${E(b.category)}</del> → <ins>${E(a.category)}</ins></div>`;
+  if(b.question!==a.question) h+=`<div class="lbl">Question</div><div class="dif">${diffWords(b.question,a.question)}</div>`;
+  if(b.answer!==a.answer) h+=`<div class="lbl">Answer</div><div class="dif">${diffWords(b.answer,a.answer)}</div>`;
+  const ld=listDiff(b.links,a.links,l=>l.url+"|"+l.label,l=>(l.label&&l.label!==l.url?l.label+" – ":"")+l.url); if(ld) h+=`<div class="lbl">Links</div><div class="dif">${ld}</div>`;
+  const fd=listDiff(b.media,a.media,m=>m.path,m=>m.name); if(fd) h+=`<div class="lbl">Files</div><div class="dif">${fd}</div>`;
+  if(v.action==="moved"&&b.sort!==a.sort) h+=`<div class="small muted">Moved ${a.sort<b.sort?"up":"down"} within ${E(a.category)}.</div>`;
+  return h;
+}
+async function showHistory(id){
+  const r=byId(id)||(ASOF&&ASOF.rows.find(x=>x.id===id));
+  $("hiTitle").textContent=`History · FAQ ${id}${r?": "+r.question:""}`; $("hiBody").innerHTML=`<p class="muted" style="margin:0">Loading…</p>`; $("hiDlg").showModal();
+  const {data,error}=await sb.from("faq_versions").select("*").eq("faq_id",id).order("at",{ascending:false}).order("id",{ascending:false});
+  if(error){$("hiBody").innerHTML=`<p class="msgline err">${E(errText(error))}</p>`;return;}
+  const vs=(data||[]).slice().sort((x,y)=>y.at.localeCompare(x.at)||y.id-x.id);
+  const cur=FAQS.find(x=>x.id===id), canRestore=canEdit&&!ASOF&&!!cur;
+  $("hiBody").innerHTML=vs.length?vs.map((v,i)=>{
+    const restorable=canRestore&&i>0&&v.after&&["imported","created","edited","restored"].includes(v.action);
+    return `<div class="ver${i===0?" cur":""}"><div class="vh">${ACT[v.action]||E(v.action)} <span>· ${fmtWhen(v.at)}${v.by_name?` · ${E(v.by_name)}`:""}${v.version?` · version ${v.version}`:""}</span></div>
+      <div class="why"><b>Reason:</b> ${E(v.reason)}</div>${versionBody(v)}
+      ${restorable?`<div><button type="button" data-restorev="${v.id}" data-faq="${id}">Restore this version</button></div>`:""}</div>`;
+  }).join(""):`<p class="muted" style="margin:0">No history yet.</p>`;
+}
+$("hiClose").onclick=()=>$("hiDlg").close();
+$("hiBody").onclick=async e=>{
+  const b=e.target.closest("[data-restorev]"); if(!b) return;
+  const reason=await askReason("Restore this version?","The FAQ goes back to this wording, links and files. The current version stays in the history.","Restore");
+  if(!reason) return; const id=+b.dataset.faq;
+  if(await act("faq_restore_version",{p_version_id:+b.dataset.restorev,p_reason:reason},"Restored",[id])) showHistory(id);
+};
+
+// ---------- Recent changes & deleted ----------
+async function renderRecent(){
+  $("feed").innerHTML=`<p class="muted" style="margin:0">Loading…</p>`;
+  const {data,error}=await sb.from("faq_versions").select("*").neq("action","imported").order("at",{ascending:false}).limit(100);
+  if(error){$("feed").innerHTML=`<p class="msgline err">${E(errText(error))}</p>`;return;}
+  const vs=(data||[]).slice().sort((x,y)=>y.at.localeCompare(x.at)||y.id-x.id);
+  $("feed").innerHTML=vs.length?vs.map(v=>{
+    const f=v.faq_id&&byId(v.faq_id), q=(v.after&&v.after.question)||(v.before&&v.before.question)||(f&&f.question)||"";
+    return `<div class="chg ${E(v.action)}"><div class="when">${fmtWhen(v.at)}${v.by_name?` · ${E(v.by_name)}`:""}</div>
+      <div><b>${ACT[v.action]||E(v.action)}</b>${v.faq_id?` · FAQ ${v.faq_id}: ${E(q)}`:""}</div>
+      <div class="why"><b>Reason:</b> ${E(v.reason)}</div>
+      ${v.faq_id?`<div><button type="button" class="linky" data-hist="${v.faq_id}">See full history</button>${f&&!f.deleted_at?` · <button type="button" class="linky" data-goto="${v.faq_id}">Open FAQ</button>`:""}</div>`:""}</div>`;
+  }).join(""):`<p class="empty" style="margin:0">No changes since the FAQs were loaded.</p>`;
+}
+function renderDeleted(){
+  $("delList").innerHTML=DELETED.length?DELETED.map(r=>`<div class="chg deleted"><div class="when">Deleted ${fmtWhen(r.deleted_at)}${r.deleted_by_name?` by ${E(r.deleted_by_name)}`:""}</div>
+    <div><b>FAQ ${r.id}: ${E(r.question)}</b> <span class="small muted">· ${E(r.category)}</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-undel="${r.id}">Restore</button><button type="button" class="linky" data-hist="${r.id}">History</button></div></div>`).join(""):`<p class="empty" style="margin:0">Nothing deleted.</p>`;
+}
+function showTab(t){
+  [["faq","tabFaq","faqView"],["recent","tabRecent","recentView"],["del","tabDel","delView"]].forEach(([k,b,v])=>{$(b).setAttribute("aria-selected",String(k===t));$(v).hidden=k!==t;});
+  if(t==="recent") renderRecent(); if(t==="del") renderDeleted();
+}
+$("tabFaq").onclick=()=>showTab("faq"); $("tabRecent").onclick=()=>showTab("recent"); $("tabDel").onclick=()=>showTab("del");
+
+// ---------- As-of view ----------
+$("asofGo").onclick=async()=>{
+  const d=$("asofDate").value; if(!d){$("asofDate").focus();return;}
+  const end=new Date(d+"T23:59:59.999"); if(isNaN(end)) return;
+  $("asofGo").disabled=true; const {data,error}=await sb.rpc("faq_as_of",{p_at:end.toISOString()}); $("asofGo").disabled=false;
+  if(error){alert(errText(error));return;}
+  ASOF={rows:data||[]};
+  $("asofText").innerHTML=`Showing the Driver FAQ as it was at the end of <b>${E(end.toLocaleDateString(undefined,{weekday:"short",month:"long",day:"numeric",year:"numeric"}))}</b>. Editing is off while you look back.`;
+  $("asofBanner").hidden=false; $("newBtn").hidden=true; render();
+};
+$("asofOff").onclick=()=>{ASOF=null;$("asofDate").value="";$("asofBanner").hidden=true;$("newBtn").hidden=!canEdit;render();};
+
+// ---------- Clicks ----------
+let leaveUrl=null;
+document.addEventListener("click",async e=>{
+  const ext=e.target.closest("a[data-ext]");
+  if(ext){e.preventDefault(); leaveUrl=ext.getAttribute("href"); let host=leaveUrl; try{host=new URL(leaveUrl).hostname;}catch(_){}
+    $("lvHost").textContent=host; $("lvUrl").textContent=leaveUrl; $("lvDlg").showModal(); return;}
+  const ref=e.target.closest("a[data-ref]"); if(ref){e.preventDefault(); history.replaceState(null,"","#faq-"+ref.dataset.ref); goTo(+ref.dataset.ref); return;}
+  const t=e.target.closest("button"); if(!t) return; const d=t.dataset;
+  if(d.hist){ if($("hiDlg").open) $("hiDlg").close(); showHistory(+d.hist); }
+  else if(d.goto){ showTab("faq"); goTo(+d.goto); }
+  else if(d.copy){ const url=location.origin+location.pathname+"#faq-"+d.copy; try{await navigator.clipboard.writeText(url);toast("Link copied");}catch(_){prompt("Copy this link:",url);} }
+  else if(d.edit){ openEditor(FAQS.find(x=>x.id===+d.edit)); }
+  else if(d.hide){ const r=FAQS.find(x=>x.id===+d.hide); const reason=await askReason(r.hidden?`Unhide FAQ ${r.id}?`:`Hide FAQ ${r.id}?`, r.hidden?"Everyone with access will see it again.":"Readers won't see it. Editors still can, and you can unhide it any time.", r.hidden?"Unhide":"Hide");
+    if(reason) act("faq_set_hidden",{p_id:r.id,p_hidden:!r.hidden,p_reason:reason},r.hidden?"Unhidden":"Hidden",[r.id]); }
+  else if(d.move&&d.id){ const id=+d.id; const reason=await askReason(`Move FAQ ${id} ${d.move<0?"up":"down"}?`,"",`Move ${d.move<0?"up":"down"}`);
+    if(reason&&await act("faq_move",{p_id:id,p_dir:+d.move,p_reason:reason},"Moved",[id])) $("faq-"+id)?.scrollIntoView({block:"nearest"}); }
+  else if(d.catmove){ const reason=await askReason(`Move "${d.cat}" ${d.catmove<0?"up":"down"}?`,"Changes the order of the categories for everyone.",`Move ${d.catmove<0?"up":"down"}`);
+    if(reason) act("faq_move_category",{p_name:d.cat,p_dir:+d.catmove,p_reason:reason},"Moved"); }
+  else if(d.del){ const r=FAQS.find(x=>x.id===+d.del); const reason=await askReason(`Delete FAQ ${r.id}?`,`"${r.question}" comes off the page for everyone. Only you can see it afterward, under Deleted, and you can restore it with its full history.`,"Delete",true);
+    if(reason) act("faq_delete",{p_id:r.id,p_reason:reason},"Deleted"); }
+  else if(d.undel){ const reason=await askReason(`Restore FAQ ${d.undel}?`,"It goes back on the page exactly as it was.","Restore");
+    if(reason&&await act("faq_undelete",{p_id:+d.undel,p_reason:reason},"Restored")) renderDeleted(); }
+});
+$("lvStay").onclick=()=>$("lvDlg").close();
+$("lvForm").addEventListener("submit",e=>{e.preventDefault(); $("lvDlg").close(); if(leaveUrl&&safeUrl(leaveUrl)) window.open(leaveUrl,"_blank","noopener");});
+$("list").addEventListener("toggle",e=>{if(e.target.matches&&e.target.matches("details[open]")) loadMedia(e.target);},true);
+let qT=null; $("q").addEventListener("input",()=>{clearTimeout(qT);qT=setTimeout(()=>render(),150);});
+$("newBtn").onclick=()=>openEditor(null);
+window.addEventListener("hashchange",()=>{const m=location.hash.match(/^#faq-(\d+)$/);if(m)goTo(+m[1]);});
+
+// ---------- Start ----------
+(async()=>{
+  const a=await ltRequireAccount(); if(!a) return;
+  const {acct,pages}=a;
+  if(a.offline){$("gateText").textContent="The FAQ couldn't load. Check your connection and refresh.";return;}
+  if(!ltCanSee(acct,pages,"faq")){$("gateText").textContent="You don't have access to the Driver FAQ yet. Ask an admin to give you access.";return;}
+  sb=ltClient();
+  canEdit=acct.role==="admin"||(acct.pages&&acct.pages.faq==="edit"); isOwner=!!acct.owner;
+  try{const u=await sb.auth.getUser(); uid=u.data.user?.id||null;}catch(_){}
+  try{await load();}catch(e){$("gateText").textContent="The FAQ couldn't load: "+errText(e);return;}
+  $("newBtn").hidden=!canEdit; $("asofDate").max=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+  $("gate").hidden=true; $("ui").hidden=false; render();
+  const m=location.hash.match(/^#faq-(\d+)$/); if(m) setTimeout(()=>goTo(+m[1]),50);
+})();
+</script>
+</body>
+</html>

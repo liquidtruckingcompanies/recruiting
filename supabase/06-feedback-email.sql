@@ -39,7 +39,7 @@ begin
   v_kind := case f.kind when 'idea' then 'Idea' when 'bug' then 'Problem' else 'Other' end;
   v_page := case f.page when 'hiring-map' then 'Hiring Map' when 'index' then 'Sign-in page' when 'admin' then 'Admin'
                         when 'dashboard' then 'Operations Dashboard' when 'recruiting' then 'Recruiting & Onboarding'
-                        when 'feedback' then 'Feedback' when '' then '-' else f.page end;
+                        when 'feedback' then 'Feedback' when 'faq' then 'Driver FAQ' when '' then '-' else f.page end;
   v_name := replace(replace(replace(f.submitted_name, '&', '&amp;'), '<', '&lt;'), '>', '&gt;');
   v_atts := jsonb_array_length(coalesce(f.attachments, '[]'::jsonb));
   v_link := 'https://www.liquidtrucking.io/feedback#id=' || f.id;
