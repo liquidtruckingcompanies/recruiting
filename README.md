@@ -25,7 +25,7 @@ City dots and population bands come from GeoNames (places of 1,000+ people, via 
 
 ## Users and admins
 
-Run `supabase/setup.sql`, then `supabase/02-admin.sql`, then `supabase/03-clear-county.sql`, then `supabase/04-owner.sql`, then `supabase/05-feedback.sql`, then `supabase/06-feedback-email.sql` (after saving the Resend API key in Vault as `resend_api_key`), then `supabase/07-feedback-delete.sql` (lets the owner delete and restore feedback), then `supabase/08-faq.sql` (Driver FAQ tables, history and file storage) and `supabase/09-faq-load.sql` (the starting 115 FAQs), each once (Supabase → SQL Editor).
+Run `supabase/setup.sql`, then `supabase/02-admin.sql`, then `supabase/03-clear-county.sql`, then `supabase/04-owner.sql`, then `supabase/05-feedback.sql`, then `supabase/06-feedback-email.sql` (after saving the Resend API key in Vault as `resend_api_key`), then `supabase/07-feedback-delete.sql` (lets the owner delete and restore feedback), then `supabase/08-faq.sql` (Driver FAQ tables, history and file storage) and `supabase/09-faq-load.sql` (the starting 115 FAQs), then `supabase/10-view-as.sql` (View as) and `supabase/11-whats-new.sql` (adds What's New to the Admin page list, admins only to start), each once (Supabase → SQL Editor).
 After that, admins manage everything on `admin.html`: add users by email, set each person's level (User or Admin), turn accounts active or inactive, give per-page access (No access, View, View + edit), and choose whether each page is public or sign-in only.
 People sign in on the Home page with an emailed 6-digit code. Every account change is listed under Account history.
 New pages get a row in `public.site_pages` (id, name, public_view, sort) and an entry in `LT_SITE` in `assets/nav.js`, which decides what shows: only the sign-in page before sign-in, then the departments and pages each account can see.
@@ -41,6 +41,7 @@ Addresses are clean URLs (Cloudflare serves `/dashboard` from `dashboard.html` a
 - `/recruiting/` (`recruiting/index.html`): Recruiting, a tile per page in the department.
 - `/recruiting/hiring-map` (`recruiting/hiring-map.html`): the county hiring map. The old `/hiring-map.html` forwards here.
 - `/admin`, `/feedback`: admin and the feedback center.
+- `/whats-new` (`whats-new.html`): What's New, every site update newest first, read from `data/whats-new.json`.
 - `assets/nav.js`: the site map (`LT_SITE`: departments and pages), the shared header, breadcrumbs and footer, and the "who can see what" rules.
 - `assets/portal.js`: sign-in helpers for the sign-in, dashboard and department pages.
 - `assets/site.css`: shared brand styles.
@@ -50,3 +51,9 @@ To add a page: put the file in its department's folder, use `<div id="ltTop" dat
 ## Driver FAQ
 
 `recruiting/faq.html` (at `/recruiting/faq`). Every active user who can see the page reads it, searches it, opens any FAQ's history and can view the whole FAQ as of a past date. People with Edit access to Driver FAQ on the Admin page (and admins) can add, edit, hide, reorder and restore older versions; every change needs a reason and is saved in `faq_versions` with before and after. Only the owner can delete (soft delete, restorable from the Deleted tab). Each FAQ holds web links (open in a new tab after a "leaving the site" warning) and photos, videos and documents in the private `faq` storage bucket. All writes go through the `faq_*` functions in `08-faq.sql`.
+
+## What's New
+
+`whats-new.html` (at `/whats-new`) lists every update to the site, newest first, grouped by day, with clickable headlines that open a summary, search, area filters and a link per entry. Updates a person hasn't opened are marked "New to you" (remembered per browser), and the dashboard tile shows how many are waiting.
+
+Nobody edits it on the site, the owner included: entries live in `data/whats-new.json` and Claude adds one with every update (see `CLAUDE.md`). Who can see it is set on the Admin page like any other page, except it only offers No access / View. Admins always see it; until `supabase/11-whats-new.sql` is run, nobody else does.

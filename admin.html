@@ -101,8 +101,12 @@ const SUPABASE_KEY = "sb_publishable_YPlmQVx-G_A97WaiTSLFqg_xIyl3PC_";
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const $=id=>document.getElementById(id);
 // Department a page belongs to (site map in /assets/nav.js), shown above each page column.
-const deptOf=id=>{const d=LT_SITE.departments.find(x=>x.id===LT_SITE.pages[id]?.dept); return d?d.name:"";};
+const deptOf=id=>{const d=LT_SITE.departments.find(x=>x.id===LT_SITE.pages[id]?.dept); return d?d.name:(LT_SITE.pages[id]&&!LT_SITE.pages[id].dept?"Site-wide":"");};
 const ACCESS=[["none","No access"],["view","View"],["edit","View + edit"]];
+// View-only pages (What's New) have no editing on the site, so they only offer No access / View.
+const viewOnly=id=>!!LT_SITE.pages[id]?.viewOnly;
+// New users start with View on regular pages and No access on pages that are private by default.
+const newDefault=id=>LT_SITE.pages[id]?.privateByDefault?"none":"view";
 const fmtWhen=iso=>new Date(iso).toLocaleString(undefined,{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});
 
 let sb=null, me=null, realMe=null, USERS=[], PAGES=[];
@@ -111,10 +115,10 @@ function toast(text,err){
   const t=document.createElement("div"); t.className="toast"+(err?" err":""); t.textContent=text; t.setAttribute("role","status");
   document.body.appendChild(t); setTimeout(()=>t.remove(),err?5000:1800);
 }
-const accessSelect=(id,val,disabled)=>`<select class="txt" id="${id}" ${disabled?"disabled":""}>${ACCESS.map(([v,l])=>`<option value="${v}" ${v===val?"selected":""}>${l}</option>`).join("")}</select>`;
+const accessSelect=(id,val,disabled,pid)=>`<select class="txt" id="${id}" ${disabled?"disabled":""}>${ACCESS.filter(([v])=>!(viewOnly(pid)&&v==="edit")).map(([v,l])=>`<option value="${v}" ${v===val?"selected":""}>${l}</option>`).join("")}</select>`;
 
 function renderAddPages(){
-  $("newPages").innerHTML=PAGES.map(p=>`<label class="field" for="np-${p.id}"><span>${esc(deptOf(p.id)?deptOf(p.id)+" · ":"")}${esc(p.name)}</span>${accessSelect("np-"+p.id,"view").replace('class="txt"','class="txt" style="width:100%"')}</label>`).join("");
+  $("newPages").innerHTML=PAGES.map(p=>`<label class="field" for="np-${p.id}"><span>${esc(deptOf(p.id)?deptOf(p.id)+" · ":"")}${esc(p.name)}</span>${accessSelect("np-"+p.id,newDefault(p.id),false,p.id).replace('class="txt"','class="txt" style="width:100%"')}</label>`).join("");
 }
 
 function renderUsers(){
@@ -129,7 +133,7 @@ function renderUsers(){
       <td>${esc(u.email)}${u.owner?' <span class="badge on" title="The owner\'s account can only be changed by the owner">Owner</span>':""}${self?' <span class="muted small">(you)</span>':""}${vaCol()?" "+vaButton(u):""}</td>
       <td><select class="txt" data-f="role" ${roleLocked?`disabled title="${self?"You can't change your own level":"Only the owner can change admin rights"}"`:""} aria-label="Account level"><option value="user" ${!admin?"selected":""}>User</option><option value="admin" ${admin?"selected":""}>Admin</option></select></td>
       <td><label class="toggle"><input type="checkbox" data-f="active" ${u.active?"checked":""} ${self||locked?"disabled":""}><span class="badge ${u.active?"on":"off"}">${u.active?"Active":"Inactive"}</span></label></td>
-      ${PAGES.map(p=>`<td>${admin?'<span class="small muted">View + edit (admin)</span>':accessSelect("",u.pages?.[p.id]||"none").replace("<select",`<select data-page="${p.id}" aria-label="${esc(p.name)} access"`)}</td>`).join("")}
+      ${PAGES.map(p=>`<td>${admin?`<span class="small muted">${viewOnly(p.id)?"View":"View + edit"} (admin)</span>`:accessSelect("",(v=>viewOnly(p.id)&&v==="edit"?"view":v)(u.pages?.[p.id]||"none"),false,p.id).replace("<select",`<select data-page="${p.id}" aria-label="${esc(p.name)} access"`)}</td>`).join("")}
     </tr>`;}).join("")||`<tr><td colspan="${4+PAGES.length}" class="muted">No users yet.</td></tr>`;
   $("userBody").querySelectorAll("[data-va]").forEach(b=>b.onclick=async()=>{
     b.disabled=true; const err=await ltStartViewAs(sb,realMe,b.dataset.va);

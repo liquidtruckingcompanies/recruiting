@@ -1,0 +1,337 @@
+{
+  "about": "What's New on the Operations Center. Claude adds an entry here with every update to the site; nobody edits it on the site. Newest first. Fields: id (unique, never reused), date (YYYY-MM-DD, Central time), area, type (new | improved | fixed), title, summary, details (list), link ({href,label}, optional), refs (list of {label,href}, optional).",
+  "entries": [
+    {
+      "id": "2026-11-06-whats-new-page",
+      "date": "2026-11-06",
+      "area": "Site-wide",
+      "type": "new",
+      "title": "What's New: one place to see every change to the site",
+      "summary": "This page. Every time the site is updated, a short note lands here with a headline you can click to read the details, so nobody has to send the news around.",
+      "details": [
+        "Newest first, grouped by day. Click a headline to open it, or use Expand all.",
+        "Search, and filter by area (Hiring Map, Driver FAQ, Admin and so on).",
+        "Updates you haven't opened yet are marked \"New to you\", and the dashboard tile shows how many are waiting. This is remembered per browser.",
+        "Every entry has its own link (the # button), handy for pointing someone at one change.",
+        "Nobody can edit this page on the site, the owner included. Claude writes each entry as part of the update itself.",
+        "Admins always see it. Everyone else needs View access, set on the Admin page like any other page. It starts as admins only."
+      ],
+      "link": { "href": "/admin", "label": "Set who can see it on the Admin page" },
+      "refs": [ { "label": "PR #5", "href": "https://github.com/liquidtruckingcompanies/recruiting/pull/5" } ]
+    },
+    {
+      "id": "2026-11-05-rename-recruiting",
+      "date": "2026-11-05",
+      "area": "Site-wide",
+      "type": "improved",
+      "title": "\"Recruiting & Onboarding\" is now just \"Recruiting\"",
+      "summary": "The department is renamed everywhere it appears: the dashboard tile, the menu, breadcrumbs and the department page.",
+      "details": [
+        "Addresses didn't change, so saved links and bookmarks still work."
+      ],
+      "link": { "href": "/recruiting/", "label": "Open Recruiting" },
+      "refs": [ { "label": "PR #4", "href": "https://github.com/liquidtruckingcompanies/recruiting/pull/4" } ]
+    },
+    {
+      "id": "2026-11-05-admin-wide-users",
+      "date": "2026-11-05",
+      "area": "Admin",
+      "type": "improved",
+      "title": "Admin page: the Users table gets the full width",
+      "summary": "The Users table now spans the whole page so every page-access column fits without scrolling sideways. Pages and Account history moved below it.",
+      "details": [
+        "Column headers wrap onto two lines and the name box is narrower, so the table fits a normal laptop screen."
+      ],
+      "link": { "href": "/admin", "label": "Open Admin" },
+      "refs": [ { "label": "PR #3", "href": "https://github.com/liquidtruckingcompanies/recruiting/pull/3" } ]
+    },
+    {
+      "id": "2026-11-05-view-as-fix",
+      "date": "2026-11-05",
+      "area": "Admin",
+      "type": "fixed",
+      "title": "View as no longer drops back to your own account",
+      "summary": "Opening the dashboard while viewing as someone used to switch View as off. It now stays on until you press Exit View as.",
+      "details": [],
+      "refs": [ { "label": "PR #2", "href": "https://github.com/liquidtruckingcompanies/recruiting/pull/2" } ]
+    },
+    {
+      "id": "2026-11-05-view-as",
+      "date": "2026-11-05",
+      "area": "Admin",
+      "type": "new",
+      "title": "View as: see the site exactly the way another user sees it",
+      "summary": "Admins can press View as next to any user on the Admin page. Every page then loads with that person's level and page access, so you can check what they can and can't see.",
+      "details": [
+        "It's read-only: every change is blocked while you're viewing as someone.",
+        "A gold banner under the header shows who you're viewing as, with an Exit View as button.",
+        "Only the owner can view as another admin.",
+        "Every start and end is written to Account history."
+      ],
+      "link": { "href": "/admin", "label": "Open Admin" },
+      "refs": [ { "label": "PR #1", "href": "https://github.com/liquidtruckingcompanies/recruiting/pull/1" } ]
+    },
+    {
+      "id": "2026-11-05-faq-expand-all",
+      "date": "2026-11-05",
+      "area": "Driver FAQ",
+      "type": "improved",
+      "title": "Driver FAQ: expand or collapse everything at once",
+      "summary": "New Expand all and Collapse all buttons, for the whole FAQ and for each category, so you can read a whole section without clicking every question.",
+      "details": [],
+      "link": { "href": "/recruiting/faq", "label": "Open the Driver FAQ" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/31b0955" } ]
+    },
+    {
+      "id": "2026-11-04-driver-faq",
+      "date": "2026-11-04",
+      "area": "Driver FAQ",
+      "type": "new",
+      "title": "Driver FAQ page, with 115 answers to start",
+      "summary": "A searchable FAQ for recruiters, loaded with 115 answers from the Payroll FAQ, Regional Driver Pay Plan, Benefits Guide and FAQ Sheet.",
+      "details": [
+        "Search across every question and answer, and jump between categories.",
+        "Each FAQ can hold web links, photos, videos and documents (the original PDFs are attached where they apply).",
+        "People with Edit access can add, edit, hide, reorder and restore older versions. Every change needs a reason.",
+        "Open any FAQ's history to see each version with before and after, or view the whole FAQ as of a past date.",
+        "Only the owner can delete, and deleted FAQs can be restored from the Deleted tab."
+      ],
+      "link": { "href": "/recruiting/faq", "label": "Open the Driver FAQ" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/872dbdd" } ]
+    },
+    {
+      "id": "2026-11-04-www-address",
+      "date": "2026-11-04",
+      "area": "Site-wide",
+      "type": "improved",
+      "title": "The site's address is now www.liquidtrucking.io",
+      "summary": "The Operations Center moved to www.liquidtrucking.io. Sign-in emails now have the subject \"Your Operations Center sign-in code\".",
+      "details": [],
+      "link": { "href": "/", "label": "Open the Operations Center" }
+    },
+    {
+      "id": "2026-11-04-feedback-delete",
+      "date": "2026-11-04",
+      "area": "Feedback",
+      "type": "new",
+      "title": "The owner can delete feedback, and restore it",
+      "summary": "Spam or duplicate feedback can now be deleted by the site owner. Nothing is lost: deleted items sit in a Deleted tab and can be restored.",
+      "details": [],
+      "link": { "href": "/feedback", "label": "Open the Feedback Center" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/d22e872" } ]
+    },
+    {
+      "id": "2026-11-03-operations-center",
+      "date": "2026-11-03",
+      "area": "Site-wide",
+      "type": "new",
+      "title": "The site becomes the Liquid Trucking Operations Center",
+      "summary": "The recruiting site grew into an Operations Center with room for every department: sign in once, land on the Operations Dashboard, and pick a department.",
+      "details": [
+        "Sign-in page at the front, then the Operations Dashboard with a tile for each department you can see.",
+        "Recruiting is the first department, holding the Hiring Map (and later the Driver FAQ).",
+        "Every page shares the same header, breadcrumbs, your name and a Sign out button.",
+        "If you open a page while signed out, you're sent to sign in and brought straight back.",
+        "The old Hiring Map address forwards to the new one."
+      ],
+      "link": { "href": "/dashboard", "label": "Open the dashboard" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/6a03e94" } ]
+    },
+    {
+      "id": "2026-11-03-feedback-email",
+      "date": "2026-11-03",
+      "area": "Feedback",
+      "type": "new",
+      "title": "Email alert to the owner when feedback comes in",
+      "summary": "Each new feedback submission now emails the site owner with what was sent and a link to it in the Feedback Center.",
+      "details": [
+        "Sent from the Liquid Trucking Operations Center at liquidtrucking.io."
+      ],
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/34682ac" } ]
+    },
+    {
+      "id": "2026-11-03-signin-email",
+      "date": "2026-11-03",
+      "area": "Sign-in",
+      "type": "improved",
+      "title": "Sign-in codes come from no-reply@liquidtrucking.io",
+      "summary": "Sign-in codes are now sent from the company's own domain, so they arrive faster and are less likely to land in spam.",
+      "details": [
+        "If a code doesn't show up, check Junk or Quarantine in Outlook."
+      ]
+    },
+    {
+      "id": "2026-11-03-map-scroll",
+      "date": "2026-11-03",
+      "area": "Hiring Map",
+      "type": "improved",
+      "title": "Hiring Map: scrolling moves the page, not the map",
+      "summary": "A plain mouse wheel or one-finger swipe now scrolls past the map. To zoom, hold Ctrl (Cmd on a Mac) while scrolling, pinch on a trackpad, or use two fingers on a phone.",
+      "details": [
+        "A short hint appears when you scroll over the map.",
+        "In full-screen mode, plain scrolling still zooms."
+      ],
+      "link": { "href": "/recruiting/hiring-map", "label": "Open the Hiring Map" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/88c7927" } ]
+    },
+    {
+      "id": "2026-11-02-feedback-center",
+      "date": "2026-11-02",
+      "area": "Feedback",
+      "type": "new",
+      "title": "Feedback button on every page, and a Feedback Center",
+      "summary": "The \"Got an idea or spot a problem?\" button on every page sends a note, with screenshots or a video if you like. Admins work through submissions in the Feedback Center; everyone else can see where theirs stand.",
+      "details": [
+        "The page you were on and your screen size are included automatically.",
+        "Admins set a status with a reason, a priority and internal notes, and every change is kept in the item's history."
+      ],
+      "link": { "href": "/feedback", "label": "Open Feedback" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/21198a9" } ]
+    },
+    {
+      "id": "2026-11-02-map-bigger",
+      "date": "2026-11-02",
+      "area": "Hiring Map",
+      "type": "improved",
+      "title": "Hiring Map: bigger map and a full-screen button",
+      "summary": "The map now uses the full width of the page and fills the window's height, and a new button opens it full screen.",
+      "details": [],
+      "link": { "href": "/recruiting/hiring-map", "label": "Open the Hiring Map" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/92d6b8c" } ]
+    },
+    {
+      "id": "2026-11-02-access-menus",
+      "date": "2026-11-02",
+      "area": "Site-wide",
+      "type": "improved",
+      "title": "Menus and tiles only show what you can open",
+      "summary": "Before sign-in, only the sign-in page shows. After sign-in, the menu and page tiles follow each account's access, and a page set to sign-in only is hidden completely from people without access.",
+      "details": [],
+      "refs": [
+        { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/08ceb0b" },
+        { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/16df769" }
+      ]
+    },
+    {
+      "id": "2026-11-02-owner-protection",
+      "date": "2026-11-02",
+      "area": "Admin",
+      "type": "new",
+      "title": "Owner account is protected; only the owner makes admins",
+      "summary": "The site now has one owner. Only the owner can make or remove admins or change another admin's account, and nobody else can change the owner's account.",
+      "details": [],
+      "link": { "href": "/admin", "label": "Open Admin" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/12755cc" } ]
+    },
+    {
+      "id": "2026-11-02-map-clear-stale",
+      "date": "2026-11-02",
+      "area": "Hiring Map",
+      "type": "new",
+      "title": "Hiring Map: clear a color, see when it last changed",
+      "summary": "Editors can clear a county's color. Each county shows when it was last changed, with a note when that was more than 60 days ago, and there's a full map reset.",
+      "details": [],
+      "link": { "href": "/recruiting/hiring-map", "label": "Open the Hiring Map" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/69dff7b" } ]
+    },
+    {
+      "id": "2026-11-02-map-bulk-confirm",
+      "date": "2026-11-02",
+      "area": "Hiring Map",
+      "type": "new",
+      "title": "Hiring Map: a check before changing many counties at once",
+      "summary": "Changing several counties together now shows a summary first and asks for a reason. For 10 or more counties you type the count to confirm.",
+      "details": [],
+      "link": { "href": "/recruiting/hiring-map", "label": "Open the Hiring Map" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/88f7683" } ]
+    },
+    {
+      "id": "2026-11-02-map-state-focus",
+      "date": "2026-11-02",
+      "area": "Hiring Map",
+      "type": "new",
+      "title": "Hiring Map: focus on one state",
+      "summary": "Pick a state to hide everything outside it until you clear the focus. The clear button stays reachable on phones.",
+      "details": [],
+      "link": { "href": "/recruiting/hiring-map", "label": "Open the Hiring Map" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/9ec9bf2" } ]
+    },
+    {
+      "id": "2026-11-02-map-search",
+      "date": "2026-11-02",
+      "area": "Hiring Map",
+      "type": "new",
+      "title": "Hiring Map: search a town, ZIP or county",
+      "summary": "Type a town, ZIP code or county to drop a pin on it and see its hiring area, plus the miles to the nearest Interstate and U.S. Highway.",
+      "details": [
+        "Distances are straight-line miles, not driving miles."
+      ],
+      "link": { "href": "/recruiting/hiring-map", "label": "Open the Hiring Map" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/9d85444" } ]
+    },
+    {
+      "id": "2026-10-29-admin-page",
+      "date": "2026-10-29",
+      "area": "Admin",
+      "type": "new",
+      "title": "Admin page: users, page access and account history",
+      "summary": "Admins add people by email, turn accounts on or off, and choose for each page whether a person has no access, can view, or can view and edit. Every change is listed in Account history.",
+      "details": [
+        "Each page can also be made public to every signed-in user, or kept to people with access."
+      ],
+      "link": { "href": "/admin", "label": "Open Admin" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/b2d244e" } ]
+    },
+    {
+      "id": "2026-10-29-map-nationwide",
+      "date": "2026-10-29",
+      "area": "Hiring Map",
+      "type": "new",
+      "title": "Hiring Map covers every state and county",
+      "summary": "The map grew to all 48 lower states and 3,108 counties, with highways and cities nationwide. Use Go to a state to jump anywhere.",
+      "details": [],
+      "link": { "href": "/recruiting/hiring-map", "label": "Open the Hiring Map" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/51051f7" } ]
+    },
+    {
+      "id": "2026-10-29-county-editing",
+      "date": "2026-10-29",
+      "area": "Hiring Map",
+      "type": "new",
+      "title": "Hiring Map: click a county to change its color and hiring",
+      "summary": "Signed-in editors click a county (or shift-click several) to set its home-time color and whether we're hiring there. Every change records who made it and when.",
+      "details": [
+        "Sign-in is by a 6-digit code emailed to your work address. No password.",
+        "Selected-county details and the edit buttons stay in view in the side panel."
+      ],
+      "link": { "href": "/recruiting/hiring-map", "label": "Open the Hiring Map" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/22bc0a9" } ]
+    },
+    {
+      "id": "2026-10-29-city-layers",
+      "date": "2026-10-29",
+      "area": "Hiring Map",
+      "type": "new",
+      "title": "Hiring Map: cities by population",
+      "summary": "Five city layers, from big metros down to rural towns, can be switched on and off. A table counts the cities in each hiring area, and you can list the cities in any area.",
+      "details": [],
+      "link": { "href": "/recruiting/hiring-map", "label": "Open the Hiring Map" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/99e2249" } ]
+    },
+    {
+      "id": "2026-10-29-hiring-map-launch",
+      "date": "2026-10-29",
+      "area": "Hiring Map",
+      "type": "new",
+      "title": "The Hiring Map goes live",
+      "summary": "The first page of the site: a map of where we're hiring and how often drivers get home, styled to match liquidtrucking.com.",
+      "details": [
+        "Green about 1 week, yellow 1 to 2 weeks (St. Louis runs 2), orange 2 to 3 weeks, red 3+ weeks.",
+        "Interstate and U.S. Highway layers.",
+        "Unless a driver lives firmly inside a green area, double-check with Planners before promising home time."
+      ],
+      "link": { "href": "/recruiting/hiring-map", "label": "Open the Hiring Map" },
+      "refs": [ { "label": "Change record", "href": "https://github.com/liquidtruckingcompanies/recruiting/commit/928370e" } ]
+    }
+  ]
+}

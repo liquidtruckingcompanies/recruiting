@@ -7,7 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Open+Sans:wght@400;600;700&display=swap">
 <link rel="stylesheet" href="/assets/site.css">
-<style>body{margin:0}</style>
+<style>body{margin:0}
+.newcount{display:inline-block;vertical-align:middle;margin-left:6px;background:var(--brand-gold);color:#1b2633;border-radius:999px;padding:1px 9px;font-family:var(--body);font-size:.75rem;font-weight:700;text-transform:none;letter-spacing:0}</style>
 </head>
 <body>
 <div id="ltTop" data-current="dashboard" data-crumbs="Dashboard"></div>
@@ -38,10 +39,18 @@
   const depts=LT_SITE.departments.filter(d=>ltDeptPages(acct,pages,d.id).length);
   $("deptTiles").innerHTML=depts.map(d=>ltTile(d.href,d.name,d.blurb)).join("");
   $("noDepts").hidden=depts.length>0;
-  const tools=[["/feedback","Product Feedback","Send an idea or report a problem, and see where yours stand.","feedback"],
+  const tools=[["/whats-new","What's New",LT_SITE.pages["whats-new"].blurb,"whats-new"],
+               ["/feedback","Product Feedback","Send an idea or report a problem, and see where yours stand.","feedback"],
                ["/admin","Admin","Users, page access and account history.","admin"]].filter(t=>ltCanSee(acct,pages,t[3]));
-  $("toolTiles").innerHTML=tools.map(t=>ltTile(t[0],t[1],t[2]).replace('class="tile"','class="tile tool"')).join("");
+  $("toolTiles").innerHTML=tools.map(t=>ltTile(t[0],t[1],t[2]).replace('class="tile"',`class="tile tool" data-tool="${t[3]}"`)).join("");
   $("main").hidden=false;
+  // What's New: show how many updates arrived since this person last opened the page (remembered in this browser).
+  if(ltCanSee(acct,pages,"whats-new")) try{
+    const r=await fetch("/data/whats-new.json",{cache:"no-cache"}); const list=(await r.json()).entries||[];
+    let seen=null; try{ seen=JSON.parse(localStorage.getItem("ltWhatsNewSeen")||"null"); }catch(e){}
+    const n=Array.isArray(seen)?list.filter(e=>!seen.includes(e.id)).length:list.length, tile=document.querySelector('[data-tool="whats-new"] h2');
+    if(n&&tile) tile.insertAdjacentHTML("beforeend",` <span class="newcount">${Array.isArray(seen)?n+" new":"Start here"}</span>`);
+  }catch(e){}
 })();
 </script>
 </body>
