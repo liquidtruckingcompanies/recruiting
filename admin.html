@@ -11,14 +11,16 @@
 /* Admin: add-user form, user table with inline controls, page visibility, account history. */
 [hidden]{display:none!important}
 body{margin:0}
-.grid2{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
-@media (max-width:980px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+@media (max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}}
 .form{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;align-items:end}
 .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
 table{border-collapse:collapse;width:100%;font-size:.9rem}
 th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
 th{background:#f4f7fa;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
 tr:last-child td{border-bottom:none}
+th{white-space:normal;min-width:90px}
+td input.txt[data-f=name]{width:150px;min-width:0}
 tr.inactive td{background:#f6f7f8;color:var(--muted)}
 td .txt{width:auto;min-width:130px;padding:5px 7px}
 td .txt:disabled{background:#f1f3f5;color:var(--muted);cursor:not-allowed}
@@ -64,17 +66,16 @@ select.txt{width:auto;padding:5px 7px}
       <div class="msg" id="addMsg"></div>
     </section>
 
-    <div class="grid2">
-      <section class="card">
+    <section class="card">
         <h2>Users</h2>
         <p class="small muted" style="margin:0">Changes save as soon as you make them. Admins can view and edit every page and manage users. Only the owner can make or remove admins, and the owner's account can't be changed by anyone else. <b>View as</b> shows the site the way that person sees it, read-only, and is logged in Account history.</p>
         <div class="tablewrap"><table>
           <thead id="userHead"></thead>
           <tbody id="userBody"></tbody>
         </table></div>
-      </section>
+    </section>
 
-      <div style="display:grid;gap:16px">
+    <div class="grid2">
         <section class="card">
           <h2>Pages</h2>
           <p class="small muted" style="margin:0">Choose whether anyone with the link can view a page, or only signed-in users you've given access.</p>
@@ -84,7 +85,6 @@ select.txt{width:auto;padding:5px 7px}
           <h2>Account history</h2>
           <div class="hist" id="hist"><span class="muted">Nothing yet.</span></div>
         </section>
-      </div>
     </div>
   </div>
 </div>
