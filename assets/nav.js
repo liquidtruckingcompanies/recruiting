@@ -118,7 +118,7 @@ const LT_VA_READ_RPC = ["can_view", "page_access", "is_admin", "is_owner", "faq_
 window.ltApplyViewAs = async function (sb, real) {
   const want = ltVaRead();
   if (!want || !want.email) return real;
-  if (!sb || !real || real.role !== "admin" || real.active === false || (want.by && want.by !== real.email)) { ltVaClear(); return real; }
+  if (!sb || !real || real.role !== "admin" || real.active === false || (want.by && real.email && want.by !== real.email)) { ltVaClear(); return real; }
   const { data, error } = await sb.rpc("admin_view_as", { p_email: want.email, p_action: "check" });
   if (error || !data) { ltVaClear(); console.warn("View as ended", error); return real; }
   window.ltViewAs = { real, target: data };
