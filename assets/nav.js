@@ -8,7 +8,7 @@
 window.LT_SITE = {
   name: "Liquid Trucking Operations Center",
   departments: [
-    { id: "recruiting", name: "Recruiting & Onboarding", short: "Recruiting", href: "/recruiting/",
+    { id: "recruiting", name: "Recruiting", short: "Recruiting", href: "/recruiting/",
       blurb: "Where we're hiring, driver home time, and the tools for bringing new drivers on.",
       pages: ["hiring-map", "faq"] }
   ],
@@ -38,7 +38,7 @@ window.ltDeptPages = function (acct, pages, deptId) {
 
 const ltEsc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-// Header + breadcrumb bar. <div id="ltTop" data-current="hiring-map" data-crumbs="Recruiting & Onboarding|/recruiting/;Hiring Map">
+// Header + breadcrumb bar. <div id="ltTop" data-current="hiring-map" data-crumbs="Recruiting|/recruiting/;Hiring Map">
 window.ltDrawShell = function () {
   if (!document.getElementById("ltShellCss")) {
   const st = document.createElement("style");

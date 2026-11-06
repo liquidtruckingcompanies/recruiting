@@ -1,4 +1,4 @@
--- Liquid Trucking Operations Center: Driver FAQ (Recruiting & Onboarding).
+-- Liquid Trucking Operations Center: Driver FAQ (Recruiting).
 -- Run once in Supabase after 07-feedback-delete.sql: SQL Editor -> New query -> paste all of this -> Run. Safe to run again.
 -- Then run 09-faq-load.sql once to load the starting FAQs.
 --

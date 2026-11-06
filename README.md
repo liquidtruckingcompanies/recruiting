@@ -1,6 +1,6 @@
 # Liquid Trucking Operations Center
 
-Internal site for the Liquid Trucking team: one sign-in, an Operations Dashboard, and a section per department (Recruiting & Onboarding first, with the Hiring Map), plus Admin and Product Feedback.
+Internal site for the Liquid Trucking team: one sign-in, an Operations Dashboard, and a section per department (Recruiting first, with the Hiring Map), plus Admin and Product Feedback.
 
 Live at https://recruiting.liquidtrucking.io . It's hosted on Cloudflare (Worker "recruiting" with static assets), which redeploys automatically on every push to `main`. `.assetsignore` keeps README and SQL files off the live site.
 
@@ -38,7 +38,7 @@ Addresses are clean URLs (Cloudflare serves `/dashboard` from `dashboard.html` a
 
 - `/` (`index.html`): sign-in. Signed-in users go straight to `?next=` or the dashboard.
 - `/dashboard` (`dashboard.html`): Operations Dashboard, a tile per department the user can see, plus Feedback and Admin.
-- `/recruiting/` (`recruiting/index.html`): Recruiting & Onboarding, a tile per page in the department.
+- `/recruiting/` (`recruiting/index.html`): Recruiting, a tile per page in the department.
 - `/recruiting/hiring-map` (`recruiting/hiring-map.html`): the county hiring map. The old `/hiring-map.html` forwards here.
 - `/admin`, `/feedback`: admin and the feedback center.
 - `assets/nav.js`: the site map (`LT_SITE`: departments and pages), the shared header, breadcrumbs and footer, and the "who can see what" rules.
