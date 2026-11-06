@@ -40,6 +40,7 @@
   $("deptTiles").innerHTML=depts.map(d=>ltTile(d.href,d.name,d.blurb)).join("");
   $("noDepts").hidden=depts.length>0;
   const tools=[["/whats-new","What's New",LT_SITE.pages["whats-new"].blurb,"whats-new"],
+               ["/how-it-works","How It Works",LT_SITE.pages["how-it-works"].blurb,"how-it-works"],
                ["/feedback","Product Feedback","Send an idea or report a problem, and see where yours stand.","feedback"],
                ["/admin","Admin","Users, page access and account history.","admin"]].filter(t=>ltCanSee(acct,pages,t[3]));
   $("toolTiles").innerHTML=tools.map(t=>ltTile(t[0],t[1],t[2]).replace('class="tile"',`class="tile tool" data-tool="${t[3]}"`)).join("");

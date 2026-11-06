@@ -19,9 +19,12 @@ window.LT_SITE = {
       blurb: "Answers on hiring, pay, benefits and life on the road, with a full change history." },
     // Site-wide page, not in a department. viewOnly: the Admin page offers No access / View only (nobody edits it on the
     // site; Claude adds an entry to data/whats-new.json with every update). privateByDefault: admins only until
-    // supabase/11-whats-new.sql adds its row, and that row starts as sign-in with access only.
+    // supabase/11-whats-new.sql adds its row, and that row starts as sign-in with access only. How It Works is the same
+    // (supabase/12-how-it-works.sql), but its content is written into how-it-works.html itself.
     "whats-new": { name: "What's New", href: "/whats-new", dept: null, viewOnly: true, privateByDefault: true,
-      blurb: "Every new feature and change to the Operations Center, newest first." }
+      blurb: "Every new feature and change to the Operations Center, newest first." },
+    "how-it-works": { name: "How It Works", href: "/how-it-works", dept: null, viewOnly: true, privateByDefault: true,
+      blurb: "How the site is built and run, in plain English. For anyone joining the work on it." }
   }
 };
 

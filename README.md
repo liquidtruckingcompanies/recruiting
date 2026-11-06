@@ -25,7 +25,7 @@ City dots and population bands come from GeoNames (places of 1,000+ people, via 
 
 ## Users and admins
 
-Run `supabase/setup.sql`, then `supabase/02-admin.sql`, then `supabase/03-clear-county.sql`, then `supabase/04-owner.sql`, then `supabase/05-feedback.sql`, then `supabase/06-feedback-email.sql` (after saving the Resend API key in Vault as `resend_api_key`), then `supabase/07-feedback-delete.sql` (lets the owner delete and restore feedback), then `supabase/08-faq.sql` (Driver FAQ tables, history and file storage) and `supabase/09-faq-load.sql` (the starting 115 FAQs), then `supabase/10-view-as.sql` (View as) and `supabase/11-whats-new.sql` (adds What's New to the Admin page list, admins only to start), each once (Supabase → SQL Editor).
+Run `supabase/setup.sql`, then `supabase/02-admin.sql`, then `supabase/03-clear-county.sql`, then `supabase/04-owner.sql`, then `supabase/05-feedback.sql`, then `supabase/06-feedback-email.sql` (after saving the Resend API key in Vault as `resend_api_key`), then `supabase/07-feedback-delete.sql` (lets the owner delete and restore feedback), then `supabase/08-faq.sql` (Driver FAQ tables, history and file storage) and `supabase/09-faq-load.sql` (the starting 115 FAQs), then `supabase/10-view-as.sql` (View as) and `supabase/11-whats-new.sql` and `supabase/12-how-it-works.sql` (add What's New and How It Works to the Admin page list, admins only to start), each once (Supabase → SQL Editor).
 After that, admins manage everything on `admin.html`: add users by email, set each person's level (User or Admin), turn accounts active or inactive, give per-page access (No access, View, View + edit), and choose whether each page is public or sign-in only.
 People sign in on the Home page with an emailed 6-digit code. Every account change is listed under Account history.
 New pages get a row in `public.site_pages` (id, name, public_view, sort) and an entry in `LT_SITE` in `assets/nav.js`, which decides what shows: only the sign-in page before sign-in, then the departments and pages each account can see.
@@ -42,6 +42,7 @@ Addresses are clean URLs (Cloudflare serves `/dashboard` from `dashboard.html` a
 - `/recruiting/hiring-map` (`recruiting/hiring-map.html`): the county hiring map. The old `/hiring-map.html` forwards here.
 - `/admin`, `/feedback`: admin and the feedback center.
 - `/whats-new` (`whats-new.html`): What's New, every site update newest first, read from `data/whats-new.json`.
+- `/how-it-works` (`how-it-works.html`): How It Works, a plain-English overview of the site for admins and new developers, written into the page.
 - `assets/nav.js`: the site map (`LT_SITE`: departments and pages), the shared header, breadcrumbs and footer, and the "who can see what" rules.
 - `assets/portal.js`: sign-in helpers for the sign-in, dashboard and department pages.
 - `assets/site.css`: shared brand styles.

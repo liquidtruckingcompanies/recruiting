@@ -149,7 +149,7 @@ const STATUSES=[
 const SLABEL=Object.fromEntries(STATUSES.map(s=>[s[0],s[1]])), SMINE=Object.fromEntries(STATUSES.map(s=>[s[0],s[2]]));
 const PRIOS=[["critical","Critical"],["high","High"],["medium","Medium"],["low","Low"]], PRANK={critical:0,high:1,medium:2,low:3};
 const KIND={idea:"💡 Idea",bug:"🐞 Problem",other:"💬 Other"};
-const PAGENAME=p=>({index:"Sign-in page",dashboard:"Operations Dashboard",recruiting:"Recruiting","hiring-map":"Hiring Map",faq:"Driver FAQ","whats-new":"What's New",admin:"Admin",feedback:"Feedback"}[p]||p||"Unknown page");
+const PAGENAME=p=>({index:"Sign-in page",dashboard:"Operations Dashboard",recruiting:"Recruiting","hiring-map":"Hiring Map",faq:"Driver FAQ","whats-new":"What's New","how-it-works":"How It Works",admin:"Admin",feedback:"Feedback"}[p]||p||"Unknown page");
 const stChip=s=>`<span class="st ${s}">${esc(SLABEL[s]||s)}</span>`;
 
 let sb=null, me=null, isAdmin=false, isOwner=false, ITEMS=[], DELETED=[], current=null, filterStatus="";

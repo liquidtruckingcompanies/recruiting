@@ -14,3 +14,12 @@ edit it on the site, so this is the only way it gets updated.
 - `refs`: the PR link (`{ "label": "PR #N", "href": "https://github.com/liquidtruckingcompanies/recruiting/pull/N" }`).
 - Behind-the-scenes changes with nothing visible (refactors, README edits) don't need an entry. Fold small follow-up
   fixes into one entry for the same day when it reads better.
+
+## Keep How It Works current
+
+`how-it-works.html` (`/how-it-works`) explains in plain English how the site is built and run, for admins and future
+developers. Its content is written straight into that file; nobody edits it on the site. When a PR changes how the site
+works (a new page, table, service, access rule, setup SQL file or deploy step), update the matching section in the same
+PR: edit the text, set that section's `data-updated` to the ship date, and add a row at the top of the
+"Changes to this page" table with the date, what changed, and the PR link. Never put passwords, keys or personal email
+addresses on it (the repo is public).
