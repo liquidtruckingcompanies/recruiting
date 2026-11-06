@@ -331,7 +331,7 @@ $("fStatus").onchange=e=>{filterStatus=e.target.value;renderCounts();renderList(
   const {data}=await sb.auth.getSession();
   const email=data.session?.user?.email?.toLowerCase();
   if(!email){ location.replace(ltSignInUrl()); return; }
-  const {data:row}=await sb.from("editors").select("*").eq("email",email).maybeSingle();
+  const row=await ltApplyViewAs(sb,(await sb.from("editors").select("*").eq("email",email).maybeSingle()).data);
   { let pg=null; try{ const r=await sb.from("site_pages").select("id,public_view"); if(!r.error) pg=r.data; }catch(e){} ltNav(row,pg); }
   if(!row||row.active===false){ $("gateText").innerHTML=`Your account isn't active, so feedback isn't available. Ask an admin for access. <a href="/dashboard">Back to the dashboard</a>`; return; }
   me=row; isAdmin=row.role==="admin"; isOwner=isAdmin&&row.owner===true; $("tabDel").hidden=!isOwner;

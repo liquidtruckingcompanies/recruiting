@@ -1132,6 +1132,7 @@ async function refreshEditor(session){
     let r=await sb.from("editors").select("name,email,role,active,pages").eq("email",sessionEmail).maybeSingle();
     if(r.error) r=await sb.from("editors").select("name,email").eq("email",sessionEmail).maybeSingle(); // before 02-admin.sql
     account=r.data||null;
+    account=await ltApplyViewAs(sb,account);
     // Edit rights: an active admin, or an active user with edit access to this page.
     if(account && account.active!==false && (!account.role || account.role==="admin" || account.pages?.["hiring-map"]==="edit")) editor=account;
   }
@@ -1167,6 +1168,7 @@ async function loadData(){
   }catch(err){ console.warn("Database not ready, showing starting colors", err); } }
   // Sign-in-only page and this person has no access: show nothing rather than the starting colors.
   locked=false;
+  if(window.ltViewAs && !ltCanSee(account,sitePages,"hiring-map")){ ok=false; locked=true; } // View as: show the lock they would see
   if(!ok && sb){ try{ const r=await sb.rpc("can_view",{p_page:"hiring-map"}); if(r.data===false) locked=true; }catch(e){} }
   if(locked && !sessionEmail){ location.replace(ltSignInUrl()); return; } // signed out and the page isn't public: go sign in
   if(locked){ live={}; audit=[]; loaded=true; paint(); return; }

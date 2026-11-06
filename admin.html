@@ -67,7 +67,7 @@ select.txt{width:auto;padding:5px 7px}
     <div class="grid2">
       <section class="card">
         <h2>Users</h2>
-        <p class="small muted" style="margin:0">Changes save as soon as you make them. Admins can view and edit every page and manage users. Only the owner can make or remove admins, and the owner's account can't be changed by anyone else.</p>
+        <p class="small muted" style="margin:0">Changes save as soon as you make them. Admins can view and edit every page and manage users. Only the owner can make or remove admins, and the owner's account can't be changed by anyone else. <b>View as</b> shows the site the way that person sees it, read-only, and is logged in Account history.</p>
         <div class="tablewrap"><table>
           <thead id="userHead"></thead>
           <tbody id="userBody"></tbody>
@@ -105,7 +105,7 @@ const deptOf=id=>{const d=LT_SITE.departments.find(x=>x.id===LT_SITE.pages[id]?.
 const ACCESS=[["none","No access"],["view","View"],["edit","View + edit"]];
 const fmtWhen=iso=>new Date(iso).toLocaleString(undefined,{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});
 
-let sb=null, me=null, USERS=[], PAGES=[];
+let sb=null, me=null, realMe=null, USERS=[], PAGES=[];
 
 function toast(text,err){
   const t=document.createElement("div"); t.className="toast"+(err?" err":""); t.textContent=text; t.setAttribute("role","status");
@@ -126,11 +126,15 @@ function renderUsers(){
     const dis=locked?"disabled":"";
     return `<tr class="${u.active?"":"inactive"}" data-i="${i}">
       <td><input class="txt" data-f="name" value="${esc(u.name)}" ${dis} aria-label="Name for ${esc(u.email)}"></td>
-      <td>${esc(u.email)}${u.owner?' <span class="badge on" title="The owner\'s account can only be changed by the owner">Owner</span>':""}${self?' <span class="muted small">(you)</span>':""}</td>
+      <td>${esc(u.email)}${u.owner?' <span class="badge on" title="The owner\'s account can only be changed by the owner">Owner</span>':""}${self?' <span class="muted small">(you)</span>':""}${vaCol()?" "+vaButton(u):""}</td>
       <td><select class="txt" data-f="role" ${roleLocked?`disabled title="${self?"You can't change your own level":"Only the owner can change admin rights"}"`:""} aria-label="Account level"><option value="user" ${!admin?"selected":""}>User</option><option value="admin" ${admin?"selected":""}>Admin</option></select></td>
       <td><label class="toggle"><input type="checkbox" data-f="active" ${u.active?"checked":""} ${self||locked?"disabled":""}><span class="badge ${u.active?"on":"off"}">${u.active?"Active":"Inactive"}</span></label></td>
       ${PAGES.map(p=>`<td>${admin?'<span class="small muted">View + edit (admin)</span>':accessSelect("",u.pages?.[p.id]||"none").replace("<select",`<select data-page="${p.id}" aria-label="${esc(p.name)} access"`)}</td>`).join("")}
     </tr>`;}).join("")||`<tr><td colspan="${4+PAGES.length}" class="muted">No users yet.</td></tr>`;
+  $("userBody").querySelectorAll("[data-va]").forEach(b=>b.onclick=async()=>{
+    b.disabled=true; const err=await ltStartViewAs(sb,realMe,b.dataset.va);
+    if(err){ b.disabled=false; toast("Couldn't start View as: "+err,true); }
+  });
   $("userBody").querySelectorAll("tr[data-i]").forEach(tr=>{
     const u=USERS[+tr.dataset.i];
     tr.querySelectorAll("[data-f],[data-page]").forEach(inp=>inp.addEventListener("change",()=>{
@@ -143,6 +147,14 @@ function renderUsers(){
       save(next);
     }));
   });
+}
+
+// View as (read-only): admins can view as users; only the owner can view as another admin. Not shown while already viewing as someone.
+const vaCol=()=>!window.ltViewAs;
+function vaButton(u){
+  if(u.email===realMe.email) return "";
+  if((u.role==="admin"||u.owner)&&!realMe.owner) return `<button type="button" class="small" style="padding:2px 8px;margin-left:4px" disabled title="Only the owner can view as another admin">View as</button>`;
+  return `<button type="button" class="small" style="padding:2px 8px;margin-left:4px" data-va="${esc(u.email)}" title="See the site the way ${esc(u.name)} sees it (read-only)">View as</button>`;
 }
 
 function renderPages(){
@@ -196,9 +208,10 @@ $("newRole").onchange=()=>$("newPages").querySelectorAll("select").forEach(s=>s.
   const {data}=await sb.auth.getSession();
   const email=data.session?.user?.email?.toLowerCase();
   if(!email){ location.replace(ltSignInUrl()); return; }
-  const {data:row}=await sb.from("editors").select("*").eq("email",email).maybeSingle();
+  const {data:realRow}=await sb.from("editors").select("*").eq("email",email).maybeSingle();
+  realMe=realRow; const row=await ltApplyViewAs(sb,realRow);
   { let pg=null; try{ const r=await sb.from("site_pages").select("id,public_view"); if(!r.error) pg=r.data; }catch(e){} ltNav(row,pg); }
-  if(!row||row.role!=="admin"||!row.active){ $("gateText").innerHTML=`This page is for admins. You're signed in as ${esc(email)}. <a href="/dashboard">Back to the dashboard</a>`; return; }
+  if(!row||row.role!=="admin"||!row.active){ $("gateText").innerHTML=`This page is for admins. ${window.ltViewAs?`${esc(row?.name||"This user")} isn't an admin, so they can't open it.`:`You're signed in as ${esc(email)}.`} <a href="/dashboard">Back to the dashboard</a>`; return; }
   me=row; $("gate").hidden=true; $("adminUI").hidden=false;
   if(!me.owner){ $("newRole").querySelector('option[value="admin"]').remove(); $("newRole").disabled=true; $("newRole").title="Only the owner can make admins"; }
   await load();

@@ -264,7 +264,9 @@ async function load(){
     sb.from("faq_categories").select("name,sort").order("sort"),
     sb.from("faq").select("*").order("sort").range(0,4999)]);
   if(c.error||f.error) throw (c.error||f.error);
-  CATS=c.data||[]; const all=f.data||[];
+  CATS=c.data||[]; let all=f.data||[];
+  // View as: hide what the database would hide from this user (hidden FAQs = editors only, deleted = owner only).
+  if(window.ltViewAs) all=all.filter(x=>x.deleted_at?isOwner:(!x.hidden||canEdit));
   FAQS=all.filter(x=>!x.deleted_at); DELETED=all.filter(x=>x.deleted_at).sort((a,b)=>b.deleted_at.localeCompare(a.deleted_at));
   $("tabDel").hidden=!isOwner; $("tabDel").textContent=`Deleted (${DELETED.length})`;
 }
