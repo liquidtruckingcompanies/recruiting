@@ -16,7 +16,8 @@
         "Each section shows when it was last updated, and a log at the bottom lists every change to the page. Claude keeps it current with each update.",
         "Admins only to start. Give others View on the Admin page."
       ],
-      "link": { "href": "/how-it-works", "label": "Open How It Works" }
+      "link": { "href": "/how-it-works", "label": "Open How It Works" },
+      "refs": [ { "label": "PR #6", "href": "https://github.com/liquidtruckingcompanies/recruiting/pull/6" } ]
     },
     {
       "id": "2026-11-06-whats-new-page",
