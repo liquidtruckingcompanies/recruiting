@@ -2,6 +2,24 @@
   "about": "What's New on the Operations Center. Claude adds an entry here with every update to the site; nobody edits it on the site. Newest first. Fields: id (unique, never reused), date (YYYY-MM-DD, Central time), area, type (new | improved | fixed), title, summary, details (list), link ({href,label}, optional), refs (list of {label,href}, optional).",
   "entries": [
     {
+      "id": "2026-11-06-how-it-works",
+      "date": "2026-11-06",
+      "area": "Site-wide",
+      "type": "new",
+      "title": "How It Works: a plain-English guide to how the site runs",
+      "summary": "A new page that explains how the Operations Center is built and run, without any code. It's for admins now, and for anyone who joins the work on the site later.",
+      "details": [
+        "The big picture: Cloudflare, Supabase, GitHub and Resend, and how they connect.",
+        "Every page and its data, who can see and do what, and where each kind of data and history is kept.",
+        "Sign-in and email, how a change goes from request to live, the accounts and setup files, and how the files are organized.",
+        "A checklist for bringing a new developer on, and a glossary.",
+        "Each section shows when it was last updated, and a log at the bottom lists every change to the page. Claude keeps it current with each update.",
+        "Admins only to start. Give others View on the Admin page."
+      ],
+      "link": { "href": "/how-it-works", "label": "Open How It Works" },
+      "refs": [ { "label": "PR #6", "href": "https://github.com/liquidtruckingcompanies/recruiting/pull/6" } ]
+    },
+    {
       "id": "2026-11-06-whats-new-page",
       "date": "2026-11-06",
       "area": "Site-wide",

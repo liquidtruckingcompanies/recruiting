@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>How It Works · Liquid Trucking Operations Center</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Open+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="/assets/site.css">
+<style>
+/* How It Works: a plain-English overview of how the site is built and run. Written by Claude; nobody edits it on the site.
+   EDITING (Claude): change a section, bump its data-updated date, and add a row at the top of the "Changes to this page" log. */
+body{margin:0}
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}}
+.toc{position:sticky;top:12px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;gap:2px;font-size:.88rem;max-height:calc(100vh - 24px);overflow:auto}
+@media (max-width:900px){.toc{position:static;max-height:none}}
+.toc b{font-family:var(--display);text-transform:uppercase;color:var(--heading);letter-spacing:.03em;margin-bottom:4px}
+.toc a{color:var(--brand-deep);text-decoration:none;padding:3px 0}
+.toc a:hover{text-decoration:underline}
+.doc{display:grid;gap:16px;min-width:0}
+.doc section{scroll-margin-top:12px}
+.doc section.card{gap:10px}
+.doc h2{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.doc h2 .upd{font-family:var(--body);font-size:.75rem;font-weight:600;text-transform:none;letter-spacing:0;color:var(--muted)}
+.doc h3{font-size:1.05rem;color:var(--heading);margin-top:4px}
+.doc p,.doc ul,.doc ol{margin:0;line-height:1.55}
+.doc ul,.doc ol{padding-left:1.3em;display:grid;gap:4px}
+.doc code{background:#eef3f7;border-radius:4px;padding:0 4px;font-size:.88em;overflow-wrap:anywhere}
+.doc a{color:var(--brand-blue);font-weight:600}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:6px}
+.doc table{border-collapse:collapse;width:100%;font-size:.88rem}
+.doc th,.doc td{padding:7px 9px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+.doc th{background:#eef3f7;color:var(--heading);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.doc tr:last-child td{border-bottom:none}
+.note{background:#fdf4d3;border:1px solid #ecd47a;border-radius:8px;padding:10px 12px;font-size:.92rem}
+/* Big-picture diagram: boxes and arrows in plain HTML so it reflows on phones. */
+.dia{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch}
+@media (max-width:760px){.dia{grid-template-columns:minmax(0,1fr)}}
+.box{border:2px solid var(--brand-blue);border-radius:8px;padding:10px 12px;background:#f7fafc;display:grid;gap:4px;align-content:start}
+.box b{font-family:var(--display);text-transform:uppercase;color:var(--heading);font-size:1.02rem}
+.box span{font-size:.85rem;color:var(--muted)}
+.box.you{border-color:var(--brand-gold);background:#fffbea}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.9rem}
+.flow span{background:#eef3f7;border:1px solid #cbd8e3;border-radius:999px;padding:3px 10px;font-weight:600;color:var(--brand-deep)}
+.flow i{font-style:normal;color:var(--muted);font-weight:700}
+.log td:first-child{white-space:nowrap}
+</style>
+</head>
+<body>
+<div id="ltTop" data-current="how-it-works" data-crumbs="How It Works"></div>
+<script src="/assets/nav.js"></script>
+
+<main class="wrap">
+  <header><div>
+    <h1>How It Works</h1>
+    <p class="muted" style="margin:6px 0 0">How the Operations Center is built and run, in plain English. For anyone joining the work on the site. No code, passwords or keys here.</p>
+  </div></header>
+
+  <div class="card" id="gate"><p class="muted" style="margin:0" id="gateText">Checking your account…</p></div>
+
+  <div class="layout" id="ui" hidden>
+    <nav class="toc" id="toc" aria-label="On this page"><b>On this page</b></nav>
+    <div class="doc">
+
+<section class="card" id="big-picture" data-updated="2026-11-06">
+  <h2>The big picture</h2>
+  <p>The site is made of four outside services. None of them run on a company computer, and there is no server of our own to look after.</p>
+  <div class="dia" aria-label="How the pieces connect">
+    <div class="box you"><b>Your browser</b><span>Loads the pages, signs you in, and talks straight to Supabase for data. All the screens are plain web pages.</span></div>
+    <div class="box"><b>Cloudflare</b><span>Owns the liquidtrucking.io domain and hosts the website at www.liquidtrucking.io. Sends out the pages and data files.</span></div>
+    <div class="box"><b>Supabase</b><span>Sign-in, the database (users, map colors, FAQs, feedback, all history) and private file storage. The rules for who can read or change what live here.</span></div>
+    <div class="box"><b>GitHub</b><span>Holds the site's files and their full history. Cloudflare publishes the site from it automatically.</span></div>
+    <div class="box"><b>Resend</b><span>Sends email from liquidtrucking.io: sign-in codes, and the alert to the owner when feedback comes in.</span></div>
+    <div class="box"><b>Claude</b><span>Makes the changes Jason asks for in the project, as pull requests on GitHub, and keeps What's New and this page up to date.</span></div>
+  </div>
+  <h3>What happens when someone opens a page</h3>
+  <div class="flow"><span>Open www.liquidtrucking.io</span><i>→</i><span>Cloudflare sends the page</span><i>→</i><span>Browser asks Supabase "who is this?"</span><i>→</i><span>Supabase returns only what that person may see</span><i>→</i><span>Page shows it</span></div>
+</section>
+
+<section class="card" id="pages" data-updated="2026-11-06">
+  <h2>The pages</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Page</th><th>Address</th><th>What it does</th><th>Its data</th></tr></thead>
+    <tbody>
+      <tr><td>Sign in</td><td><code>/</code></td><td>Email a 6-digit code and sign in. Signed-in people go straight to the dashboard.</td><td>Supabase sign-in</td></tr>
+      <tr><td>Operations Dashboard</td><td><code>/dashboard</code></td><td>A tile per department and tool the person can see.</td><td>Their account and page access</td></tr>
+      <tr><td>Recruiting</td><td><code>/recruiting/</code></td><td>Department page with a tile per Recruiting page.</td><td>Same</td></tr>
+      <tr><td>Hiring Map</td><td><code>/recruiting/hiring-map</code></td><td>County-by-county home-time colors and hiring on/off, search, layers, history and view as of a date.</td><td>County colors and every change, in the database. Map shapes, roads, cities and ZIPs are data files on the site.</td></tr>
+      <tr><td>Driver FAQ</td><td><code>/recruiting/faq</code></td><td>Searchable FAQs with links and files, full version history, view as of a date.</td><td>FAQ tables and the private <code>faq</code> file storage</td></tr>
+      <tr><td>Product Feedback</td><td><code>/feedback</code></td><td>Admins run the Feedback Center; everyone else sees their own submissions. The feedback button on every page feeds it.</td><td>Feedback tables and the private <code>feedback</code> file storage</td></tr>
+      <tr><td>Admin</td><td><code>/admin</code></td><td>Users, levels, active/inactive, page access, Public pages, View as, Account history.</td><td>Users, pages and account history tables</td></tr>
+      <tr><td>What's New</td><td><code>/whats-new</code></td><td>Every update to the site, newest first.</td><td>A data file on the site, written by Claude</td></tr>
+      <tr><td>How It Works</td><td><code>/how-it-works</code></td><td>This page.</td><td>Written by Claude into the page itself</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small muted">Addresses are "clean": Cloudflare serves <code>/admin</code> from the file <code>admin.html</code>, and so on. The old <code>/hiring-map.html</code> forwards to the new Hiring Map address.</p>
+</section>
+
+<section class="card" id="access" data-updated="2026-11-06">
+  <h2>Who can see and do what</h2>
+  <ul>
+    <li><b>Owner:</b> one account (Jason), set only in the database. Only the owner can make or remove admins, change another admin, view as another admin, or delete feedback and FAQs. Nobody else can change the owner's account.</li>
+    <li><b>Admins:</b> see and edit every page, and manage users on the Admin page.</li>
+    <li><b>Users:</b> get access page by page: No access, View, or View + edit. What's New and How It Works only offer No access or View.</li>
+    <li><b>Active / inactive:</b> turning someone inactive shuts them out everywhere without deleting their history.</li>
+    <li><b>Public:</b> a page set to Public on the Admin page can be seen by every signed-in, active user. Nothing is ever shown to people who aren't signed in, apart from the sign-in page.</li>
+    <li><b>View as:</b> an admin can see the site exactly as another user does, read-only. Each start and end goes into Account history.</li>
+  </ul>
+  <h3>Where the rules are enforced</h3>
+  <p>The rules are checked in two places. The browser uses them to decide which menus, tiles and buttons to show. The database checks them again on every read and every change, so hiding a button is never the only thing standing in the way. This is why changes go through named database functions (for example "save a county color") rather than editing tables directly: each function checks the person's access first and writes the history.</p>
+  <div class="note"><b>Worth knowing:</b> the site's files on GitHub are public. That's normal for this kind of site, because the database holds everything private and checks every request. But it means the text of What's New and this page, and the site's code, can be read by anyone who finds the GitHub page. Never put passwords, keys or private details in the site's files.</div>
+</section>
+
+<section class="card" id="data" data-updated="2026-11-06">
+  <h2>Where the data lives</h2>
+  <h3>In the database (Supabase)</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Table</th><th>What's in it</th></tr></thead>
+    <tbody>
+      <tr><td><code>editors</code></td><td>Every user: email, name, level (admin or user), active, page access, and the owner flag.</td></tr>
+      <tr><td><code>site_pages</code></td><td>The pages admins control, and whether each one is Public.</td></tr>
+      <tr><td><code>account_changes</code></td><td>Account history: every user and page-setting change, plus View as starts and ends.</td></tr>
+      <tr><td><code>county_status</code></td><td>Each county's current color, hiring on/off, note, and who last changed it.</td></tr>
+      <tr><td><code>county_changes</code></td><td>Every county change ever made, with before, after, reason, who and when. Never edited or deleted.</td></tr>
+      <tr><td><code>faq</code>, <code>faq_categories</code></td><td>The Driver FAQ as it is now.</td></tr>
+      <tr><td><code>faq_versions</code></td><td>Every FAQ change with before and after and the reason. Powers history and "as of" views.</td></tr>
+      <tr><td><code>feedback</code>, <code>feedback_events</code></td><td>Feedback submissions, and every status, priority and internal note on them.</td></tr>
+      <tr><td><code>feedback_email_log</code></td><td>Each attempt to email the owner about new feedback, for troubleshooting.</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>Files</b> (screenshots, videos, PDFs) live in two private storage areas, <code>feedback</code> and <code>faq</code>. They can only be opened by signed-in people allowed to see them. FAQ files are never deleted, so older versions keep working.</p>
+  <p><b>History is kept, not overwritten.</b> Map colors, FAQs, feedback and accounts all keep a permanent record of who changed what, when and why. Deleting feedback or an FAQ only hides it, and the owner can restore it.</p>
+  <h3>On the website itself</h3>
+  <ul>
+    <li><b>Map data files:</b> state and county outlines (U.S. Census), highways (Natural Earth), cities (GeoNames) and ZIP codes. These are free public data and rarely change.</li>
+    <li><b>Starting map colors:</b> the colors from before the map moved into the database, used as a fallback.</li>
+    <li><b>What's New:</b> the list of updates, written by Claude.</li>
+  </ul>
+</section>
+
+<section class="card" id="email" data-updated="2026-11-06">
+  <h2>Sign-in and email</h2>
+  <ul>
+    <li>Sign-in is by email only: Supabase sends a 6-digit code, with the subject "Your Operations Center sign-in code". There are no passwords. Codes rather than links are used because work email filters were using up sign-in links before people could click them.</li>
+    <li>Supabase sends those codes through Resend, from <code>no-reply@liquidtrucking.io</code>. The liquidtrucking.io domain is verified with Resend so the mail isn't treated as spam.</li>
+    <li>New feedback triggers an email to the owner, sent from the database through Resend. The Resend key is stored in Supabase's encrypted Vault, never in the site's files.</li>
+    <li>If an email doesn't arrive, check Junk or Quarantine in Outlook first. For feedback alerts, the email log table shows what happened.</li>
+  </ul>
+</section>
+
+<section class="card" id="shipping" data-updated="2026-11-06">
+  <h2>How a change gets made</h2>
+  <div class="flow"><span>Jason asks in the Claude project</span><i>→</i><span>Claude builds it on its own branch</span><i>→</i><span>Pull request on GitHub</span><i>→</i><span>Jason merges</span><i>→</i><span>Cloudflare publishes it in about a minute</span><i>→</i><span>Run SQL, if any</span></div>
+  <ol>
+    <li>Every change starts as a request. Claude makes it on a separate copy (a branch) and opens a <b>pull request</b> (PR) describing what changed and how it was tested.</li>
+    <li>Nothing reaches the live site until Jason presses <b>Merge</b> on GitHub. Cloudflare then publishes the new version automatically.</li>
+    <li>If the change needs the database to change, it comes with a numbered SQL file. Jason runs it once in the Supabase SQL Editor. The files are written so running one twice does no harm.</li>
+    <li>The same PR adds a <a href="/whats-new">What's New</a> entry, and updates this page when how the site works changes.</li>
+  </ol>
+  <div class="note">GitHub shows a red ✗ for "Workers Builds" on pull requests. That's Cloudflare's preview build for branches, and it has failed on every PR so far. The live build that runs after merging works. It's safe to ignore until someone looks at it in Cloudflare.</div>
+  <p><b>Undoing a change:</b> GitHub keeps every version, so any merged PR can be reversed with GitHub's "Revert" button, which goes live the same way. Database data (colors, FAQs and so on) is protected by the history tables and Supabase's own backups.</p>
+</section>
+
+<section class="card" id="setup" data-updated="2026-11-06">
+  <h2>Setup and accounts</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Service</th><th>What it's used for</th><th>Account</th></tr></thead>
+    <tbody>
+      <tr><td>GitHub</td><td>The site's files and history: <code>liquidtruckingcompanies/recruiting</code></td><td>Liquid Trucking's GitHub (Jason)</td></tr>
+      <tr><td>Cloudflare</td><td>Domain liquidtrucking.io, and hosting (a Worker called "recruiting")</td><td>Jason's Cloudflare account</td></tr>
+      <tr><td>Supabase</td><td>Sign-in, database, file storage (Pro plan)</td><td>Jason's Supabase organization</td></tr>
+      <tr><td>Resend</td><td>Email from liquidtrucking.io</td><td>Jason's Resend account</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Database setup files, in order</h3>
+  <p>These are in the <code>supabase</code> folder on GitHub. Each was run once, in this order, in the Supabase SQL Editor. They are the full recipe for rebuilding the database from scratch.</p>
+  <div class="tw"><table>
+    <thead><tr><th>File</th><th>What it set up</th></tr></thead>
+    <tbody>
+      <tr><td><code>setup.sql</code></td><td>Users list and the Hiring Map's county tables</td></tr>
+      <tr><td><code>02-admin.sql</code></td><td>Admin page: levels, active, per-page access, Public pages, Account history</td></tr>
+      <tr><td><code>03-clear-county.sql</code></td><td>Clearing a county's color</td></tr>
+      <tr><td><code>04-owner.sql</code></td><td>The owner account and its protections</td></tr>
+      <tr><td><code>05-feedback.sql</code></td><td>Feedback and its file storage</td></tr>
+      <tr><td><code>06-feedback-email.sql</code></td><td>Feedback email alerts (needs the Resend key saved in Vault first)</td></tr>
+      <tr><td><code>07-feedback-delete.sql</code></td><td>Owner delete and restore for feedback</td></tr>
+      <tr><td><code>08-faq.sql</code>, <code>09-faq-load.sql</code></td><td>Driver FAQ tables, history and file storage, then the starting 115 FAQs</td></tr>
+      <tr><td><code>10-view-as.sql</code></td><td>View as</td></tr>
+      <tr><td><code>11-whats-new.sql</code></td><td>What's New on the Admin page</td></tr>
+      <tr><td><code>12-how-it-works.sql</code></td><td>How It Works on the Admin page</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="card" id="files" data-updated="2026-11-06">
+  <h2>How the files are organized</h2>
+  <p>The site is plain web pages: there's no build step and no app server. Each page is one file, and a few shared files hold what every page uses.</p>
+  <ul>
+    <li><b>One file per page</b>, with each department in its own folder (for example, the Recruiting pages are in <code>recruiting/</code>).</li>
+    <li><b>The site map</b> (<code>assets/nav.js</code>): the list of departments and pages, the shared header, menu and footer, the "who can see what" rules the browser uses, and View as.</li>
+    <li><b>Sign-in helpers</b> (<code>assets/portal.js</code>), <b>the feedback button</b> (<code>assets/feedback.js</code>), and <b>the look</b> (<code>assets/site.css</code>: the liquidtrucking.com colors and fonts).</li>
+    <li><b>Data files</b> in <code>data/</code>, and <b>database setup files</b> in <code>supabase/</code>.</li>
+    <li><b>README</b> and <b>CLAUDE.md</b>: technical notes for whoever works on the site. These, and the SQL files, are kept off the live site.</li>
+  </ul>
+  <h3>Adding a page or a department</h3>
+  <ol>
+    <li>Add the page file to its department's folder, using the same header and footer as the others.</li>
+    <li>List it in the site map, under its department.</li>
+    <li>Add its row to the pages table with a small SQL file, so admins can control access to it.</li>
+    <li>If it stores anything, add its tables with access rules and history, plus functions for every change.</li>
+    <li>A new department just needs its own folder and an entry in the site map. It shows up on the dashboard once someone can see one of its pages.</li>
+  </ol>
+</section>
+
+<section class="card" id="onboarding" data-updated="2026-11-06">
+  <h2>Bringing someone onto the dev work</h2>
+  <ol>
+    <li><b>Site account:</b> add them on the <a href="/admin">Admin page</a>, and give them View on What's New and How It Works.</li>
+    <li><b>GitHub:</b> invite them to the <code>liquidtruckingcompanies/recruiting</code> repository. "Write" lets them open pull requests. Keep merging to the owner, or to someone trusted.</li>
+    <li><b>Supabase:</b> only if they need the database. Invite them to the organization with the lowest role that works. They'll be able to see real data.</li>
+    <li><b>Cloudflare and Resend:</b> usually not needed. Only for domain, hosting or email changes.</li>
+    <li><b>Where to start:</b> this page, then <a href="/whats-new">What's New</a> for recent history, then the README and CLAUDE.md on GitHub.</li>
+    <li><b>Ground rules:</b> every change goes through a pull request; database changes come as new numbered SQL files (never edit an old one that's already been run); every visible change gets a What's New entry; and no passwords, keys or private details in the files.</li>
+    <li><b>Trying changes:</b> any simple local web server works, because the site is plain files. It uses the real database, so test with care, and use View as to check what other people see.</li>
+  </ol>
+</section>
+
+<section class="card" id="glossary" data-updated="2026-11-06">
+  <h2>Words you'll see</h2>
+  <ul>
+    <li><b>Repository (repo):</b> the folder of site files on GitHub, with every past version.</li>
+    <li><b>Branch:</b> a separate copy for working on a change without touching the live site.</li>
+    <li><b>Pull request (PR):</b> a proposed change, shown as a list of edits to review before it's merged.</li>
+    <li><b>Merge:</b> accepting a PR into the main copy, which publishes it.</li>
+    <li><b>Deploy:</b> publishing the site. Cloudflare does it automatically after each merge.</li>
+    <li><b>SQL / migration:</b> instructions that set up or change the database. Ours are the numbered files.</li>
+    <li><b>Row-level security:</b> the database rules that decide, row by row, who can read what.</li>
+    <li><b>Database function:</b> a named action, such as "save a county color", that checks access and writes history in one step.</li>
+    <li><b>Publishable key:</b> the public key in the site's files that lets browsers reach Supabase. It's meant to be public: on its own it can only do what the security rules allow.</li>
+    <li><b>Vault:</b> Supabase's encrypted store for secrets, like the Resend key.</li>
+    <li><b>Worker:</b> Cloudflare's name for the service that hosts the site.</li>
+  </ul>
+</section>
+
+<section class="card" id="changes" data-updated="2026-11-06">
+  <h2>Changes to this page</h2>
+  <div class="tw log"><table>
+    <thead><tr><th>Date</th><th>What changed</th></tr></thead>
+    <tbody>
+      <tr><td>Nov 6, 2026</td><td>Page created: big picture, pages, access, data, email, how changes ship, setup, file layout, onboarding and glossary. (<a href="https://github.com/liquidtruckingcompanies/recruiting/pull/6" target="_blank" rel="noopener">PR #6</a>)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+    </div>
+  </div>
+</main>
+
+<div id="ltFoot"></div>
+<script>ltDrawShell()</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
+<script src="/assets/portal.js"></script>
+<script src="/assets/feedback.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const fmt=d=>new Date(d+"T12:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+(async()=>{
+  const a=await ltRequireAccount(); if(!a) return;
+  const {acct,pages}=a;
+  if(!ltCanSee(acct,pages,"how-it-works")){ $("gateText").innerHTML=`You don't have access to How It Works. Ask an admin to give you access. <a href="/dashboard">Back to the dashboard</a>`; return; }
+  // Table of contents and "Updated" dates come from each section, so editing a section only means changing its data-updated date.
+  const secs=[...document.querySelectorAll(".doc section[id]")];
+  secs.forEach(s=>{ const h=s.querySelector("h2"); if(s.dataset.updated&&s.id!=="changes") h.insertAdjacentHTML("beforeend",`<span class="upd">Updated ${fmt(s.dataset.updated)}</span>`); });
+  $("toc").insertAdjacentHTML("beforeend",secs.map(s=>`<a href="#${s.id}">${ltEsc(s.querySelector("h2").firstChild.textContent.trim())}</a>`).join(""));
+  $("gate").hidden=true; $("ui").hidden=false;
+  if(location.hash){ const el=document.getElementById(location.hash.slice(1)); if(el) el.scrollIntoView(); }
+})();
+</script>
+</body>
+</html>
