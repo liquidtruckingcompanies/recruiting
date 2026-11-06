@@ -16,7 +16,8 @@
         "Nobody can edit this page on the site, the owner included. Claude writes each entry as part of the update itself.",
         "Admins always see it. Everyone else needs View access, set on the Admin page like any other page. It starts as admins only."
       ],
-      "link": { "href": "/admin", "label": "Set who can see it on the Admin page" }
+      "link": { "href": "/admin", "label": "Set who can see it on the Admin page" },
+      "refs": [ { "label": "PR #5", "href": "https://github.com/liquidtruckingcompanies/recruiting/pull/5" } ]
     },
     {
       "id": "2026-11-05-rename-recruiting",
