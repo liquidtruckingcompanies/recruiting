@@ -27,6 +27,8 @@ body{margin:0}
 .cat{display:grid;gap:8px;scroll-margin-top:12px}
 .cathead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-bottom:2px solid var(--brand-gold);padding-bottom:4px}
 .cathead h2{margin:0;font-size:1.3rem;flex:1 1 auto}
+.xall{display:inline-flex;gap:6px}.xall button{font-size:.82rem;padding:4px 10px}
+.xsec{display:inline-flex;gap:10px;font-size:.82rem;margin-right:4px}
 .q{background:var(--surface);border:1px solid var(--line);border-radius:8px;scroll-margin-top:12px}
 .q[open]{box-shadow:0 3px 12px rgba(16,30,48,.12);border-color:#b9c7d3}
 .q summary{cursor:pointer;padding:12px 14px;font-weight:700;color:var(--heading);display:flex;gap:10px;align-items:flex-start;list-style:none}
@@ -120,7 +122,7 @@ dialog h2{font-size:1.15rem;margin:0}
         <button type="button" class="primary" id="newBtn" hidden>+ New FAQ</button>
       </div>
       <div class="bar" style="justify-content:space-between">
-        <span class="small muted" id="countLine"></span>
+        <span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="small muted" id="countLine"></span><span class="xall"><button type="button" data-xall="1">Expand all</button><button type="button" data-xall="0">Collapse all</button></span></span>
         <span class="asof"><label for="asofDate">See it as of</label><input type="date" id="asofDate" class="txt"><button type="button" id="asofGo">View</button></span>
       </div>
       <div class="banner" id="asofBanner" hidden><span id="asofText" style="flex:1 1 auto"></span><button type="button" id="asofOff">Back to today</button></div>
@@ -284,7 +286,7 @@ function render(keepOpen=[]){
     const items=shown.filter(r=>r.category===name); if(!items.length&&(words.length||!live)) return;
     const slug="cat-"+ci;
     jump+=`<a href="#${slug}">${E(name)} <span>${items.length}</span></a>`;
-    html+=`<section class="cat" id="${slug}"><div class="cathead"><h2>${E(name)}</h2>${live&&!words.length?`<button type="button" data-catmove="-1" data-cat="${E(name)}" aria-label="Move ${E(name)} up" ${ci===0?"disabled":""}>▲</button><button type="button" data-catmove="1" data-cat="${E(name)}" aria-label="Move ${E(name)} down" ${ci===cats.length-1?"disabled":""}>▼</button>`:""}</div>`;
+    html+=`<section class="cat" id="${slug}"><div class="cathead"><h2>${E(name)}</h2>${items.length?`<span class="xsec"><button type="button" class="linky" data-xsec="1" data-sec="${slug}">Expand all</button><button type="button" class="linky" data-xsec="0" data-sec="${slug}">Collapse all</button></span>`:""}${live&&!words.length?`<button type="button" data-catmove="-1" data-cat="${E(name)}" aria-label="Move ${E(name)} up" ${ci===0?"disabled":""}>▲</button><button type="button" data-catmove="1" data-cat="${E(name)}" aria-label="Move ${E(name)} down" ${ci===cats.length-1?"disabled":""}>▼</button>`:""}</div>`;
     html+=items.length?items.map((r,ii)=>itemHtml(r,ii,items.length,words.length>0||keepOpen.includes(r.id))).join(""):`<p class="empty small" style="margin:0">No FAQs in this category yet.</p>`;
     html+=`</section>`;
   });
@@ -521,6 +523,7 @@ document.addEventListener("click",async e=>{
   const t=e.target.closest("button"); if(!t) return; const d=t.dataset;
   if(d.hist){ if($("hiDlg").open) $("hiDlg").close(); showHistory(+d.hist); }
   else if(d.goto){ showTab("faq"); goTo(+d.goto); }
+  else if(d.xall||d.xsec){ const open=(d.xall||d.xsec)==="1", scope=d.xsec?$(d.sec):$("list"); scope.querySelectorAll("details").forEach(x=>{x.open=open;}); }
   else if(d.copy){ const url=location.origin+location.pathname+"#faq-"+d.copy; try{await navigator.clipboard.writeText(url);toast("Link copied");}catch(_){prompt("Copy this link:",url);} }
   else if(d.edit){ openEditor(FAQS.find(x=>x.id===+d.edit)); }
   else if(d.hide){ const r=FAQS.find(x=>x.id===+d.hide); const reason=await askReason(r.hidden?`Unhide FAQ ${r.id}?`:`Hide FAQ ${r.id}?`, r.hidden?"Everyone with access will see it again.":"Readers won't see it. Editors still can, and you can unhide it any time.", r.hidden?"Unhide":"Hide");
