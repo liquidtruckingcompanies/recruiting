@@ -18,7 +18,7 @@ window.ltLoadAccount = async function () {
   let email = null, acct = null, pages = null;
   try { const { data } = await sb.auth.getSession(); email = data.session?.user?.email?.toLowerCase() || null; } catch (e) {}
   if (email) {
-    try { const r = await sb.from("editors").select("name,role,active,pages,owner").eq("email", email).maybeSingle(); acct = r.data || null; } catch (e) {}
+    try { const r = await sb.from("editors").select("email,name,role,active,pages,owner").eq("email", email).maybeSingle(); acct = r.data || null; } catch (e) {}
     try { acct = await window.ltApplyViewAs(sb, acct); } catch (e) {}
     try { const r = await sb.from("site_pages").select("id,name,public_view"); if (!r.error) pages = r.data; } catch (e) {}
   }
