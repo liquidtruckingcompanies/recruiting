@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>What's New · Liquid Trucking Operations Center</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Open+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="/assets/site.css">
+<style>
+/* What's New: read-only list of site updates from /data/whats-new.json, written by Claude with each update. */
+body{margin:0}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#q{flex:1 1 240px;min-width:0;width:auto}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{font-size:.82rem;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 11px;color:var(--brand-deep)}
+.chips button[aria-pressed=true]{background:var(--brand-deep);border-color:var(--brand-deep);color:#fff}
+.chips button span{opacity:.7;font-weight:400}
+.xall{display:inline-flex;gap:6px;margin-left:auto}.xall button{font-size:.82rem;padding:4px 10px}
+.banner{background:#fdf4d3;border:1px solid #ecd47a;border-radius:8px;padding:10px 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.92rem}
+.banner button{font-size:.82rem;padding:3px 10px}
+.day{display:grid;gap:8px}
+.dayhead{border-bottom:2px solid var(--brand-gold);padding-bottom:4px;font-size:1.15rem;color:var(--heading);text-transform:uppercase;letter-spacing:.02em}
+.u{background:var(--surface);border:1px solid var(--line);border-radius:8px;scroll-margin-top:12px}
+.u[open]{box-shadow:0 3px 12px rgba(16,30,48,.12);border-color:#b9c7d3}
+.u.new{border-left:5px solid var(--brand-gold)}
+.u summary{cursor:pointer;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;list-style:none}
+.u summary::-webkit-details-marker{display:none}
+.u summary::before{content:"+";flex:0 0 auto;width:1.1em;font-family:var(--display);font-size:1.2rem;line-height:1.15;color:var(--brand-blue)}
+.u[open] summary::before{content:"−"}
+.u .head{flex:1 1 auto;display:grid;gap:4px;min-width:0}
+.u .t{font-weight:700;color:var(--heading);overflow-wrap:anywhere}
+.u .meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.u .body{padding:0 14px 14px 38px;display:grid;gap:10px;font-size:.95rem;line-height:1.55}
+.u .body p,.u .body ul{margin:0}
+.u .body ul{padding-left:1.3em;display:grid;gap:3px}
+.u .foot{display:flex;gap:8px 16px;flex-wrap:wrap;align-items:center;font-size:.85rem}
+.u .foot a{color:var(--brand-blue);font-weight:600}
+.u .foot .refs a{color:var(--muted);font-weight:400}
+.u .permalink{flex:0 0 auto;color:var(--muted);text-decoration:none;font-weight:700;padding:0 4px;border-radius:4px}
+.u .permalink:hover{color:var(--brand-deep);background:#eef3f7}
+.tag{display:inline-block;border-radius:999px;padding:1px 9px;font-size:.72rem;font-weight:700;border:1px solid;white-space:nowrap}
+.tag.area{background:#eef3f7;color:var(--brand-deep);border-color:#cbd8e3}
+.tag.new{background:#e3f3e9;color:#1f6b3c;border-color:#b8dcc5}
+.tag.improved{background:#e7eff8;color:#1d4f7a;border-color:#bcd0e5}
+.tag.fixed{background:#fbe9e7;color:#8a2a20;border-color:#efc4be}
+.tag.unread{background:var(--brand-gold);color:#1b2633;border-color:var(--brand-gold)}
+mark{background:#fff0a8;color:inherit;border-radius:2px}
+</style>
+</head>
+<body>
+<div id="ltTop" data-current="whats-new" data-crumbs="What's New"></div>
+<script src="/assets/nav.js"></script>
+
+<main class="wrap">
+  <header><div>
+    <h1>What's New</h1>
+    <p class="muted" style="margin:6px 0 0">Every new feature and change to the Operations Center, newest first. Click a headline to read more.</p>
+  </div></header>
+
+  <div class="card" id="gate"><p class="muted" style="margin:0" id="gateText">Checking your account…</p></div>
+
+  <div id="ui" hidden style="display:grid;gap:14px">
+    <div class="banner" id="unreadBar" hidden><span id="unreadText"></span><button type="button" id="markRead">Mark all as read</button></div>
+    <div class="bar">
+      <input id="q" class="txt" type="search" placeholder="Search updates" aria-label="Search updates">
+      <div class="xall"><button type="button" id="openAll">Expand all</button><button type="button" id="closeAll">Collapse all</button></div>
+    </div>
+    <div class="chips" id="areas" role="group" aria-label="Filter by area"></div>
+    <div id="list" style="display:grid;gap:18px"></div>
+    <p class="muted" id="none" hidden style="margin:0">No updates match that search.</p>
+    <p class="small muted" style="margin:0">These notes are written by Claude each time the site is updated. Nobody can edit this page on the site. Who can see it is set on the Admin page.</p>
+  </div>
+</main>
+
+<div id="ltFoot"></div>
+<script>ltDrawShell()</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
+<script src="/assets/portal.js"></script>
+<script src="/assets/feedback.js"></script>
+<script>
+const $=id=>document.getElementById(id), esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const TYPES={new:"New feature",improved:"Improved",fixed:"Fixed"};
+const SEEN_KEY="ltWhatsNewSeen";
+let ENTRIES=[], AREA="All", SEEN=null; // SEEN: ids already read in this browser (null = first visit)
+
+const fmtDay=d=>new Date(d+"T12:00:00").toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+const readSeen=()=>{ try{ const v=JSON.parse(localStorage.getItem(SEEN_KEY)||"null"); return Array.isArray(v)?v:null; }catch(e){ return null; } };
+const saveSeen=ids=>{ try{ localStorage.setItem(SEEN_KEY,JSON.stringify(ids)); }catch(e){} };
+const isUnread=e=>SEEN!==null&&!SEEN.includes(e.id);
+const markSeen=id=>{ if(SEEN===null||SEEN.includes(id)) return; SEEN.push(id); saveSeen(SEEN); };
+
+// Search highlight: escape first, then wrap each match.
+function hi(text,q){
+  const t=esc(text); if(!q) return t;
+  const rx=new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")+")","gi");
+  return t.replace(rx,"<mark>$1</mark>");
+}
+const hay=e=>[e.title,e.summary,e.area,...(e.details||[])].join(" ").toLowerCase();
+
+function entryHtml(e,q,open){
+  const det=(e.details||[]).length?`<ul>${e.details.map(d=>`<li>${hi(d,q)}</li>`).join("")}</ul>`:"";
+  const link=e.link?.href?`<a href="${esc(e.link.href)}">${esc(e.link.label||"Open")} →</a>`:"";
+  const refs=(e.refs||[]).length?`<span class="refs">${e.refs.map(r=>`<a href="${esc(r.href)}" target="_blank" rel="noopener">${esc(r.label)}</a>`).join(" · ")}</span>`:"";
+  return `<details class="u${isUnread(e)?" new":""}" id="${esc(e.id)}"${open?" open":""}>
+    <summary><div class="head"><span class="t">${hi(e.title,q)}</span>
+      <span class="meta">${isUnread(e)?'<span class="tag unread">New to you</span>':""}<span class="tag ${esc(e.type)}">${esc(TYPES[e.type]||e.type)}</span><span class="tag area">${esc(e.area)}</span></span></div>
+      <a class="permalink" href="#${esc(e.id)}" title="Link to this update" aria-label="Link to this update">#</a></summary>
+    <div class="body"><p>${hi(e.summary,q)}</p>${det}${link||refs?`<div class="foot">${link}${refs}</div>`:""}</div>
+  </details>`;
+}
+
+function render(){
+  const q=$("q").value.trim(), ql=q.toLowerCase(), want=decodeURIComponent(location.hash.slice(1));
+  const shown=ENTRIES.filter(e=>(AREA==="All"||e.area===AREA)&&(!ql||hay(e).includes(ql)));
+  const days=[...new Set(shown.map(e=>e.date))];
+  $("list").innerHTML=days.map(d=>`<section class="day"><h2 class="dayhead">${esc(fmtDay(d))}</h2>${shown.filter(e=>e.date===d).map(e=>entryHtml(e,q,!!ql||e.id===want)).join("")}</section>`).join("");
+  $("none").hidden=shown.length>0;
+  $("list").querySelectorAll("details.u").forEach(el=>el.addEventListener("toggle",()=>{ if(el.open){ markSeen(el.id); el.classList.remove("new"); el.querySelector(".tag.unread")?.remove(); renderUnread(); } }));
+  $("list").querySelectorAll(".permalink").forEach(a=>a.addEventListener("click",ev=>{ ev.stopPropagation(); }));
+}
+
+function renderAreas(){
+  const counts={}; ENTRIES.forEach(e=>counts[e.area]=(counts[e.area]||0)+1);
+  const areas=["All",...Object.keys(counts).sort()];
+  $("areas").innerHTML=areas.map(a=>`<button type="button" data-area="${esc(a)}" aria-pressed="${a===AREA}">${esc(a)} <span>${a==="All"?ENTRIES.length:counts[a]}</span></button>`).join("");
+  $("areas").querySelectorAll("button").forEach(b=>b.onclick=()=>{ AREA=b.dataset.area; renderAreas(); render(); });
+}
+
+function renderUnread(){
+  const n=ENTRIES.filter(isUnread).length;
+  $("unreadBar").hidden=!n;
+  $("unreadText").innerHTML=`<b>${n} update${n===1?"":"s"}</b> since you last looked. ${n===1?"It's":"They're"} marked <span class="tag unread">New to you</span> below.`;
+}
+
+function jumpToHash(){
+  const id=decodeURIComponent(location.hash.slice(1)); if(!id) return;
+  let el=document.getElementById(id);
+  if(!el&&ENTRIES.some(e=>e.id===id)){ AREA="All"; $("q").value=""; renderAreas(); render(); el=document.getElementById(id); }
+  if(el&&el.tagName==="DETAILS"){ el.open=true; el.scrollIntoView({block:"start"}); }
+}
+
+(async()=>{
+  const a=await ltRequireAccount(); if(!a) return;
+  const {acct,pages}=a;
+  if(!ltCanSee(acct,pages,"whats-new")){ $("gateText").innerHTML=`You don't have access to What's New. Ask an admin to give you access. <a href="/dashboard">Back to the dashboard</a>`; return; }
+  try{
+    const r=await fetch("/data/whats-new.json",{cache:"no-cache"}); if(!r.ok) throw new Error(r.status);
+    ENTRIES=((await r.json()).entries||[]).slice().sort((x,y)=>x.date<y.date?1:x.date>y.date?-1:0);
+  }catch(e){ $("gateText").textContent="Couldn't load the list of updates. Refresh to try again."; return; }
+  // First visit in this browser: nothing is flagged, and everything so far counts as read from now on.
+  SEEN=readSeen(); if(SEEN===null) saveSeen(ENTRIES.map(e=>e.id));
+  $("gate").hidden=true; $("ui").hidden=false;
+  renderAreas(); render(); renderUnread(); jumpToHash();
+  let t; $("q").addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(render,120); });
+  $("openAll").onclick=()=>$("list").querySelectorAll("details.u").forEach(d=>d.open=true);
+  $("closeAll").onclick=()=>$("list").querySelectorAll("details.u").forEach(d=>d.open=false);
+  $("markRead").onclick=()=>{ SEEN=ENTRIES.map(e=>e.id); saveSeen(SEEN); render(); renderUnread(); };
+  window.addEventListener("hashchange",jumpToHash);
+})();
+</script>
+</body>
+</html>

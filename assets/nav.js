@@ -16,7 +16,12 @@ window.LT_SITE = {
     "hiring-map": { name: "Hiring Map", href: "/recruiting/hiring-map", dept: "recruiting",
       blurb: "County-by-county hiring areas and how often drivers get home." },
     "faq": { name: "Driver FAQ", href: "/recruiting/faq", dept: "recruiting",
-      blurb: "Answers on hiring, pay, benefits and life on the road, with a full change history." }
+      blurb: "Answers on hiring, pay, benefits and life on the road, with a full change history." },
+    // Site-wide page, not in a department. viewOnly: the Admin page offers No access / View only (nobody edits it on the
+    // site; Claude adds an entry to data/whats-new.json with every update). privateByDefault: admins only until
+    // supabase/11-whats-new.sql adds its row, and that row starts as sign-in with access only.
+    "whats-new": { name: "What's New", href: "/whats-new", dept: null, viewOnly: true, privateByDefault: true,
+      blurb: "Every new feature and change to the Operations Center, newest first." }
   }
 };
 
@@ -29,7 +34,9 @@ window.ltCanSee = function (acct, pages, id) {
   if (!active) return false;
   if (id === "feedback" || id === "dashboard") return true;
   const acc = acct.pages && acct.pages[id], pg = (pages || []).find(p => p.id === id);
-  return admin || acc === "view" || acc === "edit" || !pages || !pg || !!pg.public_view;
+  if (admin || acc === "view" || acc === "edit") return true;
+  if (!pages || !pg) return !(LT_SITE.pages[id] || {}).privateByDefault;
+  return !!pg.public_view;
 };
 window.ltDeptPages = function (acct, pages, deptId) {
   const d = LT_SITE.departments.find(x => x.id === deptId);
@@ -66,6 +73,7 @@ window.ltDrawShell = function () {
     ${link("/", "Sign in", 'data-page="signin"', cur === "signin")}
     ${link("/dashboard", "Dashboard", 'data-page="dashboard"', cur === "dashboard")}
     ${depts}
+    ${link("/whats-new", "What's New", 'data-page="whats-new"', cur === "whats-new")}
     ${link("/admin", "Admin", 'data-page="admin"', cur === "admin")}
     ${link("/feedback", "Feedback", 'data-page="feedback"', cur === "feedback")}
   </nav>
