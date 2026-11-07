@@ -9,7 +9,7 @@ data sites. Two free public sources:
     people who LIVE in each county and work as truck drivers, with margin of error.
     The Census API needs a free key, saved as the repo secret CENSUS_API_KEY
     (sign up: https://api.census.gov/data/key_signup.html). Without it this part is skipped.
-Whatever downloads is written; the run log says what was used and what was missing.
+Whatever downloads is written, and the run log says what was used and what was missing.
 The site never shows a source that failed, so a partial run is safe.
 """
 import io, json, os, sys, time, datetime
