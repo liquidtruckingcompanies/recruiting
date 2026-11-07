@@ -1,6 +1,7 @@
 {
   "about": "What's New on the Operations Center. Claude adds an entry here with every update to the site; nobody edits it on the site. Newest first. Fields: id (unique, never reused), date (YYYY-MM-DD, Central time), area, type (new | improved | fixed), title, summary, details (list), link ({href,label}, optional), refs (list of {label,href}, optional).",
   "entries": [
+    {"id": "2026-11-07-truck-drivers-per-county", "date": "2026-11-07", "area": "Hiring Map", "type": "new", "title": "Truck driver numbers for each county on the Hiring Map", "summary": "Click a county to see a new “Truck drivers here” section: roughly how many truck drivers live there, how many trucking companies are based there, how many trucking jobs they have, and average trucking pay.", "details": ["Driver counts come from the U.S. Census; trucking companies, jobs and pay come from the Bureau of Labor Statistics (2025).", "These are government estimates of people working as truck drivers, not an exact count of CDL holders. No public source has exact CDL counts by county.", "Select several counties to see their totals added up.", "The numbers refresh once a year on their own."], "link": {"href": "/recruiting/hiring-map", "label": "Open the Hiring Map"}, "refs": [{"label": "PR #7", "href": "https://github.com/liquidtruckingcompanies/recruiting/pull/7"}]},
     {
       "id": "2026-11-06-how-it-works",
       "date": "2026-11-06",

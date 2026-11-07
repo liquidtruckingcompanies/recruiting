@@ -113,7 +113,7 @@ body{margin:0}
   <div class="note"><b>Worth knowing:</b> the site's files on GitHub are public. That's normal for this kind of site, because the database holds everything private and checks every request. But it means the text of What's New and this page, and the site's code, can be read by anyone who finds the GitHub page. Never put passwords, keys or private details in the site's files.</div>
 </section>
 
-<section class="card" id="data" data-updated="2026-11-06">
+<section class="card" id="data" data-updated="2026-11-07">
   <h2>Where the data lives</h2>
   <h3>In the database (Supabase)</h3>
   <div class="tw"><table>
@@ -135,6 +135,7 @@ body{margin:0}
   <h3>On the website itself</h3>
   <ul>
     <li><b>Map data files:</b> state and county outlines (U.S. Census), highways (Natural Earth), cities (GeoNames) and ZIP codes. These are free public data and rarely change.</li>
+    <li><b>Truck driver numbers</b> (<code>data/county-drivers.json</code>): for each county, how many truck drivers live there (U.S. Census American Community Survey), and the trucking companies, trucking jobs and average trucking pay based there (Bureau of Labor Statistics QCEW). A GitHub Action, "Refresh truck driver data", downloads these every March; it can also be run by hand from the repo's Actions tab. The Census download needs a free Census API key, saved in GitHub as the repo secret <code>CENSUS_API_KEY</code>. These are estimates, not exact CDL counts.</li>
     <li><b>Starting map colors:</b> the colors from before the map moved into the database, used as a fallback.</li>
     <li><b>What's New:</b> the list of updates, written by Claude.</li>
   </ul>
@@ -194,7 +195,7 @@ body{margin:0}
   </table></div>
 </section>
 
-<section class="card" id="files" data-updated="2026-11-06">
+<section class="card" id="files" data-updated="2026-11-07">
   <h2>How the files are organized</h2>
   <p>The site is plain web pages: there's no build step and no app server. Each page is one file, and a few shared files hold what every page uses.</p>
   <ul>
@@ -202,6 +203,7 @@ body{margin:0}
     <li><b>The site map</b> (<code>assets/nav.js</code>): the list of departments and pages, the shared header, menu and footer, the "who can see what" rules the browser uses, and View as.</li>
     <li><b>Sign-in helpers</b> (<code>assets/portal.js</code>), <b>the feedback button</b> (<code>assets/feedback.js</code>), and <b>the look</b> (<code>assets/site.css</code>: the liquidtrucking.com colors and fonts).</li>
     <li><b>Data files</b> in <code>data/</code>, and <b>database setup files</b> in <code>supabase/</code>.</li>
+    <li><b>Data scripts</b> in <code>scripts/</code> and the automatic jobs that run them in <code>.github/workflows/</code> (kept off the live site).</li>
     <li><b>README</b> and <b>CLAUDE.md</b>: technical notes for whoever works on the site. These, and the SQL files, are kept off the live site.</li>
   </ul>
   <h3>Adding a page or a department</h3>
@@ -244,11 +246,12 @@ body{margin:0}
   </ul>
 </section>
 
-<section class="card" id="changes" data-updated="2026-11-06">
+<section class="card" id="changes" data-updated="2026-11-07">
   <h2>Changes to this page</h2>
   <div class="tw log"><table>
     <thead><tr><th>Date</th><th>What changed</th></tr></thead>
     <tbody>
+      <tr><td>Nov 7, 2026</td><td>Where the data lives: added the truck driver numbers file and the yearly job that refreshes it. File layout: added the scripts and automatic jobs folders. (<a href="https://github.com/liquidtruckingcompanies/recruiting/pull/7" target="_blank" rel="noopener">PR #7</a>)</td></tr>
       <tr><td>Nov 6, 2026</td><td>Page created: big picture, pages, access, data, email, how changes ship, setup, file layout, onboarding and glossary. (<a href="https://github.com/liquidtruckingcompanies/recruiting/pull/6" target="_blank" rel="noopener">PR #6</a>)</td></tr>
     </tbody>
   </table></div>
