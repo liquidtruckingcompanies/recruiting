@@ -5,9 +5,10 @@ data sites. Two free public sources:
   * BLS QCEW annual averages, NAICS 484 "Truck transportation" (private ownership):
     trucking companies, trucking jobs and average trucking pay located in each county.
     No key needed.
-  * Census ACS 5-year, table B24114 line 541 "Driver/sales workers and truck drivers":
-    people who LIVE in each county and work as truck drivers, with margin of error.
-    The Census API needs a free key, saved as the repo secret CENSUS_API_KEY
+  * Census ACS 5-year microdata (PUMS), occupation 9130 "Driver/sales workers and truck
+    drivers": people who LIVE in each county and work as truck drivers. The Census only
+    publishes this for areas of 100,000+ people (PUMAs), so each area's count is split across
+    its counties by population. The Census API needs a free key, saved as the repo secret CENSUS_API_KEY
     (sign up: https://api.census.gov/data/key_signup.html). Without it this part is skipped.
 Whatever downloads is written, and the run log says what was used and what was missing.
 The site never shows a source that failed, so a partial run is safe.
@@ -82,37 +83,67 @@ for y in range(THIS_YEAR, THIS_YEAR - 4, -1):
 
 
 # ---------- Census ACS: truck drivers who live in each county ----------
-def acs(year, var, geo):
-    url = f"https://api.census.gov/data/{year}/acs/acs5?get={var}&{geo}&key={KEY}"
-    raw = get(url)
+# The Census doesn't publish its detailed "truck drivers" line for counties, only for areas of
+# about 100,000+ people called PUMAs. So: count drivers per PUMA from the 5-year survey microdata
+# (occupation 9130 "Driver/sales workers and truck drivers", employed), then split each PUMA's
+# drivers across its census tracts by population and add the tracts up by county.
+REL_URL = "https://www2.census.gov/geo/docs/maps-data/data/rel2020/2020_Census_Tract_to_2020_PUMA.txt"
+STATES = sorted({f[:2] for f in IDS})
+
+
+def api(url):
+    raw = get(url + f"&key={KEY}")
     try:
         rows = json.loads(raw)
     except ValueError:
-        raise RuntimeError(f"ACS {year}: not data: {raw[:200]!r}")
+        raise RuntimeError(f"not data: {raw[:200]!r}")
     return rows[0], rows[1:]
 
 
-def acs_fill(year, only=None):
-    head, rows = acs(year, "B24114_541E,B24114_541M", "for=county:*&in=state:*")
-    n = 0
-    for r in rows:
-        d = dict(zip(head, r))
-        f = d["state"] + d["county"]
-        if f not in out or (only is not None and f not in only):
-            continue
+def acs_drivers(y):
+    base = f"https://api.census.gov/data/{y}/acs/acs5"
+    pv = json.loads(get(f"{base}/pums/variables.json?key={KEY}"))["variables"]
+    puma_var = next((v for v in ("PUMA20", "PUMA") if v in pv), None)
+    if not puma_var:
+        raise RuntimeError(f"no PUMA field in {y} PUMS: {[k for k in pv if 'PUMA' in k]}")
+    rel = pd.read_csv(io.BytesIO(get(REL_URL)), dtype=str, encoding="utf-8-sig")
+    rel.columns = [c.strip().upper() for c in rel.columns]
+    rel["TRACT"] = rel["STATEFP"] + rel["COUNTYFP"] + rel["TRACTCE"]
+    rel["PKEY"] = rel["STATEFP"] + rel["PUMA5CE"]
+    tract_puma = dict(zip(rel["TRACT"], rel["PKEY"]))
+    county_vals, n_states = {}, 0
+    for st in STATES:
         try:
-            est, moe = float(d["B24114_541E"]), float(d["B24114_541M"])
-        except (TypeError, ValueError):
+            # Employed truck drivers (ESR 1 civilian at work, 2 civilian with a job) and their weights.
+            h, rows = api(f"{base}/pums?get=PWGTP,{puma_var},ESR&OCCP=9130&for=state:{st}")
+            drivers = {}
+            for r in rows:
+                d = dict(zip(h, r))
+                if d["ESR"] not in ("1", "2"):
+                    continue
+                k = st + str(d[puma_var]).zfill(5)
+                drivers[k] = drivers.get(k, 0) + int(d["PWGTP"])
+            h, rows = api(f"{base}?get=B01003_001E&for=tract:*&in=state:{st}")
+        except Exception as e:
+            print(f"ACS {y} state {st}: {e}")
             continue
-        if est < 0:
-            continue
-        out[f]["live"] = int(est)
-        if moe >= 0:
-            out[f]["liveMoe"] = int(moe)
-        if only is not None:
-            out[f]["liveYears"] = f"{year-4}-{year}"
-        n += 1
-    return n
+        tpop, ppop = {}, {}
+        for r in rows:
+            d = dict(zip(h, r))
+            t = d["state"] + d["county"] + d["tract"]
+            p = max(int(float(d["B01003_001E"] or 0)), 0)
+            k = tract_puma.get(t)
+            if k is None:
+                continue
+            tpop[t] = (k, p)
+            ppop[k] = ppop.get(k, 0) + p
+        for t, (k, p) in tpop.items():
+            if ppop.get(k) and k in drivers:
+                c = t[:5]
+                county_vals[c] = county_vals.get(c, 0) + drivers[k] * p / ppop[k]
+        n_states += 1
+        print(f"ACS {y} state {st}: {sum(drivers.values()):,} drivers in {len(drivers)} PUMAs")
+    return county_vals, n_states
 
 
 if not KEY:
@@ -120,22 +151,25 @@ if not KEY:
 else:
     for y in range(THIS_YEAR - 1, THIS_YEAR - 5, -1):
         try:
-            n = acs_fill(y)
+            vals, n_states = acs_drivers(y)
         except Exception as e:
             print(f"ACS {y}: {e}")
             continue
-        missing = [f for f in IDS if "live" not in out[f]]
-        print(f"ACS {y}: {n} counties; missing {len(missing)} {missing[:12]}")
-        # Connecticut's 8 old counties became planning regions in the 2022+ ACS; the map still
-        # draws the old counties, so fill them from the last 5-year release that has them.
-        if missing and y >= 2022:
-            try:
-                print(f"ACS 2021 fallback: {acs_fill(2021, set(missing))} counties")
-            except Exception as e:
-                print(f"ACS 2021 fallback: {e}")
-        sources["acs"] = {"label": f"U.S. Census American Community Survey 5-year {y-4}-{y}, driver/sales workers and truck drivers by county of residence",
-                          "years": f"{y-4}-{y}", "href": f"https://data.census.gov/table/ACSDT5Y{y}.B24114"}
+        n = 0
+        for f, v in vals.items():
+            if f in out and v >= 1:
+                out[f]["live"] = int(round(v, -1)) if v >= 100 else int(round(v))
+                n += 1
+        print(f"ACS {y}: {n} counties from {n_states} states; nationwide {sum(vals.values()):,.0f} drivers")
+        if n < len(IDS) * 0.9:
+            print(f"ACS {y}: too few counties, not using it")
+            for f in out:
+                out[f].pop("live", None)
+            continue
+        sources["acs"] = {"label": f"U.S. Census American Community Survey 5-year microdata {y-4}-{y}, employed driver/sales workers and truck drivers (occupation 9130) by home area, split into counties by population",
+                          "years": f"{y-4}-{y}", "href": "https://www.census.gov/programs-surveys/acs/microdata.html"}
         break
+
 
 # Carry forward any source that failed this run but worked before.
 for k, keys in (("qcew", ("firms", "jobs", "pay")), ("acs", ("live", "liveMoe", "liveYears"))):

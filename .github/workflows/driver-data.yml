@@ -9,7 +9,7 @@ on:
   schedule:
     - cron: "0 14 15 3 *"
   push:
-    paths: [scripts/driver_data.py, scripts/probe.py, .github/workflows/driver-data.yml]
+    paths: [scripts/driver_data.py, .github/workflows/driver-data.yml]
 
 permissions:
   contents: write
@@ -23,9 +23,6 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install pandas openpyxl
-      - run: python scripts/probe.py || true
-        env:
-          CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
       - run: python scripts/driver_data.py
         env:
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
