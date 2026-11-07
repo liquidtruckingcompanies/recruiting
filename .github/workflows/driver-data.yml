@@ -1,0 +1,35 @@
+name: Refresh truck driver data
+
+# Downloads public Census and BLS numbers and saves data/county-drivers.json for the Hiring Map.
+# Runs itself every March (new numbers come out once a year), whenever the script changes,
+# or by hand: Actions tab > Refresh truck driver data > Run workflow.
+# The Census part needs a free key saved as the repo secret CENSUS_API_KEY.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 14 15 3 *"
+  push:
+    paths: [scripts/driver_data.py, .github/workflows/driver-data.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pandas openpyxl
+      - run: python scripts/driver_data.py
+        env:
+          CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+      - name: Save the new numbers
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add data/county-drivers.json
+          git diff --cached --quiet || git commit -m "Refresh truck driver data for the Hiring Map"
+          git push

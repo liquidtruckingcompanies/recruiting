@@ -3,3 +3,5 @@ supabase
 .git
 .assetsignore
 CLAUDE.md
+scripts
+.github
