@@ -135,7 +135,7 @@ body{margin:0}
   <h3>On the website itself</h3>
   <ul>
     <li><b>Map data files:</b> state and county outlines (U.S. Census), highways (Natural Earth), cities (GeoNames) and ZIP codes. These are free public data and rarely change.</li>
-    <li><b>Truck driver numbers</b> (<code>data/county-drivers.json</code>): for each county, how many truck drivers live there (U.S. Census American Community Survey), and the trucking companies, trucking jobs and average trucking pay based there (Bureau of Labor Statistics QCEW). A GitHub Action, "Refresh truck driver data", downloads these every March; it can also be run by hand from the repo's Actions tab. The Census download needs a free Census API key, saved in GitHub as the repo secret <code>CENSUS_API_KEY</code>. These are estimates, not exact CDL counts.</li>
+    <li><b>Truck driver numbers</b> (<code>data/county-drivers.json</code>): for each county, how many truck drivers live there (U.S. Census American Community Survey; the Census counts these for areas of about 100,000 people, so each area is split into its counties by population), and the trucking companies, trucking jobs and average trucking pay based there (Bureau of Labor Statistics QCEW). A GitHub Action, "Refresh truck driver data", downloads these every March; it can also be run by hand from the repo's Actions tab. The Census download needs a free Census API key, saved in GitHub as the repo secret <code>CENSUS_API_KEY</code>. These are estimates, not exact CDL counts.</li>
     <li><b>Starting map colors:</b> the colors from before the map moved into the database, used as a fallback.</li>
     <li><b>What's New:</b> the list of updates, written by Claude.</li>
   </ul>
