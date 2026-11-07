@@ -25,6 +25,7 @@ jobs:
       - run: python scripts/driver_data.py
         env:
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+          PROBE: "1"
       - name: Save the new numbers
         run: |
           git config user.name "github-actions[bot]"

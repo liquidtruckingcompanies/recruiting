@@ -45,9 +45,39 @@ out = {c: {} for c in IDS}
 sources = {}
 
 # ---------- Census ACS ----------
+if os.environ.get("PROBE"):
+    def peek(url, hdr=None):
+        try:
+            req = urllib.request.Request(url, headers=hdr or UA)
+            with urllib.request.urlopen(req, timeout=60) as r:
+                b = r.read(); print("PROBE", r.status, len(b), url, "\n  ", b[:300])
+        except urllib.error.HTTPError as e:
+            print("PROBE", e.code, url, "\n  ", e.read()[:300])
+        except Exception as e:
+            print("PROBE ERR", url, e)
+    A = "https://api.census.gov/data"
+    peek(f"{A}/2024/acs/acs5?get=NAME,B24114_541E&for=county:153&in=state:19")
+    peek(f"{A}/2024/acs/acs5?get=NAME,B24114_541E&for=state:19")
+    peek(f"{A}/2024/acs/acs5?get=NAME,C24010_001E&for=county:153&in=state:19")
+    peek(f"{A}/2024/acs/acs5/pums?get=PWGTP,OCCP&for=public%20use%20microdata%20area:*&in=state:19&OCCP=9130")
+    peek(f"{A}/2023/acs/acs5/pums?get=PWGTP,OCCP&for=public%20use%20microdata%20area:*&in=state:19&OCCP=9130")
+    peek(f"{A}/2024/acs/acs1/pums?get=PWGTP,OCCP&for=public%20use%20microdata%20area:*&in=state:19&OCCP=9130")
+    peek(f"{A}/2024/acs/acs5/subject?get=NAME,S2401_C01_001E&for=county:153&in=state:19")
+    bua = {"User-Agent": "LiquidTruckingRecruitingData/1.0 (+https://github.com/liquidtruckingcompanies/recruiting)", "Accept": "*/*"}
+    peek("https://www.bls.gov/oes/special-requests/oesm24ma.zip", bua)
+    peek("https://download.bls.gov/pub/time.series/oe/oe.area", bua)
+    peek("https://api.bls.gov/publicAPI/v2/timeseries/data/OEUM003654000000053303201", bua)
+    peek("https://api.bls.gov/publicAPI/v2/timeseries/data/OEUM003654000000053303213", bua)
+    sys.exit(0)
+
+
 def acs(year, var, geo="for=county:*&in=state:*"):
     url = f"https://api.census.gov/data/{year}/acs/acs5?get={var}&{geo}" + (f"&key={KEY}" if KEY else "")
-    rows = json.loads(get(url))
+    raw = get(url)
+    try:
+        rows = json.loads(raw)
+    except ValueError:
+        raise RuntimeError(f"not JSON: {raw[:200]!r}")
     head, rows = rows[0], rows[1:]
     return head, rows
 
