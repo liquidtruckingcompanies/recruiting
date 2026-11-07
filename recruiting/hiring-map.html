@@ -412,7 +412,7 @@ const fmtPop=n=>n.toLocaleString("en-US");
 
 // Supabase project (filled in once it exists). The anon key is public by design; the database rules decide who can write.
 // Data version: bump when data/*.json changes so browsers fetch the new files instead of cached ones.
-const DV="2026-11-02a";
+const DV="2026-11-07a";
 const SUPABASE_URL = "https://bunskxkyzmabbhybbubg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_YPlmQVx-G_A97WaiTSLFqg_xIyl3PC_";
 
@@ -556,6 +556,27 @@ function cityList(fipsList){
   return `<hr><div class="small" style="display:grid;gap:6px"><div class="eyebrow">Cities here</div>`+
     CGROUPS.map(g=>{const cs=list.filter(c=>c.g===g); if(!cs.length) return "";
       return `<details ${g.id!=="rural"&&g.id!=="small"?"open":""}><summary><b>${g.label}</b> <span class="muted">(${g.range}) · ${cs.length}</span></summary><div class="clist">${cs.map(c=>`<span>${esc(c.name)}, ${c.st} <span class="muted">${fmtPop(c.pop)}</span></span>`).join("")}</div></details>`}).join("")+`</div>`;
+}
+// Truck driver numbers per county (data/county-drivers.json, built yearly by scripts/driver_data.py from Census + BLS).
+let DRV=null;
+function driverInfo(fipsList){
+  if(!DRV) return "";
+  const rows=fipsList.map(f=>DRV.c[f]).filter(Boolean); if(!rows.length) return "";
+  const sum=k=>rows.reduce((t,r)=>t+(r[k]||0),0), has=k=>rows.some(r=>r[k]!=null);
+  const many=fipsList.length>1, src=DRV.sources||{}, lines=[];
+  if(has("live")){
+    const moe=!many&&rows[0].liveMoe?` <span class="muted">(give or take ${fmtPop(rows[0].liveMoe)})</span>`:"";
+    lines.push(`<div><b>About ${fmtPop(sum("live"))}</b> truck drivers live ${many?"in these counties":"here"}${moe}</div>`);
+  }
+  if(has("firms")){
+    const hid=rows.some(r=>r.firms&&r.jobs==null), n=sum("firms");
+    lines.push(`<div><b>${fmtPop(n)}</b> trucking ${n===1?"company":"companies"} based ${many?"in these counties":"here"}${has("jobs")?` with <b>${fmtPop(sum("jobs"))}${hid?"+":""}</b> trucking jobs`:hid?` <span class="muted">(job count kept private for small counties)</span>`:""}</div>`);
+  }
+  if(!many&&rows[0].pay) lines.push(`<div>Average trucking pay here: <b>$${fmtPop(rows[0].pay)}</b> a year <span class="muted">(all trucking jobs, not only drivers)</span></div>`);
+  if(!lines.length) return "";
+  const cite=[["acs","Census"],["qcew","Bureau of Labor Statistics"]].filter(([k])=>src[k]).map(([k,l])=>`<a href="${esc(src[k].href)}" target="_blank" rel="noopener" title="${esc(src[k].label)}">${l} ${esc(src[k].years||src[k].year)}</a>`).join(" · ");
+  return `<hr><div class="small" style="display:grid;gap:6px"><div class="eyebrow">Truck drivers ${many?"in this area":"here"}</div>${lines.join("")}
+    <div class="muted" style="font-size:12px">Government estimates, not an exact count of CDL holders. Sources: ${cite}.</div></div>`;
 }
 function renderCityTable(){
   const body=document.getElementById("cityBody"); if(!body) return;
@@ -1025,7 +1046,7 @@ function renderDetail(){
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="primary" type="submit" id="saveBtn" disabled>Save change</button>${selected.some(f=>stateAt()[f])?`<button type="button" id="clearBtn" title="Remove the color completely">Clear color</button>`:""}<span class="msg muted" id="saveMsg"></span></div>
     </form>`;
   }
-  html+=cityList(selected);
+  html+=driverInfo(selected)+cityList(selected);
   if(!many){
     const hist=audit.filter(a=>a.fips===selected[0]).slice(0,4);
     if(hist.length) html+=`<hr><div class="small" style="display:grid;gap:6px"><div class="eyebrow">Recent changes here</div>`+
@@ -1187,6 +1208,7 @@ async function loadData(){
     buildStates(states); buildCounties(counties);
     fetch("/data/roads.json?v="+DV).then(r=>r.json()).then(buildRoads).catch(()=>{});
     paint();
+    fetch("/data/county-drivers.json?v="+DV).then(r=>r.ok?r.json():null).then(d=>{if(d&&d.c){DRV=d;paint();}}).catch(()=>{});
     fetch("/data/cities.json?v="+DV).then(r=>r.json()).then(c=>{buildCities(c);paint();}).catch(()=>{});
     if(SUPABASE_URL && window.supabase){
       // Read any sign-in result the email link left in the address bar before the client consumes it.
